@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import type { z } from "zod";
 import { MissingConfigurationError } from "@/lib/env";
 import { isSameOriginRequest } from "@/lib/security";
+import { AuthError } from "@/services/auth/wordpress-auth";
 import { CartApiError } from "@/services/woocommerce/cart";
 import { StoreApiError } from "@/services/woocommerce/store-api";
 
@@ -27,6 +28,10 @@ export function handleApiError(label: string, err: unknown) {
     // WooCommerce's own customer-facing message (e.g. out of stock).
     const status = err.status && err.status >= 400 && err.status < 500 ? err.status : 502;
     return apiError(status, err.code, err.message);
+  }
+  if (err instanceof AuthError) {
+    // Messages are the plugin's generic customer-facing ones (or our own).
+    return apiError(err.status >= 400 && err.status < 600 ? err.status : 502, err.code, err.message);
   }
   if (err instanceof MissingConfigurationError) {
     console.error(`[api] ${label}: missing configuration ${err.keys.join(", ")}`);

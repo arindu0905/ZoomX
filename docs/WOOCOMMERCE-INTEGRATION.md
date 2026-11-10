@@ -109,3 +109,30 @@ Generate secrets with `node -e "console.log(require('crypto').randomBytes(36).to
 - Cross-site writes return 403, a forged cookie gets an empty cart, and malformed input returns 400.
 - A real price change in WooCommerce stays cached until the signed webhook arrives, then shows on the very next page load.
 - Automated: `tests/e2e/cart-api.spec.ts`, `tests/unit/security.test.ts`, `tests/unit/revalidation.test.ts`.
+
+## 7. Customer accounts (Phase 9)
+
+WordPress core can't check a customer's password over its REST API, and the storefront must never store passwords. So the **zoomx-headless plugin** (`wordpress-plugin/zoomx-headless-payments`, v1.1) exposes signed server-to-server endpoints that call WordPress core:
+
+| Endpoint (`/wp-json/zoomx/v1/…`) | Uses | Notes |
+|---|---|---|
+| `auth/login` | `wp_authenticate` | Generic "Incorrect email or password." **Staff accounts (edit_posts / manage_woocommerce) are refused**: they use wp-admin |
+| `auth/register` | `wc_create_new_customer` | Only if WooCommerce → Accounts → "Allow customers to create an account on My account" is on. Generic failure message, so it doesn't reveal existing emails |
+| `auth/lost-password` | `retrieve_password` | Always `{ ok: true }`. The reset email's link is rewritten to `<storefront>/account/reset?key=…&login=…` |
+| `auth/reset-password` | `check_password_reset_key` + `reset_password` | |
+
+**Request signing**: `X-ZoomX-Timestamp` (Unix seconds, ±5 min) and `X-ZoomX-Signature` = hex(HMAC-SHA256(`timestamp + "." + raw body`, secret)). Unsigned, stale or wrong signatures get 401. The secret is `ZOOMX_HEADLESS_SECRET` in `wp-config.php` (or the `zoomx_headless_secret` option) and must equal `WORDPRESS_AUTH_SECRET` in Vercel.
+
+WordPress setup: activate the plugin and `define('ZOOMX_HEADLESS_SECRET', '<64 hex chars>');` plus `define('ZOOMX_STOREFRONT_URL', 'https://zoomx.lk');` in `wp-config.php`. Turn on account creation on the "My account" page in WooCommerce → Settings → Accounts & Privacy.
+
+**Storefront session**: `zx_session` is an HttpOnly, SameSite=Lax cookie (Secure in production), valid for 14 days. It holds only the customer id and expiry, HMAC-signed with a key derived from `SESSION_SECRET`, so it's separate from the cart cookie. No WordPress cookie or token is stored.
+
+**Data access**: profile, addresses and orders are read and written with REST v3, always using the customer id from the signed session and never an id from the browser. `/account/orders/:id` returns "Order not found" unless `order.customer_id` equals the session's customer.
+
+**Orders while signed in**: the Store API cart is a guest session, so after checkout the order is attached to the signed-in customer (`customer_id` via REST v3).
+
+**Guest tracking** (`/orders/track`): order number plus the billing email on the order (case-insensitive, constant-time compare). On a match it redirects to the order's key-protected page. A wrong combination gets one generic message.
+
+**Tracking numbers**: WooCommerce core has no tracking field. If the *WooCommerce Shipment Tracking* plugin is used, its `_wc_shipment_tracking_items` are shown on order pages (only https links are rendered).
+
+**Rate limits (per IP, in-memory)**: login 20/15 min plus 8/15 min per account, register 10/hour, forgot 5/hour, reset 10/hour, tracking 10/15 min, checkout 20/min, coupons 10/min.

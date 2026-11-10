@@ -49,6 +49,7 @@ const baseOrder = (over: Partial<Order> = {}): Order => ({
   line_items: [],
   shipping_lines: [],
   coupon_lines: [],
+  meta_data: [],
   ...over,
 });
 

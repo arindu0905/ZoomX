@@ -43,6 +43,12 @@ export const serverEnvSchema = z.object({
     z.string().min(32, "SESSION_SECRET must be at least 32 characters").optional(),
   ),
 
+  // Signs storefront → WordPress auth requests (zoomx-headless plugin). Same
+  // value as ZOOMX_HEADLESS_SECRET on the WordPress side.
+  WORDPRESS_AUTH_SECRET: optionalString.pipe(
+    z.string().min(32, "WORDPRESS_AUTH_SECRET must be at least 32 characters").optional(),
+  ),
+
   // PayHere
   PAYHERE_MODE: z.enum(["sandbox", "live"]).default("sandbox"),
   PAYHERE_MERCHANT_ID: optionalString,

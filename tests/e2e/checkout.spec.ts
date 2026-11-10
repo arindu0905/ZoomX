@@ -101,7 +101,8 @@ test("order confirmation requires the order key", async ({ page }) => {
   await expect(page.getByRole("heading", { name: "We can’t show this order." })).toBeVisible(slow);
 });
 
-test("checkout API rejects tampered or invalid submissions", async ({ request, baseURL }) => {
+test("checkout API rejects tampered or invalid submissions", async ({ request, baseURL }, info) => {
+  test.skip(info.project.name !== "desktop-chromium", "API-level check runs once");
   const headers = { Origin: baseURL!, "Content-Type": "application/json" };
   const base = {
     email: "sandbox-buyer@example.test",
@@ -156,7 +157,8 @@ test.describe("PayHere without credentials", () => {
     expect(res.status()).toBe(400);
   });
 
-  test("the notify endpoint refuses to process anything", async ({ request }) => {
+  test("the notify endpoint refuses to process anything", async ({ request }, info) => {
+    test.skip(info.project.name !== "desktop-chromium", "API-level check runs once");
     const res = await request.post("/api/payments/payhere/notify", {
       headers: { "Content-Type": "application/x-www-form-urlencoded" },
       data: "merchant_id=1&order_id=1&payment_id=1&payhere_amount=1.00&payhere_currency=LKR&status_code=2&md5sig=00000000000000000000000000000000",

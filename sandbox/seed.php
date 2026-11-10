@@ -22,6 +22,8 @@ update_option('woocommerce_ship_to_countries', '');
 update_option('woocommerce_calc_taxes', 'no');
 update_option('woocommerce_enable_coupons', 'yes');
 update_option('woocommerce_enable_guest_checkout', 'yes');
+update_option('woocommerce_enable_myaccount_registration', 'yes');
+update_option('zoomx_storefront_url', 'http://localhost:3000');
 update_option('woocommerce_coming_soon', 'no');
 update_option('permalink_structure', '/%postname%/');
 
@@ -141,6 +143,9 @@ $c->save();
 $env = @parse_ini_file("/zoomx-sandbox/.rest-keys.env") ?: [];
 $ck = $env["WOOCOMMERCE_CONSUMER_KEY"] ?? null;
 $cs = $env["WOOCOMMERCE_CONSUMER_SECRET"] ?? null;
+if (!empty($env["WORDPRESS_AUTH_SECRET"])) {
+    update_option('zoomx_headless_secret', $env["WORDPRESS_AUTH_SECRET"]);
+}
 if ($ck && $cs) {
 global $wpdb;
 $wpdb->insert($wpdb->prefix . 'woocommerce_api_keys', [

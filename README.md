@@ -2,7 +2,7 @@
 
 Next.js storefront for ZOOM X (Capital Wills Holdings (Pvt) Ltd), backed by WordPress + WooCommerce as the single source of truth for products, prices, stock, customers and orders.
 
-> **Status:** Phase 8 (payments) built: PayHere waits on sandbox credentials, developed against the local WooCommerce sandbox. WooCommerce is **not yet installed** on zoomx.lk — see [docs/PHASE-1-AUDIT.md](docs/PHASE-1-AUDIT.md) for blockers and required client inputs.
+> **Status:** Phase 9 (customer accounts) complete. PayHere still waits on sandbox credentials, developed against the local WooCommerce sandbox. WooCommerce is **not yet installed** on zoomx.lk — see [docs/PHASE-1-AUDIT.md](docs/PHASE-1-AUDIT.md) for blockers and required client inputs.
 
 ## Stack
 
@@ -86,8 +86,9 @@ The browser talks only to Next.js. Server Components read the public WooCommerce
 | 6 WooCommerce integration | ✅ Session-aware cart client (signed HttpOnly `Cart-Token` cookie), cart API, signed webhooks + manual revalidation — [docs/WOOCOMMERCE-INTEGRATION.md](docs/WOOCOMMERCE-INTEGRATION.md) |
 | 7 Cart & checkout | ✅ Bag drawer + page, quantities, coupons, delivery options, checkout (Sri Lanka address, Cash on Delivery), order confirmation — see "Cart & checkout" below |
 | 8 Payments | ✅ Cash on Delivery; PayHere built and verified with test values (signed form, verified notifications, amount check, idempotent order updates). Needs real sandbox credentials for an end-to-end payment. WEBXPAY awaiting business confirmation — [docs/PAYMENT-CONFIGURATION.md](docs/PAYMENT-CONFIGURATION.md) |
-| 9 Customer accounts | Next — registration, login, profile, order history, order tracking |
-| 10–11 | Pending — going live still needs WooCommerce on zoomx.lk |
+| 9 Customer accounts | ✅ Register, sign in/out, password reset, dashboard, order history and details, profile and address, guest order tracking — [docs/WOOCOMMERCE-INTEGRATION.md §7](docs/WOOCOMMERCE-INTEGRATION.md) |
+| 10 Optimisation | Next — SEO (sitemap, robots, metadata), performance, accessibility audit, security hardening (shared rate-limit store, CSP), content and policy pages |
+| 11 Deployment | Pending — needs WooCommerce on zoomx.lk (or staging), Vercel, DNS |
 
 ## Homepage content
 
@@ -121,7 +122,7 @@ npm run sandbox          # http://127.0.0.1:9400 — WooCommerce + seeded test c
 
 The sandbox also mounts `wordpress-plugin/zoomx-headless-payments` (the headless PayHere payment method) and enables it.
 
-Then in `.env.local`: `WOOCOMMERCE_STORE_URL=http://127.0.0.1:9400`, plus the two values from `sandbox/.rest-keys.env` (`WOOCOMMERCE_CONSUMER_KEY` / `_SECRET`). That file is created on the first `npm run sandbox`, is git-ignored, and stays the same across restarts.
+Then in `.env.local`: `WOOCOMMERCE_STORE_URL=http://127.0.0.1:9400`, plus the three values from `sandbox/.rest-keys.env` (`WOOCOMMERCE_CONSUMER_KEY` / `_SECRET`, `WORDPRESS_AUTH_SECRET`). That file is created on the first `npm run sandbox`, is git-ignored, and stays the same across restarts.
 
 - [`sandbox/seed.php`](sandbox/seed.php) creates **placeholder data only**: everything is named "Sandbox…", and all prices, SKUs and stock are invented. It covers simple, variable, on-sale, low-stock and out-of-stock products, three categories, LKR currency, Sri Lanka only, Cash on Delivery, a sandbox flat-rate shipping method and the coupon `SANDBOX10`.
 - The store is in memory: stopping it discards all changes, and the next start re-seeds it.
@@ -174,3 +175,20 @@ E2E: `tests/e2e/checkout.spec.ts` covers add to bag, the drawer, persistence aft
 ## Resilience
 
 Catalogue reads from the Store API retry up to 3 times, with backoff, on 502/503/504, network errors or a non-JSON body (for example a PHP notice). That way a brief upstream blip doesn't fail a page render or a build. Writes (cart, checkout) are never retried automatically.
+
+## Customer accounts (Phase 9)
+
+| Route | |
+|---|---|
+| `/account` | Sign in and create account (signed out), or overview (recent orders, details) |
+| `/account/orders`, `/account/orders/[id]` | Order history and details (scoped to the signed-in customer) |
+| `/account/details` | Name, phone and default delivery address |
+| `/account/forgot`, `/account/reset` | Password reset by email (WordPress sends the email; the link opens the storefront) |
+| `/orders/track` | Guest tracking by order number and email |
+
+- Passwords are checked and stored only by WordPress core, through signed server-to-server calls to the zoomx-headless plugin. The storefront keeps just a signed, HttpOnly session cookie with the customer id.
+- Order pages share one component (`src/components/orders/order-details.tsx`) with the checkout confirmation, and show tracking numbers when a shipment-tracking plugin provides them.
+- Orders placed while signed in are attached to the account. Guest orders are found with order number and email.
+- Not built yet: pre-filling checkout from the saved address, and merging a guest's past orders into a new account.
+
+E2E: `tests/e2e/account.spec.ts` covers register, sign-out, wrong password, sign-in, orders appearing in the account, saving details, isolation between customers, sign-in redirects, guest tracking (right and wrong email), password-reset messages and cross-site rejection. It runs on desktop only, because the flows don't depend on layout and this keeps registrations under the rate limit.
