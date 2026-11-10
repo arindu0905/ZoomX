@@ -2,7 +2,7 @@
 
 Next.js storefront for ZOOM X (Capital Wills Holdings (Pvt) Ltd), backed by WordPress + WooCommerce as the single source of truth for products, prices, stock, customers and orders.
 
-> **Status:** Phase 10 (optimisation) complete. PayHere still waits on sandbox credentials, developed against the local WooCommerce sandbox. WooCommerce is **not yet installed** on zoomx.lk — see [docs/PHASE-1-AUDIT.md](docs/PHASE-1-AUDIT.md) for blockers and required client inputs.
+> **Status:** Phases 1–10 complete; Phase 11 (deployment) is prepared — guides and CI are ready, waiting on access. PayHere still waits on sandbox credentials, developed against the local WooCommerce sandbox. WooCommerce is **not yet installed** on zoomx.lk — see [docs/PHASE-1-AUDIT.md](docs/PHASE-1-AUDIT.md) for blockers and required client inputs.
 
 ## Stack
 
@@ -15,6 +15,17 @@ Next.js storefront for ZOOM X (Capital Wills Holdings (Pvt) Ltd), backed by Word
 | Client UI state | Zustand (cart contents live in WooCommerce, never localStorage) |
 | Tests | Vitest 3 + React Testing Library · Playwright |
 | Hosting | Vercel (frontend) · existing WordPress host (backend) |
+
+## Documentation
+
+| Document | For |
+|---|---|
+| [docs/PHASE-1-AUDIT.md](docs/PHASE-1-AUDIT.md) | Original audit, blockers, architecture |
+| [docs/DESIGN-SYSTEM.md](docs/DESIGN-SYSTEM.md) | Tokens, type, components |
+| [docs/WOOCOMMERCE-INTEGRATION.md](docs/WOOCOMMERCE-INTEGRATION.md) | Store API, sessions, webhooks, accounts |
+| [docs/PAYMENT-CONFIGURATION.md](docs/PAYMENT-CONFIGURATION.md) | Cash on Delivery, PayHere, WEBXPAY status |
+| [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) | WordPress prep, Vercel, DNS, go-live and rollback |
+| [docs/CLIENT-HANDOVER.md](docs/CLIENT-HANDOVER.md) | Plain-language guide for the ZOOM X team and the list of inputs still needed |
 
 ## Getting started
 
@@ -88,7 +99,7 @@ The browser talks only to Next.js. Server Components read the public WooCommerce
 | 8 Payments | ✅ Cash on Delivery; PayHere built and verified with test values (signed form, verified notifications, amount check, idempotent order updates). Needs real sandbox credentials for an end-to-end payment. WEBXPAY awaiting business confirmation — [docs/PAYMENT-CONFIGURATION.md](docs/PAYMENT-CONFIGURATION.md) |
 | 9 Customer accounts | ✅ Register, sign in/out, password reset, dashboard, order history and details, profile and address, guest order tracking — [docs/WOOCOMMERCE-INTEGRATION.md §7](docs/WOOCOMMERCE-INTEGRATION.md) |
 | 10 Optimisation | ✅ Content and draft policy pages, sitemap, robots, Organization data, CSP and HSTS, axe accessibility scan (no violations), performance budget — see "Optimisation" below |
-| 11 Deployment | Next — needs WooCommerce on zoomx.lk (or a staging copy), a Vercel project, DNS access and PayHere credentials |
+| 11 Deployment | 🟡 Prepared: [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md), [docs/CLIENT-HANDOVER.md](docs/CLIENT-HANDOVER.md) and GitHub Actions CI. Waiting on WordPress/WooCommerce hosting, Vercel, DNS and PayHere access |
 
 ## Homepage content
 
@@ -232,3 +243,7 @@ To approve a page: replace the bracketed text and set `status: "approved-copy"`.
 
 ### Test infrastructure
 - `tests/e2e/global-setup.ts` restocks the sandbox products that order tests use, then refreshes the catalogue cache through `/api/revalidate`. It only acts when `WOOCOMMERCE_STORE_URL` is the local sandbox.
+
+## Continuous integration
+
+`.github/workflows/ci.yml` runs on every pull request and push to `main`: lint → typecheck → unit tests → production build → Playwright e2e. CI has no WooCommerce, so store-dependent specs skip themselves and the no-store behaviour is checked instead. Locally this setup gives 49 passed and 73 skipped. The full suite (97 tests) runs locally against the sandbox. Node 24 is pinned via `.nvmrc` and `engines`.
