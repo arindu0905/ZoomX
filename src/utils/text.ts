@@ -31,5 +31,20 @@ export function decodeEntities(input: string): string {
 
 /** Strips tags and decodes entities from short WooCommerce HTML (descriptions) for plain-text use. */
 export function htmlToText(html: string): string {
-  return decodeEntities(html.replace(/<[^>]*>/g, " ")).replace(/\s+/g, " ").trim();
+  return decodeEntities(html.replace(/<[^>]*>/g, " "))
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/**
+ * Splits WooCommerce HTML into plain-text paragraphs (on block tags and line
+ * breaks) so long descriptions keep their structure without rendering
+ * backend markup. Lists become one paragraph per item.
+ */
+export function htmlToParagraphs(html: string): string[] {
+  return html
+    .replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi, "")
+    .split(/<\/?(?:p|div|br|li|ul|ol|h[1-6]|blockquote|tr)\b[^>]*>|\r?\n\s*\r?\n/gi)
+    .map(htmlToText)
+    .filter(Boolean);
 }

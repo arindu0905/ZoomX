@@ -1,5 +1,5 @@
 import "server-only";
-import type { z } from "zod";
+import { z } from "zod";
 import { getServerEnv } from "@/lib/env";
 
 export class StoreApiError extends Error {
@@ -27,12 +27,7 @@ function buildUrl(path: string, query: Query = {}): URL {
   return url;
 }
 
-/**
- * Public, unauthenticated, read-only Store API GET (catalogue data).
- * Cart and checkout calls carry a customer Cart-Token and live in a
- * separate session-aware client (Phase 6/7) — never through this function.
- */
-export async function storeGet<S extends z.ZodType>(path: string, schema: S, query?: Query): Promise<z.infer<S>> {
+async function request<S extends z.ZodType>(path: string, schema: S, query?: Query) {
   const url = buildUrl(path, query);
   const { WOOCOMMERCE_REQUEST_TIMEOUT_MS } = getServerEnv();
   let res: Response;
@@ -51,5 +46,35 @@ export async function storeGet<S extends z.ZodType>(path: string, schema: S, que
   if (!parsed.success) {
     throw new StoreApiError(`Unexpected Store API response shape for ${url.pathname}`);
   }
-  return parsed.data;
+  return { data: parsed.data as z.infer<S>, headers: res.headers };
+}
+
+/**
+ * Public, unauthenticated, read-only Store API GET (catalogue data).
+ * Cart and checkout calls carry a customer Cart-Token and live in a
+ * separate session-aware client (Phase 6/7) — never through this function.
+ */
+export async function storeGet<S extends z.ZodType>(path: string, schema: S, query?: Query): Promise<z.infer<S>> {
+  return (await request(path, schema, query)).data;
+}
+
+export interface Page<T> {
+  items: T[];
+  total: number;
+  totalPages: number;
+}
+
+/** Collection GET that also reads WordPress pagination headers. */
+export async function storeGetPage<S extends z.ZodType>(
+  path: string,
+  schema: S,
+  query?: Query,
+): Promise<Page<z.infer<S>>> {
+  const { data, headers } = await request(path, z.array(schema), query);
+  const int = (h: string) => Math.max(0, Number.parseInt(headers.get(h) ?? "", 10) || 0);
+  return {
+    items: data,
+    total: int("x-wp-total") || data.length,
+    totalPages: int("x-wp-totalpages") || 1,
+  };
 }

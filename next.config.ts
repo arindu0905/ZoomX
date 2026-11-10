@@ -1,5 +1,18 @@
 import type { NextConfig } from "next";
 
+/** Allows next/image to optimise media from the configured WooCommerce host (staging, sandbox or live). */
+function storeImagePattern() {
+  const raw = process.env.WOOCOMMERCE_STORE_URL;
+  if (!raw) return [];
+  try {
+    const url = new URL(raw);
+    const protocol = url.protocol.replace(":", "") as "http" | "https";
+    return [{ protocol, hostname: url.hostname, port: url.port, pathname: "/wp-content/uploads/**" }];
+  } catch {
+    return [];
+  }
+}
+
 const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
@@ -7,7 +20,10 @@ const nextConfig: NextConfig = {
   images: {
     // WooCommerce media is served from the WordPress host. Tightened to the
     // exact host once WOOCOMMERCE_STORE_URL is confirmed.
-    remotePatterns: [{ protocol: "https", hostname: "zoomx.lk", pathname: "/wp-content/uploads/**" }],
+    remotePatterns: [
+      { protocol: "https", hostname: "zoomx.lk", pathname: "/wp-content/uploads/**" },
+      ...storeImagePattern(),
+    ],
   },
   async headers() {
     return [

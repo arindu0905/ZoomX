@@ -4,15 +4,14 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, Menu, Search, ShoppingBag, User, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import { Logo } from "@/components/ui/logo";
+import { iconButton, panelMotion } from "./header-shared";
+import { SearchPanel } from "./search-panel";
 import { useDialog } from "@/hooks/use-dialog";
 import { categoryHref, primaryNav, type NavCategory } from "@/lib/navigation";
 import { useUiStore } from "@/store/ui";
 import { cn } from "@/utils/cn";
-
-const iconButton =
-  "inline-flex size-11 items-center justify-center rounded-full text-ink/80 transition-colors hover:bg-black/5 hover:text-ink";
 
 const isActive = (pathname: string, href: string) =>
   href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
@@ -162,12 +161,6 @@ function BagLink() {
   );
 }
 
-const panelMotion = {
-  initial: { opacity: 0, y: -8 },
-  animate: { opacity: 1, y: 0 },
-  exit: { opacity: 0, y: -8, transition: { duration: 0.2 } },
-};
-
 function CategoriesFlyout({
   open,
   categories,
@@ -220,76 +213,6 @@ function CategoriesFlyout({
   );
 }
 
-function SearchPanel({
-  open,
-  categories,
-  onClose,
-}: {
-  open: boolean;
-  categories: NavCategory[];
-  onClose: () => void;
-}) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const ref = useDialog<HTMLDivElement>(open, onClose, inputRef);
-  return (
-    <AnimatePresence>
-      {open && (
-        <motion.div
-          ref={ref}
-          id="search-panel"
-          role="dialog"
-          aria-modal="true"
-          aria-label="Search"
-          {...panelMotion}
-          className="absolute inset-x-0 top-full z-10 bg-canvas pb-12 shadow-[0_24px_48px_-24px_rgba(0,0,0,0.18)]"
-        >
-          <div className="mx-auto max-w-3xl px-gutter pt-8">
-            {/* Plain GET form: works before hydration and without JavaScript. */}
-            <form action="/shop" method="get" role="search" className="flex items-center gap-3">
-              <Search aria-hidden className="size-6 shrink-0 text-ink-muted" strokeWidth={1.75} />
-              <label htmlFor="site-search" className="sr-only">
-                Search ZOOM X products
-              </label>
-              <input
-                ref={inputRef}
-                id="site-search"
-                name="search"
-                type="search"
-                required
-                maxLength={100}
-                autoComplete="off"
-                enterKeyHint="search"
-                placeholder="Search zoomx.lk"
-                className="h-14 w-full bg-transparent text-title font-semibold outline-none placeholder:text-ink-muted/60 focus-visible:outline-none [&::-webkit-search-cancel-button]:hidden"
-              />
-              <button type="button" onClick={onClose} aria-label="Close search" className={iconButton}>
-                <X aria-hidden className="size-5" strokeWidth={1.75} />
-              </button>
-            </form>
-            <div className="mt-8">
-              <p className="text-caption text-ink-muted">Quick links</p>
-              <ul className="mt-3 space-y-2">
-                <li>
-                  <Link href="/shop" className="text-body font-medium hover:text-brand-strong">
-                    All products
-                  </Link>
-                </li>
-                {categories.slice(0, 5).map((c) => (
-                  <li key={c.slug}>
-                    <Link href={categoryHref(c.slug)} className="text-body font-medium hover:text-brand-strong">
-                      {c.name}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </motion.div>
-      )}
-    </AnimatePresence>
-  );
-}
-
 function MobileMenu({
   open,
   categories,
@@ -326,18 +249,28 @@ function MobileMenu({
             className="px-gutter pt-6 pb-16"
             initial="hidden"
             animate="show"
-            variants={{ show: { transition: { staggerChildren: 0.04, delayChildren: 0.05 } } }}
+            variants={{
+              show: {
+                transition: { staggerChildren: 0.04, delayChildren: 0.05 },
+              },
+            }}
           >
             {items.map((item) => (
               <motion.li
                 key={item.label}
-                variants={{ hidden: { opacity: 0, y: -6 }, show: { opacity: 1, y: 0 } }}
+                variants={{
+                  hidden: { opacity: 0, y: -6 },
+                  show: { opacity: 1, y: 0 },
+                }}
               >
                 {item.href === "#categories" ? (
                   <details className="group">
                     <summary className="flex h-14 cursor-pointer list-none items-center justify-between text-title [&::-webkit-details-marker]:hidden">
                       Categories
-                      <ChevronDown aria-hidden className="size-5 text-ink-muted transition-transform group-open:rotate-180" />
+                      <ChevronDown
+                        aria-hidden
+                        className="size-5 text-ink-muted transition-transform group-open:rotate-180"
+                      />
                     </summary>
                     <ul className="space-y-1 pb-3 pl-1">
                       <li>

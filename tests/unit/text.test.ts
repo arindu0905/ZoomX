@@ -21,3 +21,14 @@ describe("htmlToText", () => {
     expect(htmlToText("<p>Gentle&nbsp;on <strong>hands</strong></p>\n")).toBe("Gentle on hands");
   });
 });
+
+describe("htmlToParagraphs", () => {
+  it("splits on block tags and strips markup", async () => {
+    const { htmlToParagraphs } = await import("@/utils/text");
+    expect(htmlToParagraphs("<p>One &amp; two</p><ul><li>A</li><li><b>B</b></li></ul><script>x</script>")).toEqual([
+      "One & two",
+      "A",
+      "B",
+    ]);
+  });
+});

@@ -2,7 +2,7 @@
 
 Next.js storefront for ZOOM X (Capital Wills Holdings (Pvt) Ltd), backed by WordPress + WooCommerce as the single source of truth for products, prices, stock, customers and orders.
 
-> **Status:** Phase 4 (homepage) complete. WooCommerce is **not yet installed** on zoomx.lk — see [docs/PHASE-1-AUDIT.md](docs/PHASE-1-AUDIT.md) for blockers and required client inputs.
+> **Status:** Phase 5 (catalogue) complete, developed against the local WooCommerce sandbox. WooCommerce is **not yet installed** on zoomx.lk — see [docs/PHASE-1-AUDIT.md](docs/PHASE-1-AUDIT.md) for blockers and required client inputs.
 
 ## Stack
 
@@ -82,8 +82,9 @@ The browser talks only to Next.js. Server Components read the public WooCommerce
 | 2 Foundation | ✅ Next.js, TS, Tailwind, Inter, env validation, security headers, Vitest, Playwright, Git |
 | 3 Design system | ✅ Tokens, type scale, buttons, layout primitives, header (desktop flyout, search, mobile menu), footer, announcement bar, 404 — [docs/DESIGN-SYSTEM.md](docs/DESIGN-SYSTEM.md) |
 | 4 Homepage | ✅ Hero, range/categories, best sellers, business campaign, brand story, featured, why ZOOM X — see "Homepage content" below |
-| 5 Catalogue | Next — shop, category and product pages (needs a staging WooCommerce to test against real data) |
-| 6–11 | Pending — blocked on WooCommerce installation |
+| 5 Catalogue | ✅ Shop, category and product pages, filters, sorting, pagination, search + suggestions, variations — see "Catalogue" below |
+| 6 WooCommerce integration | Next — session-aware Store API client (Cart-Token cookie), webhook revalidation |
+| 7–11 | Pending — 7–8 testable on the sandbox; going live still needs WooCommerce on zoomx.lk |
 
 ## Homepage content
 
@@ -122,3 +123,24 @@ Then in `.env.local`: `WOOCOMMERCE_STORE_URL=http://127.0.0.1:9400`.
 - Admin: http://127.0.0.1:9400/wp-admin — Playground default login `admin` / `password` (sandbox only). Auto-login is deliberately off: it redirects cookieless requests, which breaks server-side fetches.
 - WordPress is pinned to 7.1.3 in `sandbox/blueprint.json` so it boots from the local Playground cache (`~/.wordpress-playground`); bump it when needed.
 - Never point production at the sandbox. Swap the URL for the real store once it exists.
+
+## Catalogue (Phase 5)
+
+| Route | Rendering | Notes |
+|---|---|---|
+| `/shop` | Static shell + streamed results | `?search`, `?category`, `?sort` (`popularity`, `newest`, `price-asc`, `price-desc`), `?min`/`?max` (whole LKR), `?page` (12 per page) |
+| `/category/[slug]` | Prerendered for live categories, others on demand | Name, description, image, breadcrumbs, same filters |
+| `/product/[slug]` | Top 24 best sellers prerendered, others on demand | Gallery, price/sale, SKU, sizes, stock, quantity, specs, related products, Product + Breadcrumb JSON-LD |
+| `/api/search?q=` | Dynamic, CDN-cacheable 60s | Header suggestions (products + matching categories) |
+
+- **Query parsing**: [`src/lib/catalog-query.ts`](src/lib/catalog-query.ts) validates every URL param with Zod and drops anything malformed rather than erroring. Rupees in the URL are converted to the Store API's minor units.
+- **Filters** are a plain GET form (works without JavaScript); `next/form` makes submissions client-side navigations. Empty fields and the default sort are left out of the URL.
+- **Variations**: [`src/lib/variations.ts`](src/lib/variations.ts) matches selections to WooCommerce variations, including "any" values and taxonomy slugs. Out-of-stock sizes are shown crossed out and can't be bought. Each variation's own price, SKU and stock comes from the Store API. WooCommerce re-checks all of it at add-to-cart.
+- **Descriptions** from WooCommerce are rendered as plain-text paragraphs, never as raw HTML.
+- **Caching**: product lists and product detail are cached for minutes, categories for hours. All reads are tagged `products` / `categories` / `product:<id>` for webhook revalidation in Phase 6.
+- **Sorting note**: WooCommerce sorts a variable product by its highest price for "high to low" and its lowest for "low to high".
+- **Add to bag** is shown disabled ("Online ordering is coming soon") until the session-backed cart lands in Phase 7.
+
+Known gap (Phase 10): an unknown product or category renders the 404 page with `noindex`, but with HTTP 200 instead of 404. That's a side effect of streaming the page shell.
+
+E2E: `tests/e2e/catalogue.spec.ts` runs when the app is connected to the sandbox and skips otherwise. With the sandbox running and `.env.local` pointing at it, run `npm run test:e2e`.

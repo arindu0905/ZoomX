@@ -43,6 +43,49 @@ export const storeProductSchema = z.object({
   review_count: z.number().default(0),
 });
 
+const attributeTermSchema = z.object({
+  id: z.number(),
+  name: z.string(),
+  slug: z.string(),
+});
+
+export const storeProductDetailSchema = storeProductSchema.extend({
+  sku: z.string().default(""),
+  description: z.string().default(""),
+  low_stock_remaining: z.number().nullable().optional(),
+  stock_availability: z.object({ text: z.string(), class: z.string() }).optional(),
+  attributes: z
+    .array(
+      z.object({
+        id: z.number(),
+        name: z.string(),
+        taxonomy: z.string().nullable(),
+        has_variations: z.boolean(),
+        terms: z.array(attributeTermSchema).default([]),
+      }),
+    )
+    .default([]),
+  variations: z
+    .array(
+      z.object({
+        id: z.number(),
+        attributes: z.array(z.object({ name: z.string(), value: z.string() })),
+      }),
+    )
+    .default([]),
+  add_to_cart: z
+    .object({
+      minimum: z.number().default(1),
+      maximum: z.number().default(9999),
+      multiple_of: z.number().default(1),
+    })
+    .partial()
+    .optional(),
+  weight: z.string().default(""),
+  formatted_weight: z.string().default(""),
+  formatted_dimensions: z.string().default(""),
+});
+
 export const storeCategorySchema = z.object({
   id: z.number(),
   name: z.string(),
@@ -56,4 +99,5 @@ export const storeCategorySchema = z.object({
 export type StoreImage = z.infer<typeof storeImageSchema>;
 export type StorePrices = z.infer<typeof storePricesSchema>;
 export type StoreProduct = z.infer<typeof storeProductSchema>;
+export type StoreProductDetail = z.infer<typeof storeProductDetailSchema>;
 export type StoreCategory = z.infer<typeof storeCategorySchema>;
