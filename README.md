@@ -2,7 +2,7 @@
 
 Next.js storefront for ZOOM X (Capital Wills Holdings (Pvt) Ltd), backed by WordPress + WooCommerce as the single source of truth for products, prices, stock, customers and orders.
 
-> **Status:** Phase 5 (catalogue) complete, developed against the local WooCommerce sandbox. WooCommerce is **not yet installed** on zoomx.lk — see [docs/PHASE-1-AUDIT.md](docs/PHASE-1-AUDIT.md) for blockers and required client inputs.
+> **Status:** Phase 6 (WooCommerce integration layer) complete, developed against the local WooCommerce sandbox. WooCommerce is **not yet installed** on zoomx.lk — see [docs/PHASE-1-AUDIT.md](docs/PHASE-1-AUDIT.md) for blockers and required client inputs.
 
 ## Stack
 
@@ -83,8 +83,9 @@ The browser talks only to Next.js. Server Components read the public WooCommerce
 | 3 Design system | ✅ Tokens, type scale, buttons, layout primitives, header (desktop flyout, search, mobile menu), footer, announcement bar, 404 — [docs/DESIGN-SYSTEM.md](docs/DESIGN-SYSTEM.md) |
 | 4 Homepage | ✅ Hero, range/categories, best sellers, business campaign, brand story, featured, why ZOOM X — see "Homepage content" below |
 | 5 Catalogue | ✅ Shop, category and product pages, filters, sorting, pagination, search + suggestions, variations — see "Catalogue" below |
-| 6 WooCommerce integration | Next — session-aware Store API client (Cart-Token cookie), webhook revalidation |
-| 7–11 | Pending — 7–8 testable on the sandbox; going live still needs WooCommerce on zoomx.lk |
+| 6 WooCommerce integration | ✅ Session-aware cart client (signed HttpOnly `Cart-Token` cookie), cart API, signed webhooks + manual revalidation — [docs/WOOCOMMERCE-INTEGRATION.md](docs/WOOCOMMERCE-INTEGRATION.md) |
+| 7 Cart & checkout | Next — bag drawer/page, coupons, shipping, checkout, order creation |
+| 8–11 | Pending — 8 testable on the sandbox; going live still needs WooCommerce on zoomx.lk |
 
 ## Homepage content
 
@@ -139,6 +140,7 @@ Then in `.env.local`: `WOOCOMMERCE_STORE_URL=http://127.0.0.1:9400`.
 - **Descriptions** from WooCommerce are rendered as plain-text paragraphs, never as raw HTML.
 - **Caching**: product lists and product detail are cached for minutes, categories for hours. All reads are tagged `products` / `categories` / `product:<id>` for webhook revalidation in Phase 6.
 - **Sorting note**: WooCommerce sorts a variable product by its highest price for "high to low" and its lowest for "low to high".
+- **Header**: only the pathname-dependent pieces (active link, close-on-navigate) are inside `<Suspense>`, so the header is interactive immediately and pages can be re-rendered on demand after revalidation.
 - **Add to bag** is shown disabled ("Online ordering is coming soon") until the session-backed cart lands in Phase 7.
 
 Known gap (Phase 10): an unknown product or category renders the 404 page with `noindex`, but with HTTP 200 instead of 404. That's a side effect of streaming the page shell.

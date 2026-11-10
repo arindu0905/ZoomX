@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { ChevronDown, Menu, Search, ShoppingBag, User, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect } from "react";
+import { Suspense, useEffect } from "react";
 import { Logo } from "@/components/ui/logo";
 import { iconButton, panelMotion } from "./header-shared";
 import { SearchPanel } from "./search-panel";
@@ -16,17 +16,24 @@ import { cn } from "@/utils/cn";
 const isActive = (pathname: string, href: string) =>
   href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
 
+/**
+ * The pathname is request data. Reading it during prerender outside a
+ * Suspense boundary makes on-demand re-renders (ISR / webhook revalidation)
+ * fail, but wrapping the whole header would delay its interactivity until
+ * the stream arrives. So only the pathname-dependent bits are suspended:
+ * close-on-navigate and the active-link state. The mobile menu reads it
+ * only while open (client-side).
+ */
 export function SiteHeader({ categories }: { categories: NavCategory[] }) {
-  const pathname = usePathname();
   const { panel, toggle, close } = useUiStore();
-
-  // Close any open panel after navigation.
-  useEffect(() => close(), [pathname, close]);
 
   const [home, ...rest] = primaryNav;
 
   return (
     <header className="sticky top-0 z-50">
+      <Suspense fallback={null}>
+        <CloseOnNavigate onNavigate={close} />
+      </Suspense>
       <div
         className={cn(
           "relative z-20 border-b border-black/[0.06] backdrop-blur-xl backdrop-saturate-150 transition-colors duration-300",
@@ -39,7 +46,7 @@ export function SiteHeader({ categories }: { categories: NavCategory[] }) {
           {/* Desktop links */}
           <ul className="ml-6 hidden flex-1 items-center justify-center gap-1 md:flex">
             {[home, rest[0]].map((l) => (
-              <NavItem key={l.href} href={l.href} active={isActive(pathname, l.href)}>
+              <NavItem key={l.href} href={l.href}>
                 {l.label}
               </NavItem>
             ))}
@@ -51,7 +58,7 @@ export function SiteHeader({ categories }: { categories: NavCategory[] }) {
                 onClick={() => toggle("categories")}
                 className={cn(
                   "inline-flex h-11 items-center gap-1 rounded-full px-3 text-sm text-ink/80 transition-colors hover:text-ink",
-                  (panel === "categories" || pathname.startsWith("/category/")) && "text-ink",
+                  panel === "categories" && "text-ink",
                 )}
               >
                 Categories
@@ -62,7 +69,7 @@ export function SiteHeader({ categories }: { categories: NavCategory[] }) {
               </button>
             </li>
             {rest.slice(1).map((l) => (
-              <NavItem key={l.href} href={l.href} active={isActive(pathname, l.href)}>
+              <NavItem key={l.href} href={l.href}>
                 {l.label}
               </NavItem>
             ))}
@@ -103,7 +110,7 @@ export function SiteHeader({ categories }: { categories: NavCategory[] }) {
 
       <CategoriesFlyout open={panel === "categories"} categories={categories} onClose={close} />
       <SearchPanel open={panel === "search"} categories={categories} onClose={close} />
-      <MobileMenu open={panel === "menu"} categories={categories} pathname={pathname} onClose={close} />
+      <MobileMenu open={panel === "menu"} categories={categories} onClose={close} />
 
       {/* Dim page behind any open panel */}
       <AnimatePresence>
@@ -123,20 +130,38 @@ export function SiteHeader({ categories }: { categories: NavCategory[] }) {
   );
 }
 
-function NavItem({ href, active, children }: { href: string; active: boolean; children: string }) {
+function CloseOnNavigate({ onNavigate }: { onNavigate: () => void }) {
+  const pathname = usePathname();
+  useEffect(() => onNavigate(), [pathname, onNavigate]);
+  return null;
+}
+
+function NavItem({ href, children }: { href: string; children: string }) {
   return (
     <li>
-      <Link
-        href={href}
-        aria-current={active ? "page" : undefined}
-        className={cn(
-          "inline-flex h-11 items-center rounded-full px-3 text-sm transition-colors hover:text-ink",
-          active ? "text-ink" : "text-ink/80",
-        )}
-      >
-        {children}
-      </Link>
+      <Suspense fallback={<NavLink href={href} active={false} label={children} />}>
+        <ActiveNavLink href={href} label={children} />
+      </Suspense>
     </li>
+  );
+}
+
+function ActiveNavLink({ href, label }: { href: string; label: string }) {
+  return <NavLink href={href} active={isActive(usePathname(), href)} label={label} />;
+}
+
+function NavLink({ href, active, label }: { href: string; active: boolean; label: string }) {
+  return (
+    <Link
+      href={href}
+      aria-current={active ? "page" : undefined}
+      className={cn(
+        "inline-flex h-11 items-center rounded-full px-3 text-sm transition-colors hover:text-ink",
+        active ? "text-ink" : "text-ink/80",
+      )}
+    >
+      {label}
+    </Link>
   );
 }
 
@@ -213,17 +238,7 @@ function CategoriesFlyout({
   );
 }
 
-function MobileMenu({
-  open,
-  categories,
-  pathname,
-  onClose,
-}: {
-  open: boolean;
-  categories: NavCategory[];
-  pathname: string;
-  onClose: () => void;
-}) {
+function MobileMenu({ open, categories, onClose }: { open: boolean; categories: NavCategory[]; onClose: () => void }) {
   const ref = useDialog<HTMLDivElement>(open, onClose);
   const items = [
     ...primaryNav.slice(0, 2),
@@ -291,13 +306,7 @@ function MobileMenu({
                     </ul>
                   </details>
                 ) : (
-                  <Link
-                    href={item.href}
-                    aria-current={isActive(pathname, item.href) ? "page" : undefined}
-                    className="flex h-14 items-center text-title aria-[current=page]:text-brand-strong"
-                  >
-                    {item.label}
-                  </Link>
+                  <MobileNavLink href={item.href} label={item.label} />
                 )}
               </motion.li>
             ))}
@@ -305,5 +314,19 @@ function MobileMenu({
         </motion.div>
       )}
     </AnimatePresence>
+  );
+}
+
+/** Rendered only while the mobile menu is open, i.e. on the client. */
+function MobileNavLink({ href, label }: { href: string; label: string }) {
+  const pathname = usePathname();
+  return (
+    <Link
+      href={href}
+      aria-current={isActive(pathname, href) ? "page" : undefined}
+      className="flex h-14 items-center text-title aria-[current=page]:text-brand-strong"
+    >
+      {label}
+    </Link>
   );
 }

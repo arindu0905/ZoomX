@@ -3,7 +3,7 @@
 import { SlidersHorizontal, X } from "lucide-react";
 import Form from "next/form";
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useRef } from "react";
 import { buttonClasses } from "@/components/ui/button";
 import { SORT_OPTIONS, type CatalogQuery } from "@/lib/catalog-query";
 import type { NavCategory } from "@/lib/navigation";
@@ -29,7 +29,6 @@ export function CatalogToolbar({
   total: number;
 }) {
   const formRef = useRef<HTMLFormElement>(null);
-  const [filtersOpen, setFiltersOpen] = useState(query.min !== undefined || query.max !== undefined);
   const submit = () => formRef.current?.requestSubmit();
   const activeFilters = !!(query.search || query.min !== undefined || query.max !== undefined || query.category);
 
@@ -82,53 +81,50 @@ export function CatalogToolbar({
               ))}
             </select>
           </label>
-          <button
-            type="button"
-            aria-expanded={filtersOpen}
-            aria-controls="price-filter"
-            onClick={() => setFiltersOpen((o) => !o)}
-            className={buttonClasses({ variant: "ghost", className: "h-11" })}
-          >
-            <SlidersHorizontal aria-hidden className="size-4" />
-            Price
-          </button>
+          {/* Native disclosure: works before hydration and without JavaScript. */}
+          <details className="group relative">
+            <summary
+              className={buttonClasses({
+                variant: "ghost",
+                className: "h-11 cursor-pointer list-none [&::-webkit-details-marker]:hidden",
+              })}
+            >
+              <SlidersHorizontal aria-hidden className="size-4" />
+              Price
+            </summary>
+            <fieldset className="absolute right-0 z-10 mt-2 flex w-max max-w-[calc(100vw-2*var(--spacing-gutter))] flex-wrap items-end gap-3 rounded-3xl bg-canvas-alt p-5 shadow-[0_16px_40px_-20px_rgba(0,0,0,0.25)]">
+              <legend className="sr-only">Price range in LKR</legend>
+              <label className="flex flex-col gap-1.5 text-caption text-ink-muted">
+                Min (LKR)
+                <input
+                  name="min"
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  step={1}
+                  defaultValue={query.min}
+                  className={cn(field, "w-36 bg-canvas")}
+                />
+              </label>
+              <label className="flex flex-col gap-1.5 text-caption text-ink-muted">
+                Max (LKR)
+                <input
+                  name="max"
+                  type="number"
+                  inputMode="numeric"
+                  min={0}
+                  step={1}
+                  defaultValue={query.max}
+                  className={cn(field, "w-36 bg-canvas")}
+                />
+              </label>
+              <button type="submit" className={buttonClasses({ size: "md" })}>
+                Apply
+              </button>
+            </fieldset>
+          </details>
         </div>
       </div>
-
-      <fieldset
-        id="price-filter"
-        hidden={!filtersOpen}
-        className={cn("flex flex-wrap items-end gap-3 rounded-3xl bg-canvas-alt p-5")}
-      >
-        <legend className="sr-only">Price range in LKR</legend>
-        <label className="flex flex-col gap-1.5 text-caption text-ink-muted">
-          Min (LKR)
-          <input
-            name="min"
-            type="number"
-            inputMode="numeric"
-            min={0}
-            step={1}
-            defaultValue={query.min}
-            className={cn(field, "w-36 bg-canvas")}
-          />
-        </label>
-        <label className="flex flex-col gap-1.5 text-caption text-ink-muted">
-          Max (LKR)
-          <input
-            name="max"
-            type="number"
-            inputMode="numeric"
-            min={0}
-            step={1}
-            defaultValue={query.max}
-            className={cn(field, "w-36 bg-canvas")}
-          />
-        </label>
-        <button type="submit" className={buttonClasses({ size: "md" })}>
-          Apply
-        </button>
-      </fieldset>
 
       {activeFilters && (
         <div className="flex flex-wrap items-center gap-2 text-caption">

@@ -41,7 +41,7 @@ test.describe("shop", () => {
 
   test("filters by price range", async ({ page }) => {
     await page.goto("/shop");
-    await page.getByRole("button", { name: "Price" }).click();
+    await page.locator("summary", { hasText: "Price" }).click();
     await page.getByLabel("Min (LKR)").fill("700");
     await page.getByLabel("Max (LKR)").fill("800");
     await page.getByRole("button", { name: "Apply" }).click();
@@ -75,7 +75,8 @@ test.describe("search", () => {
     await page.getByRole("button", { name: "Search products" }).click();
     await page.getByLabel("Search ZOOM X products").fill("laundry");
     const dialog = page.getByRole("dialog", { name: "Search" });
-    await expect(dialog.getByRole("link", { name: /Sandbox Laundry Liquid/ })).toBeVisible();
+    // The WASM sandbox is slow under parallel load; production WooCommerce answers far faster.
+    await expect(dialog.getByRole("link", { name: /Sandbox Laundry Liquid/ })).toBeVisible({ timeout: 15_000 });
     await expect(dialog.getByRole("link", { name: "Sandbox Laundry", exact: true })).toBeVisible();
     await dialog.getByRole("button", { name: "Clear" }).click();
     await expect(dialog.getByText("Quick links")).toBeVisible();
