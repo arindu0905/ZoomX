@@ -4,6 +4,8 @@ import { Hero } from "@/components/home/hero";
 import { ProductRail } from "@/components/home/product-rail";
 import { ShopByCategory } from "@/components/home/shop-by-category";
 import { WhyZoomX } from "@/components/home/why-zoomx";
+import { site, siteUrl } from "@/lib/site";
+import { jsonLdString, organizationJsonLd } from "@/lib/structured-data";
 import { getBestSellers, getCategories, getFeaturedProducts } from "@/services/woocommerce/catalog";
 
 /*
@@ -31,6 +33,22 @@ export default async function Home() {
       <BrandStory />
       <ProductRail id="featured" eyebrow="Featured" title="Picked for you." products={featured} tone="alt" />
       <WhyZoomX />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{
+          __html: jsonLdString(
+            organizationJsonLd({
+              name: site.name,
+              legalName: site.legalEntity,
+              url: siteUrl,
+              logo: new URL("/logo/zoomx-logo.webp", siteUrl).toString(),
+              phone: site.contact.phone,
+              address: site.contact.office,
+              sameAs: Object.values(site.social).filter((v): v is string => !!v),
+            }),
+          ),
+        }}
+      />
     </>
   );
 }

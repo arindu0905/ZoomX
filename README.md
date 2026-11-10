@@ -2,7 +2,7 @@
 
 Next.js storefront for ZOOM X (Capital Wills Holdings (Pvt) Ltd), backed by WordPress + WooCommerce as the single source of truth for products, prices, stock, customers and orders.
 
-> **Status:** Phase 9 (customer accounts) complete. PayHere still waits on sandbox credentials, developed against the local WooCommerce sandbox. WooCommerce is **not yet installed** on zoomx.lk — see [docs/PHASE-1-AUDIT.md](docs/PHASE-1-AUDIT.md) for blockers and required client inputs.
+> **Status:** Phase 10 (optimisation) complete. PayHere still waits on sandbox credentials, developed against the local WooCommerce sandbox. WooCommerce is **not yet installed** on zoomx.lk — see [docs/PHASE-1-AUDIT.md](docs/PHASE-1-AUDIT.md) for blockers and required client inputs.
 
 ## Stack
 
@@ -87,8 +87,8 @@ The browser talks only to Next.js. Server Components read the public WooCommerce
 | 7 Cart & checkout | ✅ Bag drawer + page, quantities, coupons, delivery options, checkout (Sri Lanka address, Cash on Delivery), order confirmation — see "Cart & checkout" below |
 | 8 Payments | ✅ Cash on Delivery; PayHere built and verified with test values (signed form, verified notifications, amount check, idempotent order updates). Needs real sandbox credentials for an end-to-end payment. WEBXPAY awaiting business confirmation — [docs/PAYMENT-CONFIGURATION.md](docs/PAYMENT-CONFIGURATION.md) |
 | 9 Customer accounts | ✅ Register, sign in/out, password reset, dashboard, order history and details, profile and address, guest order tracking — [docs/WOOCOMMERCE-INTEGRATION.md §7](docs/WOOCOMMERCE-INTEGRATION.md) |
-| 10 Optimisation | Next — SEO (sitemap, robots, metadata), performance, accessibility audit, security hardening (shared rate-limit store, CSP), content and policy pages |
-| 11 Deployment | Pending — needs WooCommerce on zoomx.lk (or staging), Vercel, DNS |
+| 10 Optimisation | ✅ Content and draft policy pages, sitemap, robots, Organization data, CSP and HSTS, axe accessibility scan (no violations), performance budget — see "Optimisation" below |
+| 11 Deployment | Next — needs WooCommerce on zoomx.lk (or a staging copy), a Vercel project, DNS access and PayHere credentials |
 
 ## Homepage content
 
@@ -149,7 +149,7 @@ Then in `.env.local`: `WOOCOMMERCE_STORE_URL=http://127.0.0.1:9400`, plus the th
 - **Header**: only the pathname-dependent pieces (active link, close-on-navigate) are inside `<Suspense>`, so the header is interactive immediately and pages can be re-rendered on demand after revalidation.
 - **Add to bag** is shown disabled ("Online ordering is coming soon") until the session-backed cart lands in Phase 7.
 
-Known gap (Phase 10): an unknown product or category renders the 404 page with `noindex`, but with HTTP 200 instead of 404. That's a side effect of streaming the page shell.
+Unknown product, category or policy URLs show the 404 page with `noindex`, but with HTTP 200 (a "soft 404"). This is how Next's Partial Prefetching works: it sends the route's static shell for any URL that wasn't prerendered before the not-found result is known. Search engines respect the `noindex`. Unknown top-level paths (e.g. `/does-not-exist`) return a real 404.
 
 E2E: `tests/e2e/catalogue.spec.ts` runs when the app is connected to the sandbox and skips otherwise. With the sandbox running and `.env.local` pointing at it, run `npm run test:e2e`.
 
@@ -192,3 +192,43 @@ Catalogue reads from the Store API retry up to 3 times, with backoff, on 502/503
 - Not built yet: pre-filling checkout from the saved address, and merging a guest's past orders into a new account.
 
 E2E: `tests/e2e/account.spec.ts` covers register, sign-out, wrong password, sign-in, orders appearing in the account, saving details, isolation between customers, sign-in redirects, guest tracking (right and wrong email), password-reset messages and cross-site rejection. It runs on desktop only, because the flows don't depend on layout and this keeps registrations under the rate limit.
+
+## Optimisation (Phase 10)
+
+### Content pages
+| Route | Content |
+|---|---|
+| `/about`, `/sustainability`, `/for-businesses` | The brand's own copy from zoomx.lk ([`src/content/pages.ts`](src/content/pages.ts)), with unproven claims left out (listed at the top of that file) |
+| `/contact` | Real phone number, office and factory addresses, and a maps link. **No contact form** until an email delivery service is chosen. The email is shown once confirmed |
+| `/faqs` | Draft: describes how this site works. `noindex` |
+| `/policies/delivery`, `/returns`, `/privacy`, `/terms` | **Drafts awaiting client approval**: a visible "Draft" notice, `noindex`, kept out of the sitemap. [Bracketed] text marks facts only the business can provide; no fees, timeframes or windows are invented. The privacy draft lists the site's real cookies and data flows |
+
+To approve a page: replace the bracketed text and set `status: "approved-copy"`. It then becomes indexable and is added to the sitemap.
+
+### SEO
+- `/sitemap.xml`: home, shop, content pages, approved policies, and every WooCommerce category and product (refreshed by the `products`/`categories` cache tags).
+- `/robots.txt`: on an HTTPS production URL, allows everything except `/api`, `/cart`, `/checkout`, `/account` and `/orders/`. On any preview, `vercel.app` or local URL it **disallows everything**, so staging is never indexed.
+- Organization JSON-LD on the home page (legal name, phone, address, logo). Product and Breadcrumb JSON-LD are on catalogue pages (Phase 5). Every page has a title, description and canonical. Private pages are `noindex`.
+- Not yet: a default Open Graph image (no approved brand imagery yet).
+
+### Security headers (next.config.ts)
+- **CSP**: `default-src 'self'`. Scripts and styles from this site only (`'unsafe-inline'` for Next's inline bootstrap, because nonces would make every page dynamic). `form-action` limited to this site and PayHere. `frame-ancestors 'none'`, `object-src 'none'`, `base-uri 'self'`, plus `upgrade-insecure-requests` on HTTPS.
+- **HSTS** (2 years, includeSubDomains) on HTTPS, plus COOP `same-origin`, `nosniff`, `X-Frame-Options: DENY`, a restrictive Permissions-Policy, and no `X-Powered-By`.
+- Rate limiting is in-memory per server instance (best-effort). For strict global limits on Vercel, back `src/lib/rate-limit.ts` with a shared store such as Upstash Redis; that's a deployment decision.
+
+### Accessibility
+- `tests/e2e/a11y.spec.ts` runs axe-core (WCAG 2.0/2.1 A and AA) on 11 key pages, on desktop and mobile: **0 violations**.
+- Already in place: skip link, landmarks, one h1 per page, labelled forms with linked errors, focus-trapped dialogs, visible focus rings, reduced-motion support (MotionProvider), and an accessible bag count.
+- Automated scans catch only part of the issues. A manual pass with NVDA/VoiceOver and keyboard only is recommended before launch.
+
+### Performance (local production build, headless Chromium)
+| Page | LCP | JS transferred |
+|---|---|---|
+| `/` | ~1.0 s | ~239 KB |
+| `/shop` | ~0.2 s | ~244 KB |
+| `/product/…` | ~0.6 s | ~244 KB |
+
+`tests/e2e/perf.spec.ts` enforces a budget (LCP < 2.5 s, JS < 350 KB) to catch regressions. Measure real-world Core Web Vitals on Vercel (Speed Insights) once deployed: the sandbox has no product images yet, and real packshots will affect LCP.
+
+### Test infrastructure
+- `tests/e2e/global-setup.ts` restocks the sandbox products that order tests use, then refreshes the catalogue cache through `/api/revalidate`. It only acts when `WOOCOMMERCE_STORE_URL` is the local sandbox.

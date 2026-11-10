@@ -80,3 +80,31 @@ export function productJsonLd(input: {
 export function jsonLdString(data: unknown): string {
   return JSON.stringify(data).replace(/</g, "\\u003c");
 }
+
+/** Organization data from the business details in lib/site (no invented fields). */
+export function organizationJsonLd(input: {
+  name: string;
+  legalName: string;
+  url: string;
+  logo: string;
+  phone: string;
+  address: string;
+  sameAs: string[];
+}) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: input.name,
+    legalName: input.legalName,
+    url: input.url,
+    logo: input.logo,
+    address: { "@type": "PostalAddress", streetAddress: input.address, addressCountry: "LK" },
+    contactPoint: {
+      "@type": "ContactPoint",
+      telephone: input.phone,
+      contactType: "customer service",
+      areaServed: "LK",
+    },
+    ...(input.sameAs.length ? { sameAs: input.sameAs } : {}),
+  };
+}

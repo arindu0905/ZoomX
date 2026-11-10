@@ -201,3 +201,19 @@ export async function searchProducts(term: string, limit = 6): Promise<StoreProd
     }),
   );
 }
+
+/** Every published product's slug + modified date, for the XML sitemap. */
+export async function getAllProductSlugs(): Promise<{ slug: string }[]> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(CACHE_TAGS.products);
+  return safely("all products", async () => {
+    const out: { slug: string }[] = [];
+    for (let page = 1; page <= 50; page++) {
+      const batch = await storeGetPage("products", storeProductSchema, { per_page: 100, page });
+      out.push(...batch.items.map((p) => ({ slug: p.slug })));
+      if (page >= batch.totalPages) break;
+    }
+    return out;
+  });
+}

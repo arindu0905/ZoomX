@@ -9,6 +9,7 @@ const baseURL = process.env.PLAYWRIGHT_BASE_URL ?? `http://localhost:${PORT}`;
 
 export default defineConfig({
   testDir: "./tests/e2e",
+  globalSetup: "./tests/e2e/global-setup.ts",
   fullyParallel: true,
   // The local WooCommerce sandbox (WordPress Playground) has 6 PHP workers and
   // is far slower than a real host; keep load and timeouts realistic for it.

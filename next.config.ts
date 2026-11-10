@@ -13,6 +13,31 @@ function storeImagePattern() {
   }
 }
 
+const isDev = process.env.NODE_ENV !== "production";
+// HTTPS-only directives apply when the site is actually served over HTTPS
+// (not for local `next start` on http://localhost).
+const httpsSite = (process.env.NEXT_PUBLIC_SITE_URL ?? "").startsWith("https://");
+
+/**
+ * Content Security Policy. Next.js inlines bootstrap scripts; nonces would
+ * force every page to render per request (losing static/cached pages), so
+ * inline scripts are allowed but every *origin* is locked to this site.
+ * Forms may only post to this site and PayHere's checkout.
+ */
+const csp = [
+  "default-src 'self'",
+  `script-src 'self' 'unsafe-inline'${isDev ? " 'unsafe-eval'" : ""}`,
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob:",
+  "font-src 'self'",
+  `connect-src 'self'${isDev ? " ws:" : ""}`,
+  "form-action 'self' https://sandbox.payhere.lk https://www.payhere.lk",
+  "frame-ancestors 'none'",
+  "base-uri 'self'",
+  "object-src 'none'",
+  ...(httpsSite ? ["upgrade-insecure-requests"] : []),
+].join("; ");
+
 const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
@@ -33,7 +58,10 @@ const nextConfig: NextConfig = {
           { key: "X-Content-Type-Options", value: "nosniff" },
           { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
           { key: "X-Frame-Options", value: "DENY" },
-          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=()" },
+          { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=()" },
+          { key: "Content-Security-Policy", value: csp },
+          { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+          ...(!httpsSite ? [] : [{ key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" }]),
         ],
       },
     ];
