@@ -1,8 +1,10 @@
-import { CheckCircle2 } from "lucide-react";
+import { CheckCircle2, Clock, XCircle } from "lucide-react";
 import type { Metadata } from "next";
 import { Suspense } from "react";
 import { ButtonLink } from "@/components/ui/button";
+import { AutoRefresh } from "@/components/checkout/auto-refresh";
 import { Container } from "@/components/ui/layout";
+import { PAYHERE_METHOD_ID } from "@/services/payments/payhere-notify";
 import { getOrderWithKey } from "@/services/woocommerce/orders";
 import { ORDER_STATUS_LABEL, type Order } from "@/types/order";
 import { formatDecimalPrice } from "@/utils/currency";
@@ -35,6 +37,8 @@ async function Confirmation({ params, searchParams }: PageProps<"/checkout/order
   const order = await getOrderWithKey(Number(id), typeof key === "string" ? key : "");
   if (!order) return <NotAvailable />;
 
+  const { cancelled } = await searchParams;
+  const awaitingPayment = order.payment_method === PAYHERE_METHOD_ID && order.status === "pending";
   const fmt = (amount: string) => formatDecimalPrice(amount, order.currency);
   const status = ORDER_STATUS_LABEL[order.status] ?? order.status;
   const date = new Intl.DateTimeFormat("en-LK", {
@@ -45,13 +49,8 @@ async function Confirmation({ params, searchParams }: PageProps<"/checkout/order
 
   return (
     <div className="mx-auto max-w-3xl">
-      <header className="flex flex-col items-center gap-4 text-center">
-        <CheckCircle2 aria-hidden className="size-12 text-brand-strong" strokeWidth={1.5} />
-        <h1 className="text-headline text-balance">Thank you, {order.billing.first_name}.</h1>
-        <p className="text-lead text-ink-muted">
-          Your order <strong className="text-ink">#{order.number}</strong> has been received.
-        </p>
-      </header>
+      <PaymentHeader order={order} cancelled={cancelled === "1"} />
+      {awaitingPayment && cancelled !== "1" && <AutoRefresh />}
 
       <dl className="mt-12 grid grid-cols-2 gap-6 rounded-3xl bg-canvas-alt p-6 sm:grid-cols-4 sm:p-8">
         <Fact label="Order number" value={`#${order.number}`} />
@@ -143,6 +142,98 @@ function Totals({ order, fmt }: { order: Order; fmt: (a: string) => string }) {
         <dd className="text-title tabular-nums">{fmt(order.total)}</dd>
       </div>
     </dl>
+  );
+}
+
+/**
+ * Wording follows the order's real status in WooCommerce. A PayHere order is
+ * only "paid" once our verified notification handler has updated it — the
+ * customer returning here proves nothing on its own.
+ */
+function PaymentHeader({ order, cancelled }: { order: Order; cancelled: boolean }) {
+  const payhere = order.payment_method === PAYHERE_METHOD_ID;
+  const payAgain = `/checkout/pay/${order.id}?key=${encodeURIComponent(order.order_key)}`;
+  const name = order.billing.first_name;
+
+  if (payhere && order.status === "pending") {
+    return cancelled ? (
+      <Header
+        icon={<XCircle aria-hidden className="size-12 text-ink-muted" strokeWidth={1.5} />}
+        title="Payment cancelled."
+      >
+        <p className="text-lead text-ink-muted">
+          Order <strong className="text-ink">#{order.number}</strong> is saved but not paid. You can try again.
+        </p>
+        <ButtonLink href={payAgain} size="lg">
+          Pay now
+        </ButtonLink>
+      </Header>
+    ) : (
+      <Header
+        icon={<Clock aria-hidden className="size-12 text-brand-strong" strokeWidth={1.5} />}
+        title="Confirming your payment…"
+      >
+        <p className="text-lead text-ink-muted" role="status">
+          We’re waiting for PayHere to confirm payment for order <strong className="text-ink">#{order.number}</strong>.
+          This page updates automatically.
+        </p>
+        <p className="text-body text-ink-muted">
+          Didn’t complete the payment?{" "}
+          <a href={payAgain} className="text-brand-strong underline underline-offset-4">
+            Pay now
+          </a>
+        </p>
+      </Header>
+    );
+  }
+  if (order.status === "failed" || order.status === "cancelled") {
+    return (
+      <Header
+        icon={<XCircle aria-hidden className="size-12 text-danger" strokeWidth={1.5} />}
+        title={order.status === "failed" ? "Payment unsuccessful." : "Order cancelled."}
+      >
+        <p className="text-lead text-ink-muted">
+          Order <strong className="text-ink">#{order.number}</strong> was not paid. No money has been taken by us;
+          please contact us if you were charged.
+        </p>
+        <ButtonLink href="/shop" variant="secondary">
+          Continue shopping
+        </ButtonLink>
+      </Header>
+    );
+  }
+  if (order.status === "on-hold") {
+    return (
+      <Header
+        icon={<Clock aria-hidden className="size-12 text-ink-muted" strokeWidth={1.5} />}
+        title={`Thank you, ${name}.`}
+      >
+        <p className="text-lead text-ink-muted">
+          Order <strong className="text-ink">#{order.number}</strong> is on hold while we review it. We’ll be in touch.
+        </p>
+      </Header>
+    );
+  }
+  return (
+    <Header
+      icon={<CheckCircle2 aria-hidden className="size-12 text-brand-strong" strokeWidth={1.5} />}
+      title={`Thank you, ${name}.`}
+    >
+      <p className="text-lead text-ink-muted">
+        {payhere ? "Your payment is confirmed and your order " : "Your order "}
+        <strong className="text-ink">#{order.number}</strong> has been received.
+      </p>
+    </Header>
+  );
+}
+
+function Header({ icon, title, children }: { icon: React.ReactNode; title: string; children: React.ReactNode }) {
+  return (
+    <header className="flex flex-col items-center gap-4 text-center">
+      {icon}
+      <h1 className="text-headline text-balance">{title}</h1>
+      {children}
+    </header>
   );
 }
 

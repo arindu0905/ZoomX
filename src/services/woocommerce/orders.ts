@@ -1,4 +1,5 @@
 import "server-only";
+import { z } from "zod";
 import { safeEqual } from "@/lib/security";
 import { orderSchema, type Order } from "@/types/order";
 import { restRequest } from "./rest";
@@ -21,4 +22,25 @@ export async function getOrderWithKey(id: number, key: string): Promise<Order | 
     if (err instanceof StoreApiError && (err.status === 404 || err.status === 400)) return null;
     throw err;
   }
+}
+
+/** Server-side order read (no key check) — for verified gateway callbacks only. */
+export async function getOrder(id: number): Promise<Order | null> {
+  try {
+    return await restRequest("GET", `orders/${id}`, orderSchema);
+  } catch (err) {
+    if (err instanceof StoreApiError && (err.status === 404 || err.status === 400)) return null;
+    throw err;
+  }
+}
+
+export async function updateOrder(id: number, patch: Record<string, unknown>): Promise<void> {
+  await restRequest("PUT", `orders/${id}`, orderSchema, { body: patch });
+}
+
+/** Private note (visible to shop staff in WooCommerce, not to the customer). */
+export async function addOrderNote(id: number, note: string): Promise<void> {
+  await restRequest("POST", `orders/${id}/notes`, z.object({ id: z.number() }), {
+    body: { note, customer_note: false },
+  });
 }

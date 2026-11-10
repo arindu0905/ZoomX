@@ -11,7 +11,7 @@ import { CartTotals } from "@/components/cart/cart-totals";
 import { Button, ButtonLink } from "@/components/ui/button";
 import type { ApiErrorBody } from "@/lib/api-route";
 import { checkoutSchema, type CheckoutData, type CheckoutInput } from "@/lib/checkout-schema";
-import { PAYMENT_METHODS, isSupportedPaymentMethod } from "@/lib/payment-methods";
+import { PAYMENT_METHODS, type PaymentMethodId } from "@/lib/payment-methods";
 import { DISTRICTS } from "@/lib/sri-lanka";
 import { useCartStore } from "@/store/cart";
 import { SelectField, TextAreaField, TextField } from "./fields";
@@ -23,12 +23,13 @@ type Prefix = "billing" | "shipping";
  * server. Totals shown are WooCommerce's; the order is created from the
  * session cart by WooCommerce, not from anything on this page.
  */
-export function CheckoutForm() {
+export function CheckoutForm({ configuredMethods }: { configuredMethods: PaymentMethodId[] }) {
   const router = useRouter();
   const { cart, status, reset } = useCartStore();
   const [submitError, setSubmitError] = useState<string | null>(null);
 
-  const methods = (cart?.payment_methods ?? []).filter(isSupportedPaymentMethod);
+  // Offered only if configured on the storefront AND enabled in WooCommerce.
+  const methods = configuredMethods.filter((m) => cart?.payment_methods.includes(m));
   const form = useForm<CheckoutInput, unknown, CheckoutData>({
     resolver: zodResolver(checkoutSchema) as Resolver<CheckoutInput, unknown, CheckoutData>,
     mode: "onTouched",
@@ -213,7 +214,11 @@ export function CheckoutForm() {
 
         <Button type="submit" size="lg" className="mt-6 w-full" disabled={isSubmitting || methods.length === 0}>
           <Lock aria-hidden className="size-4" />
-          {isSubmitting ? "Placing order…" : `Place order · ${money(cart.totals.total_price, cart)}`}
+          {isSubmitting
+            ? "Placing order…"
+            : selectedMethod === "zoomx_payhere"
+              ? `Continue to payment · ${money(cart.totals.total_price, cart)}`
+              : `Place order · ${money(cart.totals.total_price, cart)}`}
         </Button>
       </aside>
     </form>

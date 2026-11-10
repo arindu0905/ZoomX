@@ -35,6 +35,9 @@ update_option('woocommerce_cod_settings', [
     'enable_for_virtual' => 'yes',
 ]);
 
+// Headless PayHere method (wordpress-plugin/zoomx-headless-payments) enabled.
+update_option('woocommerce_zoomx_payhere_settings', ['enabled' => 'yes', 'title' => 'Card or mobile wallet (PayHere)', 'description' => '']);
+
 // Shipping: one island-wide zone with a sandbox flat rate.
 $zone = new WC_Shipping_Zone();
 $zone->set_zone_name('Sandbox — Sri Lanka');

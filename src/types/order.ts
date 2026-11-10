@@ -30,6 +30,7 @@ export const orderSchema = z.object({
   total_tax: z.string(),
   payment_method: z.string(),
   payment_method_title: z.string(),
+  transaction_id: z.string().default(""),
   customer_id: z.number().default(0),
   customer_note: z.string().default(""),
   billing: address,

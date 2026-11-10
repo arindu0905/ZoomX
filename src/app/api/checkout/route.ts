@@ -1,7 +1,8 @@
 import type { NextRequest } from "next/server";
 import { apiError, apiOk, guardMutation, handleApiError, readJson } from "@/lib/api-route";
 import { checkoutSchema, toWooAddress } from "@/lib/checkout-schema";
-import { isSupportedPaymentMethod } from "@/lib/payment-methods";
+import { isKnownPaymentMethod } from "@/lib/payment-methods";
+import { getConfiguredPaymentMethods } from "@/services/payments/methods";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { getCart, placeOrder } from "@/services/woocommerce/cart";
 
@@ -27,7 +28,7 @@ export async function POST(request: NextRequest) {
   if ("response" in body) return body.response;
   const data = body.data;
 
-  if (!isSupportedPaymentMethod(data.paymentMethod)) {
+  if (!isKnownPaymentMethod(data.paymentMethod) || !getConfiguredPaymentMethods().includes(data.paymentMethod)) {
     return apiError(400, "payment_method_unavailable", "That payment method isn’t available.");
   }
 
@@ -53,9 +54,14 @@ export async function POST(request: NextRequest) {
       return apiError(402, "payment_failed", "We couldn’t place your order. Please try again.");
     }
 
-    // Our own confirmation URL — never WooCommerce's redirect_url, and the
-    // page re-reads the order from WooCommerce rather than trusting this response.
-    const next = `/checkout/order/${order.order_id}?key=${encodeURIComponent(order.order_key)}`;
+    // Our own URLs — never WooCommerce's redirect_url. Note that WooCommerce's
+    // payment_status "success" only means the order was created; for PayHere
+    // the order stays "pending" until a verified PayHere notification.
+    const key = encodeURIComponent(order.order_key);
+    const next =
+      data.paymentMethod === "zoomx_payhere"
+        ? `/checkout/pay/${order.order_id}?key=${key}`
+        : `/checkout/order/${order.order_id}?key=${key}`;
     return apiOk<CheckoutResponse>({ orderId: order.order_id, next }, 201);
   } catch (err) {
     return handleApiError("checkout", err);

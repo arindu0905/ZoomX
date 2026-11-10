@@ -126,3 +126,41 @@ test("checkout API rejects tampered or invalid submissions", async ({ request, b
   });
   expect(invalid.status()).toBe(400);
 });
+
+test.describe("PayHere without credentials", () => {
+  test.skip(!!process.env.PAYHERE_MERCHANT_SECRET, "PayHere is configured in this environment");
+
+  test("is neither offered at checkout nor accepted by the API", async ({ page, request, baseURL }) => {
+    await addLaundry1L(page);
+    await page.goto("/checkout");
+    await expect(page.getByRole("radio", { name: /Cash on delivery/ })).toBeVisible(slow);
+    await expect(page.getByRole("radio", { name: /PayHere|Card or mobile wallet/ })).toHaveCount(0);
+
+    const res = await request.post("/api/checkout", {
+      headers: { Origin: baseURL!, "Content-Type": "application/json" },
+      data: {
+        email: "sandbox-buyer@example.test",
+        phone: "0771234567",
+        billing: {
+          firstName: "T",
+          lastName: "B",
+          address1: "1 Road",
+          city: "Ratmalana",
+          district: "Colombo",
+          postcode: "10390",
+        },
+        paymentMethod: "zoomx_payhere",
+        terms: true,
+      },
+    });
+    expect(res.status()).toBe(400);
+  });
+
+  test("the notify endpoint refuses to process anything", async ({ request }) => {
+    const res = await request.post("/api/payments/payhere/notify", {
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      data: "merchant_id=1&order_id=1&payment_id=1&payhere_amount=1.00&payhere_currency=LKR&status_code=2&md5sig=00000000000000000000000000000000",
+    });
+    expect(res.status()).toBe(503);
+  });
+});

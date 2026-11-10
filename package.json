@@ -12,7 +12,7 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "format": "prettier --write .",
-    "sandbox": "npx -y @wp-playground/cli@latest server --port=9400 --mount=./sandbox:/zoomx-sandbox --blueprint=./sandbox/blueprint.json",
+    "sandbox": "npx -y @wp-playground/cli@latest server --port=9400 --mount=./sandbox:/zoomx-sandbox --mount=./wordpress-plugin/zoomx-headless-payments:/wordpress/wp-content/plugins/zoomx-headless-payments --blueprint=./sandbox/blueprint.json",
     "presandbox": "node scripts/sandbox-keys.mjs"
   },
   "dependencies": {

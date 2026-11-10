@@ -27,22 +27,46 @@ function buildUrl(path: string, query: Query = {}): URL {
   return url;
 }
 
+const RETRYABLE = new Set([502, 503, 504]);
+const MAX_ATTEMPTS = 3;
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
 async function request<S extends z.ZodType>(path: string, schema: S, query?: Query) {
   const url = buildUrl(path, query);
   const { WOOCOMMERCE_REQUEST_TIMEOUT_MS } = getServerEnv();
-  let res: Response;
-  try {
-    res = await fetch(url, {
-      headers: { Accept: "application/json" },
-      signal: AbortSignal.timeout(WOOCOMMERCE_REQUEST_TIMEOUT_MS),
-    });
-  } catch (err) {
-    const reason = err instanceof Error && err.name === "TimeoutError" ? "timed out" : "failed";
-    throw new StoreApiError(`Store API request ${reason}: ${url.pathname}`);
+  let res: Response | undefined;
+  let body: unknown;
+  // Read-only GETs are safe to retry: brief upstream blips (502/503/504, a
+  // dropped connection, or a PHP notice corrupting the JSON) shouldn't fail a
+  // page render or a build.
+  for (let attempt = 1; ; attempt++) {
+    const last = attempt >= MAX_ATTEMPTS;
+    try {
+      res = await fetch(url, {
+        headers: { Accept: "application/json" },
+        signal: AbortSignal.timeout(WOOCOMMERCE_REQUEST_TIMEOUT_MS),
+      });
+      if (!RETRYABLE.has(res.status) || last) {
+        if (!res.ok) throw new StoreApiError(`Store API ${res.status} for ${url.pathname}`, res.status);
+        const text = await res.text();
+        try {
+          body = JSON.parse(text);
+          break;
+        } catch {
+          if (last) throw new StoreApiError(`Store API returned invalid JSON for ${url.pathname}`, 502);
+        }
+      }
+    } catch (err) {
+      if (err instanceof StoreApiError) throw err;
+      if (last) {
+        const reason = err instanceof Error && err.name === "TimeoutError" ? "timed out" : "failed";
+        throw new StoreApiError(`Store API request ${reason}: ${url.pathname}`);
+      }
+    }
+    await sleep(250 * 2 ** (attempt - 1));
   }
-  if (!res.ok) throw new StoreApiError(`Store API ${res.status} for ${url.pathname}`, res.status);
 
-  const parsed = schema.safeParse(await res.json());
+  const parsed = schema.safeParse(body);
   if (!parsed.success) {
     throw new StoreApiError(`Unexpected Store API response shape for ${url.pathname}`);
   }
