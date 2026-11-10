@@ -6,6 +6,11 @@
  * client — components must hide them rather than invent a substitute.
  */
 
+export interface Announcement {
+  message: string;
+  link?: { label: string; href: string };
+}
+
 // Must be a literal `process.env.NEXT_PUBLIC_*` reference so Next.js inlines it.
 const rawSiteUrl = process.env.NEXT_PUBLIC_SITE_URL;
 
@@ -28,6 +33,9 @@ export const site = {
     office: "No 419, Galle Road, Ratmalana, Sri Lanka",
     factory: "No 49, 10th Cross Lane, Borupona, Sri Lanka",
   },
+  // Announcement bar copy. Null until the client approves a real promotion or
+  // delivery message — delivery coverage and timeframes must not be guessed.
+  announcement: null as Announcement | null,
   // Icons exist on the current site but have no real URLs — awaiting client.
   social: {
     facebook: null as string | null,

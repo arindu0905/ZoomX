@@ -2,7 +2,7 @@
 
 Next.js storefront for ZOOM X (Capital Wills Holdings (Pvt) Ltd), backed by WordPress + WooCommerce as the single source of truth for products, prices, stock, customers and orders.
 
-> **Status:** Phase 2 (foundation) complete. WooCommerce is **not yet installed** on zoomx.lk — see [docs/PHASE-1-AUDIT.md](docs/PHASE-1-AUDIT.md) for blockers and required client inputs.
+> **Status:** Phase 4 (homepage) complete. WooCommerce is **not yet installed** on zoomx.lk — see [docs/PHASE-1-AUDIT.md](docs/PHASE-1-AUDIT.md) for blockers and required client inputs.
 
 ## Stack
 
@@ -80,8 +80,28 @@ The browser talks only to Next.js. Server Components read the public WooCommerce
 |---|---|
 | 1 Research & audit | ✅ [docs/PHASE-1-AUDIT.md](docs/PHASE-1-AUDIT.md) |
 | 2 Foundation | ✅ Next.js, TS, Tailwind, Inter, env validation, security headers, Vitest, Playwright, Git |
-| 3 Design system | Next |
-| 4–11 | Pending — 6+ blocked on WooCommerce installation |
+| 3 Design system | ✅ Tokens, type scale, buttons, layout primitives, header (desktop flyout, search, mobile menu), footer, announcement bar, 404 — [docs/DESIGN-SYSTEM.md](docs/DESIGN-SYSTEM.md) |
+| 4 Homepage | ✅ Hero, range/categories, best sellers, business campaign, brand story, featured, why ZOOM X — see "Homepage content" below |
+| 5 Catalogue | Next — shop, category and product pages (needs a staging WooCommerce to test against real data) |
+| 6–11 | Pending — blocked on WooCommerce installation |
+
+## Homepage content
+
+Copy lives in [`src/content/home.ts`](src/content/home.ts), taken from the current zoomx.lk pages. **It needs client approval before launch.**
+
+| Section | Source | Behaviour without WooCommerce |
+|---|---|---|
+| Hero | zoomx.lk tagline + intro | Typographic. Set `heroImage` once a real packshot is approved (the AI renders on zoomx.lk have garbled label text, so they aren't used). |
+| Shop by category | Live Store API categories | Falls back to the 10 product names from zoomx.lk/products, each linking to a shop search |
+| Best sellers / Featured | Store API (`orderby=popularity`, `featured=true`) | Hidden |
+| Campaign | zoomx.lk/for-businesses | Always shown |
+| Brand story / Why ZOOM X | zoomx.lk/about-us, home "Why We Care" | Always shown |
+| Testimonials | — | Omitted until verified reviews exist |
+| Newsletter | — | Omitted until an email provider is chosen |
+
+Left out on purpose, pending evidence: "99.9% germ kill", "dermatologically tested and certified", "food-contact certified" and "phosphate/paraben free".
+
+Catalogue data comes from [`src/services/woocommerce/catalog.ts`](src/services/woocommerce/catalog.ts). Reads are cached for hours and tagged `products` and `categories` for webhook revalidation (Phase 6). Responses are validated with Zod. If WooCommerce is unconfigured or down, product sections are hidden rather than breaking the page. Product names are decoded to plain text and never rendered as HTML.
 
 ## Business data policy
 
