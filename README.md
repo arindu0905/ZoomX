@@ -106,3 +106,19 @@ Catalogue data comes from [`src/services/woocommerce/catalog.ts`](src/services/w
 ## Business data policy
 
 Product details, prices, claims, certifications, reviews and policies are never invented. Unknown business details are `null` in `src/lib/site.ts` and hidden in the UI until the client supplies them.
+
+## Local WooCommerce sandbox
+
+zoomx.lk has no WooCommerce yet, so development runs against a throwaway local store: [WordPress Playground](https://wordpress.github.io/wordpress-playground/) (PHP compiled to WebAssembly, so no Docker, PHP install or native binaries are needed).
+
+```bash
+npm run sandbox          # http://127.0.0.1:9400 — WooCommerce + seeded test catalogue (first boot downloads WP + WooCommerce)
+```
+
+Then in `.env.local`: `WOOCOMMERCE_STORE_URL=http://127.0.0.1:9400`.
+
+- [`sandbox/seed.php`](sandbox/seed.php) creates **placeholder data only**: everything is named "Sandbox…", and all prices, SKUs and stock are invented. It covers simple, variable, on-sale, low-stock and out-of-stock products, three categories, LKR currency, Sri Lanka only, Cash on Delivery, a sandbox flat-rate shipping method and the coupon `SANDBOX10`.
+- The store is in memory: stopping it discards all changes, and the next start re-seeds it.
+- Admin: http://127.0.0.1:9400/wp-admin — Playground default login `admin` / `password` (sandbox only). Auto-login is deliberately off: it redirects cookieless requests, which breaks server-side fetches.
+- WordPress is pinned to 7.1.3 in `sandbox/blueprint.json` so it boots from the local Playground cache (`~/.wordpress-playground`); bump it when needed.
+- Never point production at the sandbox. Swap the URL for the real store once it exists.

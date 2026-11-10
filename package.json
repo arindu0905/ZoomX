@@ -11,7 +11,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:e2e": "playwright test",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "sandbox": "npx -y @wp-playground/cli@latest server --port=9400 --mount=./sandbox:/wordpress/sandbox --blueprint=./sandbox/blueprint.json"
   },
   "dependencies": {
     "@hookform/resolvers": "^7.0.5",
