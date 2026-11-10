@@ -3,6 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { SiteHeader } from "@/components/layout/site-header";
 import { useUiStore } from "@/store/ui";
+import { useCartStore } from "@/store/cart";
 
 vi.mock("next/navigation", () => ({ usePathname: () => "/shop" }));
 vi.mock("@/components/ui/logo", () => ({ Logo: () => <span>ZOOM X home</span> }));
@@ -10,7 +11,12 @@ vi.mock("@/components/ui/logo", () => ({ Logo: () => <span>ZOOM X home</span> })
 const categories = [{ name: "Laundry Care", slug: "laundry-care" }];
 
 describe("SiteHeader", () => {
-  beforeEach(() => act(() => useUiStore.setState({ panel: null, bagCount: 0 })));
+  beforeEach(() =>
+    act(() => {
+      useUiStore.setState({ panel: null });
+      useCartStore.setState({ cart: null });
+    }),
+  );
 
   it("marks the current route", () => {
     render(<SiteHeader categories={categories} />);
@@ -22,7 +28,7 @@ describe("SiteHeader", () => {
   it("announces the bag count accessibly", () => {
     render(<SiteHeader categories={[]} />);
     expect(screen.getByRole("link", { name: "Shopping bag" })).toBeInTheDocument();
-    act(() => useUiStore.getState().setBagCount(3));
+    act(() => useCartStore.setState({ cart: { items_count: 3 } as never }));
     expect(screen.getByRole("link", { name: "Shopping bag, 3 items" })).toBeInTheDocument();
   });
 

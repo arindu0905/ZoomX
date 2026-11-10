@@ -79,3 +79,22 @@ export const storeErrorSchema = z.object({
   message: z.string(),
   data: z.object({ status: z.number().optional() }).partial().optional(),
 });
+
+/** Store API `POST /checkout` response (subset). */
+export const checkoutResultSchema = z.object({
+  order_id: z.number(),
+  order_key: z.string(),
+  order_number: z.string().optional(),
+  status: z.string(),
+  payment_method: z.string(),
+  payment_result: z
+    .object({
+      payment_status: z.string(),
+      payment_details: z.array(z.object({ key: z.string(), value: z.unknown() })).default([]),
+      redirect_url: z.string().default(""),
+    })
+    .nullable()
+    .optional(),
+});
+
+export type CheckoutResult = z.infer<typeof checkoutResultSchema>;

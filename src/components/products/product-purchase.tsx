@@ -4,6 +4,8 @@ import { Minus, Plus } from "lucide-react";
 import { useId, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { findVariant, isOptionAvailable, optionExists, type Selection } from "@/lib/variations";
+import { useCartStore } from "@/store/cart";
+import { useUiStore } from "@/store/ui";
 import type { StorePrices } from "@/types/store-api";
 import { cn } from "@/utils/cn";
 import { Price } from "./price";
@@ -74,6 +76,26 @@ export function ProductPurchase({
   const view = variant ?? product;
   const canBuy = complete && !invalidCombination && view.inStock && view.purchasable;
 
+  const add = useCartStore((s) => s.add);
+  const openPanel = useUiStore((s) => s.open);
+  const [adding, setAdding] = useState(false);
+  const [addError, setAddError] = useState<string | null>(null);
+
+  /** Sends only the product/variation id, quantity and chosen attributes. */
+  const addToBag = async () => {
+    if (!canBuy) return;
+    setAdding(true);
+    setAddError(null);
+    const r = await add({
+      id: variant?.id ?? product.id,
+      quantity: qty,
+      ...(variant ? { variation: names.map((n) => ({ attribute: n, value: selection[n]! })) } : {}),
+    });
+    setAdding(false);
+    if (r.ok) openPanel("bag");
+    else setAddError(r.message);
+  };
+
   const status = !complete
     ? "Choose an option to see availability."
     : invalidCombination
@@ -126,14 +148,21 @@ export function ProductPurchase({
           onChange={setQty}
           disabled={!canBuy}
         />
-        {/* Cart wiring lands in Phase 7 (session-backed WooCommerce cart). */}
-        <Button size="lg" className="min-w-56 flex-1 sm:flex-none" disabled aria-describedby="bag-note">
-          Add to bag
+        <Button
+          size="lg"
+          className="min-w-56 flex-1 sm:flex-none"
+          disabled={!canBuy || adding}
+          aria-describedby={addError ? "add-error" : undefined}
+          onClick={addToBag}
+        >
+          {adding ? "Adding…" : "Add to bag"}
         </Button>
       </div>
-      <p id="bag-note" className="-mt-4 text-caption text-ink-muted">
-        Online ordering is coming soon.
-      </p>
+      {addError && (
+        <p id="add-error" role="alert" className="-mt-4 text-body text-danger">
+          {addError}
+        </p>
+      )}
     </div>
   );
 }

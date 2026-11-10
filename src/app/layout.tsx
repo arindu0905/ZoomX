@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
+import { CartProvider } from "@/components/cart/cart-provider";
 import { AnnouncementBar } from "@/components/layout/announcement-bar";
 import { MotionProvider } from "@/components/layout/motion-provider";
 import { SiteFooter } from "@/components/layout/site-footer";
@@ -52,6 +53,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
             {children}
           </main>
           <SiteFooter />
+          <CartProvider />
         </MotionProvider>
       </body>
     </html>

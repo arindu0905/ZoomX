@@ -2,7 +2,7 @@
 
 Next.js storefront for ZOOM X (Capital Wills Holdings (Pvt) Ltd), backed by WordPress + WooCommerce as the single source of truth for products, prices, stock, customers and orders.
 
-> **Status:** Phase 6 (WooCommerce integration layer) complete, developed against the local WooCommerce sandbox. WooCommerce is **not yet installed** on zoomx.lk — see [docs/PHASE-1-AUDIT.md](docs/PHASE-1-AUDIT.md) for blockers and required client inputs.
+> **Status:** Phase 7 (cart & checkout) complete, developed against the local WooCommerce sandbox. WooCommerce is **not yet installed** on zoomx.lk — see [docs/PHASE-1-AUDIT.md](docs/PHASE-1-AUDIT.md) for blockers and required client inputs.
 
 ## Stack
 
@@ -84,8 +84,9 @@ The browser talks only to Next.js. Server Components read the public WooCommerce
 | 4 Homepage | ✅ Hero, range/categories, best sellers, business campaign, brand story, featured, why ZOOM X — see "Homepage content" below |
 | 5 Catalogue | ✅ Shop, category and product pages, filters, sorting, pagination, search + suggestions, variations — see "Catalogue" below |
 | 6 WooCommerce integration | ✅ Session-aware cart client (signed HttpOnly `Cart-Token` cookie), cart API, signed webhooks + manual revalidation — [docs/WOOCOMMERCE-INTEGRATION.md](docs/WOOCOMMERCE-INTEGRATION.md) |
-| 7 Cart & checkout | Next — bag drawer/page, coupons, shipping, checkout, order creation |
-| 8–11 | Pending — 8 testable on the sandbox; going live still needs WooCommerce on zoomx.lk |
+| 7 Cart & checkout | ✅ Bag drawer + page, quantities, coupons, delivery options, checkout (Sri Lanka address, Cash on Delivery), order confirmation — see "Cart & checkout" below |
+| 8 Payments | Next — PayHere (and WEBXPAY if required): needs merchant sandbox credentials |
+| 9–11 | Pending — going live still needs WooCommerce on zoomx.lk |
 
 ## Homepage content
 
@@ -117,12 +118,13 @@ zoomx.lk has no WooCommerce yet, so development runs against a throwaway local s
 npm run sandbox          # http://127.0.0.1:9400 — WooCommerce + seeded test catalogue (first boot downloads WP + WooCommerce)
 ```
 
-Then in `.env.local`: `WOOCOMMERCE_STORE_URL=http://127.0.0.1:9400`.
+Then in `.env.local`: `WOOCOMMERCE_STORE_URL=http://127.0.0.1:9400`, plus the two values from `sandbox/.rest-keys.env` (`WOOCOMMERCE_CONSUMER_KEY` / `_SECRET`). That file is created on the first `npm run sandbox`, is git-ignored, and stays the same across restarts.
 
 - [`sandbox/seed.php`](sandbox/seed.php) creates **placeholder data only**: everything is named "Sandbox…", and all prices, SKUs and stock are invented. It covers simple, variable, on-sale, low-stock and out-of-stock products, three categories, LKR currency, Sri Lanka only, Cash on Delivery, a sandbox flat-rate shipping method and the coupon `SANDBOX10`.
 - The store is in memory: stopping it discards all changes, and the next start re-seeds it.
 - Admin: http://127.0.0.1:9400/wp-admin — Playground default login `admin` / `password` (sandbox only). Auto-login is deliberately off: it redirects cookieless requests, which breaks server-side fetches.
 - WordPress is pinned to 7.1.3 in `sandbox/blueprint.json` so it boots from the local Playground cache (`~/.wordpress-playground`); bump it when needed.
+- The sandbox folder is mounted at `/zoomx-sandbox`, outside the WordPress web root, so the keys file can't be fetched over HTTP. A sandbox-only mu-plugin lets WooCommerce accept REST Basic auth over plain HTTP on 127.0.0.1. **Never** do this on a real site: production must use HTTPS.
 - Never point production at the sandbox. Swap the URL for the real store once it exists.
 
 ## Catalogue (Phase 5)
@@ -146,3 +148,22 @@ Then in `.env.local`: `WOOCOMMERCE_STORE_URL=http://127.0.0.1:9400`.
 Known gap (Phase 10): an unknown product or category renders the 404 page with `noindex`, but with HTTP 200 instead of 404. That's a side effect of streaming the page shell.
 
 E2E: `tests/e2e/catalogue.spec.ts` runs when the app is connected to the sandbox and skips otherwise. With the sandbox running and `.env.local` pointing at it, run `npm run test:e2e`.
+
+## Cart & checkout (Phase 7)
+
+| Route | What it does |
+|---|---|
+| Bag drawer | Opens after "Add to bag" and from the header icon. Without JavaScript the icon links to `/cart` |
+| `/cart` | Line items, quantity steppers, remove, coupons, delivery options, WooCommerce totals |
+| `/checkout` | Contact, address (district list, postcode), optional separate delivery address, notes, payment method, terms |
+| `/checkout/order/[id]?key=…` | Confirmation read live from WooCommerce (REST v3), shown only with the order's secret key |
+
+- **Client state**: `src/store/cart.ts` (Zustand) mirrors the latest cart response from `/api/cart*`. It never calculates prices, totals or stock. The cart itself is the WooCommerce session.
+- **Checkout**: one Zod schema (`src/lib/checkout-schema.ts`) validates in the browser (React Hook Form) and again on the server. The request carries no prices. WooCommerce creates the order from the session cart and calculates everything.
+- **Sri Lanka**: the 25 districts are sent as the address `state`. Phone numbers are normalised to +94. The 5-digit postcode is required because WooCommerce's address rules for Sri Lanka require it, and orders without one were rejected.
+- **Payment methods**: a method is offered only if it's in `src/lib/payment-methods.ts` **and** enabled in WooCommerce. Phase 7 ships Cash on Delivery. PayHere and WEBXPAY come in Phase 8.
+- **Order confirmation**: uses the storefront's own URL, never WooCommerce's `redirect_url`. The page re-reads the order server-side and compares the key in constant time. A wrong key, an unknown id and a missing key all show the same "can't show this order" page. `noindex`, `no-referrer`.
+- **Abuse limits**: checkout and coupon endpoints are rate-limited per IP (10/min, in-memory and best-effort per instance; a shared store is planned for Phase 10).
+- **Not yet built**: terms/policy pages (the checkout links `/policies/terms`, which arrive with the content pages), customer accounts (Phase 9), order emails (sent by WooCommerce itself).
+
+E2E: `tests/e2e/checkout.spec.ts` covers add to bag, the drawer, persistence after reload, quantity, coupons (valid and invalid), totals, validation, a Cash on Delivery order and the confirmation page, plus API tampering checks. These tests place real orders in the sandbox, which lowers its stock until the next restart.

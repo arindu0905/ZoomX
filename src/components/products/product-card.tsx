@@ -4,12 +4,13 @@ import Link from "next/link";
 import type { StoreProduct } from "@/types/store-api";
 import { decodeEntities } from "@/utils/text";
 import { Price } from "./price";
+import { QuickAdd } from "./quick-add";
 
 export const productHref = (slug: string) => `/product/${encodeURIComponent(slug)}`;
 
 /**
- * Minimal product card. Add-to-bag is added in Phase 7 once the
- * session-backed WooCommerce cart exists.
+ * Minimal product card. Simple in-stock products get a quick "Add"; products
+ * with options link to their page to choose a size first.
  */
 export function ProductCard({ product }: { product: StoreProduct }) {
   const image = product.images[0];
@@ -53,6 +54,15 @@ export function ProductCard({ product }: { product: StoreProduct }) {
         )}
         <Price prices={product.prices} onSale={product.on_sale} className="text-body" />
         {!product.is_in_stock && <p className="text-caption font-medium text-ink-muted">Out of stock</p>}
+        {product.is_in_stock && product.is_purchasable && (
+          <div className="mt-2">
+            {product.type === "simple" && !product.has_options ? (
+              <QuickAdd productId={product.id} name={name} />
+            ) : (
+              <span className="text-caption text-ink-muted">Choose options</span>
+            )}
+          </div>
+        )}
       </div>
       {/* Visible focus ring for the stretched link */}
       <span className="pointer-events-none absolute -inset-2 rounded-[28px] ring-brand-strong group-has-[:focus-visible]:ring-2" />

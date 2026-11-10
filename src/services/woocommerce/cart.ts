@@ -1,6 +1,7 @@
 import "server-only";
 import { getServerEnv } from "@/lib/env";
-import { cartSchema, storeErrorSchema, type Cart } from "@/types/cart";
+import type { z } from "zod";
+import { cartSchema, checkoutResultSchema, storeErrorSchema, type Cart, type CheckoutResult } from "@/types/cart";
 import { decodeEntities } from "@/utils/text";
 import { readCartToken, writeCartToken } from "./session";
 import { StoreApiError } from "./store-api";
@@ -29,19 +30,29 @@ export class CartApiError extends StoreApiError {
 type Method = "GET" | "POST";
 
 async function cartRequest(method: Method, path: string, body?: unknown): Promise<Cart> {
+  return sessionRequest(method, path, cartSchema, body);
+}
+
+async function sessionRequest<S extends z.ZodType>(
+  method: Method,
+  path: string,
+  schema: S,
+  body?: unknown,
+): Promise<z.infer<S>> {
   let token = await readCartToken();
   // Without a Cart-Token WooCommerce demands a nonce for writes. Start a
   // session first (a GET issues a token), then make the write with it.
-  if (!token && method === "POST") token = (await send("GET", "cart", null)).token;
-  return (await send(method, path, token, body)).cart;
+  if (!token && method === "POST") token = (await send("GET", "cart", null, cartSchema)).token;
+  return (await send(method, path, token, schema, body)).data;
 }
 
-async function send(
+async function send<S extends z.ZodType>(
   method: Method,
   path: string,
   token: string | null,
+  schema: S,
   body?: unknown,
-): Promise<{ cart: Cart; token: string | null }> {
+): Promise<{ data: z.infer<S>; token: string | null }> {
   const { WOOCOMMERCE_STORE_URL, WOOCOMMERCE_REQUEST_TIMEOUT_MS } = getServerEnv();
   if (!WOOCOMMERCE_STORE_URL) throw new StoreApiError("WooCommerce store URL is not configured", 503);
 
@@ -77,9 +88,9 @@ async function send(
     throw new CartApiError(message, res.status, err.success ? err.data.code : "unknown");
   }
 
-  const parsed = cartSchema.safeParse(json);
+  const parsed = schema.safeParse(json);
   if (!parsed.success) throw new StoreApiError(`Unexpected cart response shape for ${url.pathname}`, 502);
-  return { cart: parsed.data, token: current };
+  return { data: parsed.data as z.infer<S>, token: current };
 }
 
 export const getCart = () => cartRequest("GET", "cart");
@@ -104,3 +115,17 @@ export const removeCoupon = (code: string) => cartRequest("POST", "cart/remove-c
 
 export const selectShippingRate = (packageId: number | string, rateId: string) =>
   cartRequest("POST", "cart/select-shipping-rate", { package_id: packageId, rate_id: rateId });
+
+export interface PlaceOrderInput {
+  billing_address: Record<string, string>;
+  shipping_address: Record<string, string>;
+  customer_note: string;
+  payment_method: string;
+}
+
+/**
+ * Creates the order from the session cart. WooCommerce recalculates prices,
+ * discounts, shipping, tax and stock; nothing monetary is sent from here.
+ */
+export const placeOrder = (input: PlaceOrderInput): Promise<CheckoutResult> =>
+  sessionRequest("POST", "checkout", checkoutResultSchema, input);

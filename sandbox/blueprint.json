@@ -9,6 +9,6 @@
       "pluginData": { "resource": "wordpress.org/plugins", "slug": "woocommerce" },
       "options": { "activate": true }
     },
-    { "step": "runPHP", "code": "<?php require '/wordpress/sandbox/seed.php';" }
+    { "step": "runPHP", "code": "<?php require '/zoomx-sandbox/seed.php';" }
   ]
 }

@@ -131,6 +131,37 @@ $c->set_discount_type('percent');
 $c->set_amount(10);
 $c->save();
 
+// ── REST API v3 key for server-side calls (order lookup, accounts) ──────
+// Generated on the host by scripts/sandbox-keys.mjs (npm run sandbox) into
+// sandbox/.rest-keys.env (git-ignored). Read-only here: nothing secret is
+// written into the web root. Sandbox-only values.
+$env = @parse_ini_file("/zoomx-sandbox/.rest-keys.env") ?: [];
+$ck = $env["WOOCOMMERCE_CONSUMER_KEY"] ?? null;
+$cs = $env["WOOCOMMERCE_CONSUMER_SECRET"] ?? null;
+if ($ck && $cs) {
+global $wpdb;
+$wpdb->insert($wpdb->prefix . 'woocommerce_api_keys', [
+    'user_id' => 1,
+    'description' => 'ZOOM X storefront (sandbox)',
+    'permissions' => 'read_write',
+    'consumer_key' => wc_api_hash($ck),
+    'consumer_secret' => $cs,
+    'truncated_key' => substr($ck, -7),
+]);
+}
+
+// WooCommerce only accepts Basic auth over HTTPS. The sandbox is plain HTTP
+// on localhost, so treat REST requests as secure here. NEVER do this on a
+// real site — production must be served over HTTPS.
+@mkdir('/wordpress/wp-content/mu-plugins', 0777, true);
+file_put_contents('/wordpress/wp-content/mu-plugins/zoomx-sandbox-rest-auth.php', <<<'PHP'
+<?php
+/* ZOOM X local sandbox only: allow REST Basic auth over http://127.0.0.1. */
+if (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], '/wp-json/wc/v3/') !== false) {
+    $_SERVER['HTTPS'] = 'on';
+}
+PHP);
+
 flush_rewrite_rules();
 update_option('zoomx_sandbox_seeded', 1);
 echo "ZOOM X sandbox seeded\n";

@@ -14,3 +14,12 @@ describe("formatPrice", () => {
     expect(() => formatPrice({ amount: "abc", minorUnit: 2 })).toThrow(TypeError);
   });
 });
+
+describe("formatDecimalPrice", () => {
+  it("formats REST v3 decimal strings without float maths", async () => {
+    const { formatDecimalPrice } = await import("@/utils/currency");
+    expect(formatDecimalPrice("1250.00")).toBe(formatDecimalPrice("1250"));
+    expect(formatDecimalPrice("0.1")).toMatch(/0\.10$/);
+    expect(() => formatDecimalPrice("12,50")).toThrow();
+  });
+});

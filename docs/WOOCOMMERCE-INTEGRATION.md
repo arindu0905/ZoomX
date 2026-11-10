@@ -35,10 +35,18 @@ The browser never calls WooCommerce directly. That means no CORS setup, no third
 | POST | `/api/cart/items` | `{ id, quantity, variation? }` |
 | PATCH | `/api/cart/items/:key` | `{ quantity }` |
 | DELETE | `/api/cart/items/:key` | — |
+| POST | `/api/cart/coupons` | `{ code }` (rate-limited) |
+| DELETE | `/api/cart/coupons/:code` | — |
+| POST | `/api/cart/shipping` | `{ packageId, rateId }` |
+| POST | `/api/checkout` | contact, addresses, note, `paymentMethod`, `terms` (rate-limited) |
 
 Only ids, quantities and attribute values are forwarded. Prices, stock and totals are never accepted from the browser. WooCommerce's own error messages (for example "out of stock") are passed to the customer. Any other failure returns a generic message, and the details are logged on the server only.
 
-Coupons and shipping-rate selection already exist in the service layer (`applyCoupon`, `removeCoupon`, `selectShippingRate`) and get HTTP endpoints in Phase 7.
+### Checkout and orders
+
+- `POST /api/checkout` re-validates the form and checks that the cart isn't empty, has no WooCommerce errors and offers the chosen payment method. It then calls Store API `POST /checkout` with the session's Cart-Token. WooCommerce calculates prices, discounts, shipping, tax and stock, and creates the order.
+- The confirmation page reads the order with **REST v3** (`GET /wc/v3/orders/:id`) on the server and shows it only if the URL's `key` matches `order_key` (constant-time compare). The Store API's own order endpoint only covers orders still awaiting payment, so it can't be used here.
+- WooCommerce's address rules for Sri Lanka require a postcode; the form enforces it.
 
 ## 3. Cache refresh (webhooks)
 

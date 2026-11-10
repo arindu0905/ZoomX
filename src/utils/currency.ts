@@ -26,3 +26,15 @@ export function formatPrice({ amount, minorUnit, currencyCode = "LKR" }: StoreAp
     .format(value)
     .replace(/ /g, " ");
 }
+
+/**
+ * Formats a decimal amount string as returned by the WooCommerce REST API v3
+ * (e.g. "1250.00") — used for orders, where v3 is the source.
+ */
+export function formatDecimalPrice(amount: string, currencyCode = "LKR", decimals = 2): string {
+  const m = /^(-?)(\d+)(?:\.(\d+))?$/.exec(amount.trim());
+  if (!m) throw new TypeError(`Invalid decimal amount: ${amount}`);
+  const frac = (m[3] ?? "").padEnd(decimals, "0").slice(0, decimals);
+  const minor = Number.parseInt(`${m[1]}${m[2]}${frac}`, 10);
+  return formatPrice({ amount: minor, minorUnit: decimals, currencyCode });
+}

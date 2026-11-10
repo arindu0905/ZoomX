@@ -10,6 +10,7 @@ import { iconButton, panelMotion } from "./header-shared";
 import { SearchPanel } from "./search-panel";
 import { useDialog } from "@/hooks/use-dialog";
 import { categoryHref, primaryNav, type NavCategory } from "@/lib/navigation";
+import { useCartStore } from "@/store/cart";
 import { useUiStore } from "@/store/ui";
 import { cn } from "@/utils/cn";
 
@@ -166,10 +167,18 @@ function NavLink({ href, active, label }: { href: string; active: boolean; label
 }
 
 function BagLink() {
-  const count = useUiStore((s) => s.bagCount);
+  // Display-only mirror of WooCommerce's items_count.
+  const count = useCartStore((s) => s.cart?.items_count ?? 0);
+  const toggle = useUiStore((s) => s.toggle);
   return (
     <Link
       href="/cart"
+      onClick={(e) => {
+        // Opens the drawer once hydrated; without JavaScript it links to /cart.
+        if (e.metaKey || e.ctrlKey || e.shiftKey || e.button !== 0) return;
+        e.preventDefault();
+        toggle("bag");
+      }}
       aria-label={count ? `Shopping bag, ${count} ${count === 1 ? "item" : "items"}` : "Shopping bag"}
       className={cn(iconButton, "relative")}
     >
