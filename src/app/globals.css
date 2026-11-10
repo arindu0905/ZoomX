@@ -1,0 +1,46 @@
+@import "tailwindcss";
+
+/*
+ * Base tokens. The full design system (type scale, spacing, components)
+ * is built in Phase 3. Brand green is provisional (#00B42C sampled from
+ * zoomx.lk) until confirmed against the master logo.
+ */
+@theme {
+  --color-canvas: #ffffff;
+  --color-canvas-alt: #f5f5f7;
+  --color-ink: #1d1d1f;
+  --color-ink-muted: #6e6e73;
+  --color-line: #d2d2d7;
+  --color-brand: #00b42c;
+  --color-brand-strong: #008a22; /* AA-contrast variant for text/buttons on white */
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-brand-strong);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
