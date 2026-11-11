@@ -2,6 +2,7 @@ import { BrandStory } from "@/components/home/brand-story";
 import { BusinessCampaign } from "@/components/home/business-campaign";
 import { Hero } from "@/components/home/hero";
 import { ProductRail } from "@/components/home/product-rail";
+import { ProductTiles } from "@/components/home/product-tiles";
 import { ShopByCategory } from "@/components/home/shop-by-category";
 import { WhyZoomX } from "@/components/home/why-zoomx";
 import { site, siteUrl } from "@/lib/site";
@@ -20,18 +21,22 @@ import { getBestSellers, getCategories, getFeaturedProducts } from "@/services/w
 export default async function Home() {
   const [categories, bestSellers, featured] = await Promise.all([
     getCategories(),
-    getBestSellers(),
+    getBestSellers(12),
     getFeaturedProducts(),
   ]);
+  // apple.com-style tiles: featured products lead as full-width tiles, then
+  // best sellers fill the two-up grid (each product shown once).
+  const featuredIds = new Set(featured.map((p) => p.id));
+  const tiles = [...featured, ...bestSellers.filter((p) => !featuredIds.has(p.id))].slice(0, 8);
 
   return (
     <>
-      <Hero />
+      <Hero products={bestSellers} />
+      <ProductTiles products={tiles} title="Our most popular products." fullWidth={Math.min(2, featured.length)} />
       <ShopByCategory categories={categories} />
-      <ProductRail id="best-sellers" eyebrow="Best sellers" title="Our most popular products." products={bestSellers} />
       <BusinessCampaign />
       <BrandStory />
-      <ProductRail id="featured" eyebrow="Featured" title="Picked for you." products={featured} tone="alt" />
+      <ProductRail id="all-products" eyebrow="The full range" title="Take a closer look." products={bestSellers.slice(0, 12)} tone="alt" />
       <WhyZoomX />
       <script
         type="application/ld+json"

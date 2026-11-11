@@ -15,18 +15,19 @@ test.beforeEach(async ({ request }) => {
 test.setTimeout(90_000);
 const slow = { timeout: 20_000 };
 
-async function addLaundry1L(page: Page) {
-  await page.goto("/product/sandbox-laundry-liquid");
-  await page.getByRole("radio", { name: "1 L" }).click();
+// Air Freshener (Cinnamon): LKR 750.00 sandbox placeholder price.
+async function addCinnamon(page: Page) {
+  await page.goto("/product/air-freshener");
+  await page.getByRole("radio", { name: "Cinnamon" }).click();
   await page.getByRole("button", { name: "Add to bag" }).click();
   const bag = page.getByRole("dialog", { name: /Bag/ });
-  await expect(bag.getByText("Size: 1 L")).toBeVisible(slow);
+  await expect(bag.getByText("Fragrance: Cinnamon")).toBeVisible(slow);
   return bag;
 }
 
 test("add to bag opens the drawer and updates the badge", async ({ page }) => {
-  const bag = await addLaundry1L(page);
-  await expect(bag.getByText("LKR 1,100.00").first()).toBeVisible();
+  const bag = await addCinnamon(page);
+  await expect(bag.getByText("LKR 750.00").first()).toBeVisible();
   await expect(
     page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Shopping bag, 1 item" }),
   ).toBeAttached();
@@ -35,12 +36,12 @@ test("add to bag opens the drawer and updates the badge", async ({ page }) => {
 });
 
 test("bag page: persistence, quantity, coupons and WooCommerce totals", async ({ page }) => {
-  await addLaundry1L(page);
+  await addCinnamon(page);
   await page.goto("/cart"); // full reload: cart comes back from the WooCommerce session
-  await expect(page.getByText("Size: 1 L")).toBeVisible(slow);
+  await expect(page.getByText("Fragrance: Cinnamon")).toBeVisible(slow);
 
   await page.getByRole("button", { name: "Increase quantity" }).click();
-  await expect(page.getByText("LKR 2,200.00").first()).toBeVisible(slow);
+  await expect(page.getByText("LKR 1,500.00").first()).toBeVisible(slow);
 
   const coupon = page.getByRole("textbox", { name: "Coupon code" });
   await coupon.fill("NOPE");
@@ -49,18 +50,18 @@ test("bag page: persistence, quantity, coupons and WooCommerce totals", async ({
 
   await coupon.fill("SANDBOX10");
   await page.getByRole("button", { name: "Apply" }).click();
-  await expect(page.getByText("−LKR 220.00").first()).toBeVisible(slow);
-  // 2 × 1,100 − 10% + 350 sandbox delivery, as calculated by WooCommerce
-  await expect(page.getByText("LKR 2,330.00")).toBeVisible();
+  await expect(page.getByText("−LKR 150.00").first()).toBeVisible(slow);
+  // 2 × 750 − 10% + 350 sandbox delivery, as calculated by WooCommerce
+  await expect(page.getByText("LKR 1,700.00")).toBeVisible();
 
   await page.getByRole("button", { name: "Remove", exact: false }).first().click();
   await expect(page.getByRole("heading", { name: "Your bag is empty." })).toBeVisible(slow);
 });
 
 test("checkout validates, places a Cash on Delivery order and shows the confirmation", async ({ page }) => {
-  await addLaundry1L(page);
+  await addCinnamon(page);
   await page.goto("/checkout");
-  const place = page.getByRole("button", { name: /Place order · LKR 1,450.00/ });
+  const place = page.getByRole("button", { name: /Place order · LKR 1,100.00/ });
   await expect(place).toBeVisible(slow);
 
   await place.click();
@@ -83,8 +84,8 @@ test("checkout validates, places a Cash on Delivery order and shows the confirma
   await expect(page).toHaveURL(/\/checkout\/order\/\d+\?key=wc_order_/, slow);
   await expect(page.getByRole("heading", { name: "Thank you, Test." })).toBeVisible(slow);
   await expect(page.getByText("Processing")).toBeVisible();
-  await expect(page.getByText("Sandbox Laundry Liquid - 1 L")).toBeVisible();
-  await expect(page.getByText(/Please have LKR 1,450.00 ready in cash/)).toBeVisible();
+  await expect(page.getByText("Air Freshener - Cinnamon")).toBeVisible();
+  await expect(page.getByText(/Please have LKR 1,100.00 ready in cash/)).toBeVisible();
   await expect(page.getByText("+94771234567")).toBeVisible();
   await expect(page.getByText("Ratmalana, Colombo")).toBeVisible();
 
@@ -132,7 +133,7 @@ test.describe("PayHere without credentials", () => {
   test.skip(!!process.env.PAYHERE_MERCHANT_SECRET, "PayHere is configured in this environment");
 
   test("is neither offered at checkout nor accepted by the API", async ({ page, request, baseURL }) => {
-    await addLaundry1L(page);
+    await addCinnamon(page);
     await page.goto("/checkout");
     await expect(page.getByRole("radio", { name: /Cash on delivery/ })).toBeVisible(slow);
     await expect(page.getByRole("radio", { name: /PayHere|Card or mobile wallet/ })).toHaveCount(0);

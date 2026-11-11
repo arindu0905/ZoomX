@@ -16,7 +16,7 @@ export function pageWindow(current: number, total: number): (number | "gap")[] {
 }
 
 const item =
-  "inline-flex size-11 items-center justify-center rounded-full text-body transition-colors hover:bg-canvas-alt focus-visible:outline-2 focus-visible:outline-offset-2";
+  "inline-flex size-11 items-center justify-center rounded-full text-body transition-colors hover:bg-black/5 focus-visible:outline-2 focus-visible:outline-offset-2";
 
 export function Pagination({
   basePath,

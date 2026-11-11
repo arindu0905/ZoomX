@@ -12,7 +12,7 @@ export function ProductGallery({ images, name }: { images: StoreImage[]; name: s
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="relative aspect-square overflow-hidden rounded-[32px] bg-canvas-alt">
+      <div className="relative aspect-square overflow-hidden rounded-tile bg-canvas-alt">
         {current ? (
           <Image
             key={current.id}

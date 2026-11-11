@@ -13,6 +13,20 @@ function storeImagePattern() {
   }
 }
 
+/**
+ * Next 16 refuses to optimise images that resolve to private IPs (SSRF
+ * guard). Relax it ONLY when the store itself is on loopback — i.e. the
+ * local WooCommerce sandbox — never for a real store URL.
+ */
+function storeIsLoopback() {
+  try {
+    const { hostname } = new URL(process.env.WOOCOMMERCE_STORE_URL ?? "");
+    return hostname === "127.0.0.1" || hostname === "localhost" || hostname === "[::1]";
+  } catch {
+    return false;
+  }
+}
+
 const isDev = process.env.NODE_ENV !== "production";
 // HTTPS-only directives apply when the site is actually served over HTTPS
 // (not for local `next start` on http://localhost).
@@ -43,6 +57,7 @@ const nextConfig: NextConfig = {
   partialPrefetching: true,
   poweredByHeader: false,
   images: {
+    dangerouslyAllowLocalIP: storeIsLoopback(),
     // WooCommerce media is served from the WordPress host. Tightened to the
     // exact host once WOOCOMMERCE_STORE_URL is confirmed.
     remotePatterns: [

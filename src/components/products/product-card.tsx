@@ -17,29 +17,27 @@ export function ProductCard({ product }: { product: StoreProduct }) {
   const rating = Number.parseFloat(product.average_rating);
   const name = decodeEntities(product.name);
   return (
-    <article className="group relative flex flex-col">
-      <div className="relative aspect-[4/5] overflow-hidden rounded-3xl bg-canvas-alt">
+    <article className="group relative flex h-full flex-col rounded-card bg-canvas p-5 shadow-card transition-[box-shadow,transform] duration-300 ease-standard hover:scale-[1.01] hover:shadow-card-hover sm:p-7">
+      {product.on_sale && product.is_in_stock && (
+        <p className="mb-1 text-caption font-semibold tracking-tight text-highlight">Sale</p>
+      )}
+      <div className="relative aspect-square overflow-hidden">
         {image ? (
           <Image
             src={image.src}
             alt={image.alt || name}
             fill
             sizes="(min-width: 1024px) 25vw, (min-width: 640px) 45vw, 80vw"
-            className="object-contain p-8 transition-transform duration-500 ease-standard group-hover:scale-[1.03]"
+            className="object-contain p-2 sm:p-4"
           />
         ) : (
           <div aria-hidden className="flex h-full items-center justify-center text-caption text-ink-muted">
             Image coming soon
           </div>
         )}
-        {product.on_sale && product.is_in_stock && (
-          <span className="absolute top-4 left-4 rounded-full bg-canvas px-3 py-1 text-caption font-semibold text-danger">
-            Sale
-          </span>
-        )}
       </div>
       <div className="mt-5 flex flex-1 flex-col gap-1.5">
-        <h3 className="text-lg font-semibold tracking-tight">
+        <h3 className="text-body font-semibold tracking-tight sm:text-lg">
           <Link href={productHref(product.slug)} className="after:absolute after:inset-0 focus-visible:outline-none">
             {name}
           </Link>
@@ -65,7 +63,7 @@ export function ProductCard({ product }: { product: StoreProduct }) {
         )}
       </div>
       {/* Visible focus ring for the stretched link */}
-      <span className="pointer-events-none absolute -inset-2 rounded-[28px] ring-brand-strong group-has-[:focus-visible]:ring-2" />
+      <span className="pointer-events-none absolute inset-0 rounded-card ring-brand-strong ring-offset-2 group-has-[:focus-visible]:ring-2" />
     </article>
   );
 }

@@ -10,7 +10,7 @@ import type { NavCategory } from "@/lib/navigation";
 import { cn } from "@/utils/cn";
 
 const field =
-  "h-11 rounded-full bg-canvas-alt px-4 text-body text-ink outline-none focus-visible:ring-2 focus-visible:ring-brand-strong";
+  "h-11 rounded-full bg-canvas px-4 shadow-[inset_0_0_0_1px_var(--color-line)] text-body text-ink outline-none focus-visible:ring-2 focus-visible:ring-brand-strong";
 
 /**
  * Sort + filters as a plain GET form (works without JavaScript); next/form
@@ -86,13 +86,15 @@ export function CatalogToolbar({
             <summary
               className={buttonClasses({
                 variant: "ghost",
-                className: "h-11 cursor-pointer list-none [&::-webkit-details-marker]:hidden",
+                size: "md",
+                className:
+                  "h-11 cursor-pointer list-none bg-canvas shadow-[inset_0_0_0_1px_var(--color-line)] hover:bg-canvas [&::-webkit-details-marker]:hidden",
               })}
             >
               <SlidersHorizontal aria-hidden className="size-4" />
               Price
             </summary>
-            <fieldset className="absolute right-0 z-10 mt-2 flex w-max max-w-[calc(100vw-2*var(--spacing-gutter))] flex-wrap items-end gap-3 rounded-3xl bg-canvas-alt p-5 shadow-[0_16px_40px_-20px_rgba(0,0,0,0.25)]">
+            <fieldset className="absolute right-0 z-10 mt-2 flex w-max max-w-[calc(100vw-2*var(--spacing-gutter))] flex-wrap items-end gap-3 rounded-card bg-canvas p-5 shadow-card-hover">
               <legend className="sr-only">Price range in LKR</legend>
               <label className="flex flex-col gap-1.5 text-caption text-ink-muted">
                 Min (LKR)

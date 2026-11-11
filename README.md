@@ -107,9 +107,10 @@ Copy lives in [`src/content/home.ts`](src/content/home.ts), taken from the curre
 
 | Section | Source | Behaviour without WooCommerce |
 |---|---|---|
-| Hero | zoomx.lk tagline + intro | Typographic. Set `heroImage` once a real packshot is approved (the AI renders on zoomx.lk have garbled label text, so they aren't used). |
+| Hero | zoomx.lk tagline + intro, apple.com-style line-up of best-seller packshots | Typographic. Set `heroImage` once a real packshot is approved (the AI renders on zoomx.lk have garbled label text, so they aren't used). |
 | Shop by category | Live Store API categories | Falls back to the 10 product names from zoomx.lk/products, each linking to a shop search |
-| Best sellers / Featured | Store API (`orderby=popularity`, `featured=true`) | Hidden |
+| Product tiles | apple.com-style tiles: featured products full-width, then best sellers two-up, each with Learn more / Buy | Hidden |
+| The full range | Best-seller card carousel | Hidden |
 | Campaign | zoomx.lk/for-businesses | Always shown |
 | Brand story / Why ZOOM X | zoomx.lk/about-us, home "Why We Care" | Always shown |
 | Testimonials | — | Omitted until verified reviews exist |
@@ -135,7 +136,10 @@ The sandbox also mounts `wordpress-plugin/zoomx-headless-payments` (the headless
 
 Then in `.env.local`: `WOOCOMMERCE_STORE_URL=http://127.0.0.1:9400`, plus the three values from `sandbox/.rest-keys.env` (`WOOCOMMERCE_CONSUMER_KEY` / `_SECRET`, `WORDPRESS_AUTH_SECRET`). That file is created on the first `npm run sandbox`, is git-ignored, and stays the same across restarts.
 
-- [`sandbox/seed.php`](sandbox/seed.php) creates **placeholder data only**: everything is named "Sandbox…", and all prices, SKUs and stock are invented. It covers simple, variable, on-sale, low-stock and out-of-stock products, three categories, LKR currency, Sri Lanka only, Cash on Delivery, a sandbox flat-rate shipping method and the coupon `SANDBOX10`.
+- [`sandbox/seed.php`](sandbox/seed.php) loads the **real ZOOM X range** from [`sandbox/catalogue/products.json`](sandbox/catalogue/products.json): the 10 products on zoomx.lk/products (Air Freshener as one variable product with Cinnamon and Green Apple), their sizes, features and packshots (`sandbox/catalogue/images/`), in the six proposed categories. **Prices, SKUs (`SBX-…`) and stock are sandbox-only placeholders** — zoomx.lk publishes none — chosen to cover sale, low-stock, out-of-stock and variable states for the e2e suite. Also: LKR, Sri Lanka only, Cash on Delivery, a sandbox flat-rate shipping method and the coupon `SANDBOX10`.
+- Unverified claims from zoomx.lk ("biodegradable", "dermatologically / lab tested and certified") are left out of the copy and listed per product under `withheldClaims`.
+- **Real store import:** `node scripts/catalogue-csv.mjs` writes [`docs/zoomx-products-import.csv`](docs/zoomx-products-import.csv) for WooCommerce → Products → Import. Products import as drafts with prices, SKUs and stock blank; images are fetched from the existing zoomx.lk media.
+- next/image normally refuses private IPs; `next.config.ts` allows it only when `WOOCOMMERCE_STORE_URL` is on loopback (the sandbox).
 - The store is in memory: stopping it discards all changes, and the next start re-seeds it.
 - Admin: http://127.0.0.1:9400/wp-admin — Playground default login `admin` / `password` (sandbox only). Auto-login is deliberately off: it redirects cookieless requests, which breaks server-side fetches.
 - WordPress is pinned to 7.1.3 in `sandbox/blueprint.json` so it boots from the local Playground cache (`~/.wordpress-playground`); bump it when needed.

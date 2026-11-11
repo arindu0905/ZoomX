@@ -72,7 +72,7 @@ function EmptyState({
   action?: { label: string; href: string };
 }) {
   return (
-    <div className="flex flex-col items-center gap-4 rounded-3xl bg-canvas-alt px-6 py-20 text-center">
+    <div className="flex flex-col items-center gap-4 rounded-card bg-canvas px-6 py-20 text-center shadow-card">
       <SearchX aria-hidden className="size-8 text-ink-muted" strokeWidth={1.5} />
       <h2 className="text-title">{title}</h2>
       <p className="max-w-prose text-body text-ink-muted">{body}</p>

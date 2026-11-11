@@ -1,6 +1,6 @@
 import { createHmac } from "node:crypto";
 import { expect, test, type APIRequestContext } from "@playwright/test";
-import { hasSandboxCatalogue } from "./store";
+import { hasSandboxCatalogue, sandboxIds } from "./store";
 
 /**
  * Cart session + webhook behaviour against the WooCommerce sandbox.
@@ -12,9 +12,6 @@ test.beforeEach(async ({ request }, info) => {
   test.skip(!(await hasSandboxCatalogue(request)), "needs the WooCommerce sandbox");
 });
 
-const LAUNDRY_1L = 17; // sandbox variation ids (sandbox/seed.php)
-const LAUNDRY_2L = 18; // out of stock
-const DISH = 10;
 
 function json(request: APIRequestContext, baseURL: string) {
   const headers = { Origin: baseURL, "Content-Type": "application/json" };
@@ -27,23 +24,24 @@ function json(request: APIRequestContext, baseURL: string) {
 }
 
 test("cart persists across requests and WooCommerce calculates totals", async ({ request, baseURL }) => {
+  const { cinnamon, dish } = await sandboxIds(request);
   const api = json(request, baseURL!);
   expect((await (await api.get()).json()).cart.items_count).toBe(0);
 
-  const added = await api.add(LAUNDRY_1L, 2);
+  const added = await api.add(cinnamon, 2);
   expect(added.status()).toBe(201);
   expect(added.headers()["set-cookie"]).toMatch(/zx_cart=.*HttpOnly/i);
   expect(added.headers()["cache-control"]).toBe("private, no-store");
 
-  await api.add(DISH, 1);
+  await api.add(dish, 1);
   const { cart } = await (await api.get()).json(); // new request, same cookie jar
   expect(cart.items.map((i: { name: string; quantity: number }) => [i.name, i.quantity])).toEqual([
-    ["Sandbox Laundry Liquid", 2],
-    ["Sandbox Dish Liquid", 1],
+    ["Air Freshener", 2],
+    ["Dish Washing Liquid", 1],
   ]);
-  expect(cart.items[0].variation[0]).toMatchObject({ attribute: "Size", value: "1 L" });
-  // 2 × 1,100 + 650 + 350 sandbox flat-rate shipping, in minor units
-  expect(cart.totals.total_price).toBe("320000");
+  expect(cart.items[0].variation[0]).toMatchObject({ attribute: "Fragrance", value: "Cinnamon" });
+  // 2 × 750 + 650 + 350 sandbox flat-rate shipping, in minor units
+  expect(cart.totals.total_price).toBe("250000");
 
   const key = cart.items[0].key;
   expect((await (await api.update(key, 3)).json()).cart.items_count).toBe(4);
@@ -51,7 +49,8 @@ test("cart persists across requests and WooCommerce calculates totals", async ({
 });
 
 test("out-of-stock variations are refused by WooCommerce", async ({ request, baseURL }) => {
-  const res = await json(request, baseURL!).add(LAUNDRY_2L, 1);
+  const { greenApple } = await sandboxIds(request);
+  const res = await json(request, baseURL!).add(greenApple, 1);
   expect(res.status()).toBe(400);
   expect((await res.json()).error).toMatchObject({ code: "woocommerce_rest_product_out_of_stock" });
 });
@@ -59,7 +58,7 @@ test("out-of-stock variations are refused by WooCommerce", async ({ request, bas
 test("mutations reject cross-site requests and invalid input", async ({ request }) => {
   const cross = await request.post("/api/cart/items", {
     headers: { Origin: "https://evil.example", "Content-Type": "application/json" },
-    data: { id: DISH, quantity: 1 },
+    data: { id: 1, quantity: 1 }, // rejected on origin before the id matters
   });
   expect(cross.status()).toBe(403);
 
@@ -89,7 +88,8 @@ test.describe("webhooks", () => {
 
   test("a signed product webhook revalidates and the page re-renders", async ({ request }) => {
     test.skip(!secret, "WOOCOMMERCE_WEBHOOK_SECRET not set");
-    const body = JSON.stringify({ id: DISH });
+    const { dish } = await sandboxIds(request);
+    const body = JSON.stringify({ id: dish });
     const signature = createHmac("sha256", secret!).update(body).digest("base64");
     const res = await request.post("/api/webhooks/woocommerce", {
       headers: { "X-WC-Webhook-Topic": "product.updated", "X-WC-Webhook-Signature": signature },
@@ -97,11 +97,11 @@ test.describe("webhooks", () => {
     });
     expect(await res.json()).toMatchObject({
       ok: true,
-      revalidated: expect.arrayContaining(["products", "product:10"]),
+      revalidated: expect.arrayContaining(["products", `product:${dish}`]),
     });
     // Regression: on-demand re-render after revalidation must not 500.
-    const page = await request.get("/product/sandbox-dish-liquid");
+    const page = await request.get("/product/dish-washing-liquid");
     expect(page.status()).toBe(200);
-    expect(await page.text()).toContain("Sandbox Dish Liquid");
+    expect(await page.text()).toContain("Dish Washing Liquid");
   });
 });

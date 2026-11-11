@@ -15,6 +15,18 @@ Questions for the client:
 
 Switching the accent colour means changing only `--color-brand*` tokens.
 
+## apple.com patterns
+
+The storefront follows apple.com layout conventions with ZOOM X branding (the brand green stays the action colour; the Apple blue is not used):
+
+- **Global nav** — 44px frosted bar (`bg-glass`), 12px links spread evenly across a 1024px column.
+- **Homepage** — hero with a product line-up; full-width product tiles then a two-up tile grid with 12px gutters (`ProductTiles`); each tile = eyebrow, name, one line, "Learn more" + "Buy" pills, packshot.
+- **Store pages** — `/shop` and categories sit on `canvas-alt` with white cards (`rounded-card`, `shadow-card`, lift on hover), a bold title with a muted second line, and an image category row (`CategoryRow`).
+- **Buy page** — large rounded gallery (`rounded-tile`), options as full-width selectable tiles, `#buy` anchor for tile "Buy" links.
+- **Footer** — 12px type, fine-print line, directory columns.
+
+Tokens added: `glass`, `highlight` (#B64400 eyebrow orange), `radius-card` 18px, `radius-tile` 28px, `shadow-card(-hover)`, `text-hero`, `text-tile`, `text-nav`, `tile-gap`.
+
 ## Colour
 
 | Token | Value | Use |
@@ -47,7 +59,7 @@ Inter (self-hosted by `next/font`), tight negative tracking at display sizes.
 - `max-w-page` 1280px · `max-w-prose` 672px
 - `px-gutter` 16 → 40px responsive side padding
 - `py-section` 72 → 128px between sections
-- `h-nav` / `top-nav` 48px global navigation
+- `h-nav` / `top-nav` 44px global navigation
 - Separate sections by alternating `Section tone="default" | "alt"`, not with borders or cards.
 
 ## Components (`src/components/ui`)

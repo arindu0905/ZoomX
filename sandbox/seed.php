@@ -1,10 +1,12 @@
 <?php
 /**
- * ZOOM X local sandbox seed — PLACEHOLDER DATA ONLY.
+ * ZOOM X local sandbox seed.
  *
- * Every product, price, SKU and stock level here is invented to exercise the
- * storefront (simple / variable / sale / out-of-stock / multi-category).
- * None of it is Zoom X business data. Names are prefixed "Sandbox".
+ * Products, categories, copy and images are the real ZOOM X range from
+ * zoomx.lk (sandbox/catalogue/products.json). PRICES, SKUs (SBX-…) AND STOCK
+ * ARE SANDBOX PLACEHOLDERS — zoomx.lk publishes none — invented only to
+ * exercise sale / low-stock / out-of-stock / variable states in tests.
+ * Shipping rate and the SANDBOX10 coupon are placeholders too.
  */
 require_once '/wordpress/wp-load.php';
 
@@ -50,84 +52,134 @@ update_option("woocommerce_flat_rate_{$instance}_settings", [
     'title' => 'Sandbox flat rate', 'tax_status' => 'none', 'cost' => '350',
 ]);
 
-// Categories.
+// ── Catalogue ────────────────────────────────────────────────────────────
+// Real ZOOM X range from zoomx.lk (sandbox/catalogue/products.json): names,
+// sizes, copy and packshots. zoomx.lk publishes no prices, SKUs or stock, so
+// $commerce below is SANDBOX-ONLY placeholder data that exists purely to
+// exercise cart, checkout and stock states. Never import it into the real
+// store — use the generated WooCommerce CSV (scripts/catalogue-csv.mjs),
+// which leaves prices blank for the business to fill in.
+require_once ABSPATH . 'wp-admin/includes/image.php';
+
+$catalogue = json_decode(file_get_contents('/zoomx-sandbox/catalogue/products.json'), true);
+
 $cats = [];
-foreach ([
-    'sandbox-kitchen' => ['Sandbox Kitchen', 'Placeholder category for kitchen products.'],
-    'sandbox-laundry' => ['Sandbox Laundry', 'Placeholder category for laundry products.'],
-    'sandbox-surfaces' => ['Sandbox Surfaces', 'Placeholder category for surface cleaners.'],
-] as $slug => [$name, $desc]) {
-    $term = wp_insert_term($name, 'product_cat', ['slug' => $slug, 'description' => $desc]);
-    $cats[$slug] = is_wp_error($term) ? (int) $term->get_error_data() : $term['term_id'];
+foreach ($catalogue['categories'] as $c) {
+    $term = wp_insert_term($c['name'], 'product_cat', ['slug' => $c['slug'], 'description' => $c['description']]);
+    $cats[$c['slug']] = is_wp_error($term) ? (int) $term->get_error_data() : $term['term_id'];
 }
 
-function zx_simple(array $a, array $cats): int {
-    $p = new WC_Product_Simple();
-    $p->set_name($a['name']);
-    $p->set_slug($a['slug']);
-    $p->set_sku($a['sku']);
-    $p->set_regular_price($a['price']);
-    if (!empty($a['sale'])) $p->set_sale_price($a['sale']);
-    $p->set_manage_stock(true);
-    $p->set_stock_quantity($a['stock']);
-    $p->set_stock_status($a['stock'] > 0 ? 'instock' : 'outofstock');
-    $p->set_short_description('Sandbox placeholder product. Not real Zoom X data.');
-    $p->set_description('<p>This is invented test content for the local development sandbox.</p>');
-    $p->set_category_ids(array_map(fn($s) => $cats[$s], $a['cats']));
-    $p->set_featured(!empty($a['featured']));
-    $p->set_weight('1');
-    if (!empty($a['sales'])) $p->set_total_sales($a['sales']);
-    return $p->save();
+/** Copies a catalogue image into the media library; returns the attachment id. */
+function zx_image(string $file, string $alt): int {
+    static $done = [];
+    if (isset($done[$file])) return $done[$file];
+    $uploads = wp_upload_dir();
+    $dest = trailingslashit($uploads['path']) . $file;
+    copy('/zoomx-sandbox/catalogue/images/' . $file, $dest);
+    $id = wp_insert_attachment([
+        'post_mime_type' => 'image/webp',
+        'post_title' => $alt,
+        'post_status' => 'inherit',
+    ], $dest);
+    wp_update_attachment_metadata($id, wp_generate_attachment_metadata($id, $dest));
+    update_post_meta($id, '_wp_attachment_image_alt', $alt);
+    return $done[$file] = $id;
 }
 
-zx_simple(['name' => 'Sandbox Dish Liquid', 'slug' => 'sandbox-dish-liquid', 'sku' => 'SBX-DISH-500',
-    'price' => '650', 'stock' => 40, 'cats' => ['sandbox-kitchen'], 'featured' => true, 'sales' => 120], $cats);
-zx_simple(['name' => 'Sandbox Floor Cleaner', 'slug' => 'sandbox-floor-cleaner', 'sku' => 'SBX-FLOOR-1L',
-    'price' => '890', 'sale' => '750', 'stock' => 25, 'cats' => ['sandbox-surfaces'], 'sales' => 80], $cats);
-zx_simple(['name' => 'Sandbox Glass Cleaner', 'slug' => 'sandbox-glass-cleaner', 'sku' => 'SBX-GLASS-500',
-    'price' => '540', 'stock' => 0, 'cats' => ['sandbox-surfaces']], $cats);
-zx_simple(['name' => 'Sandbox Fabric Softener', 'slug' => 'sandbox-fabric-softener', 'sku' => 'SBX-SOFT-1L',
-    'price' => '980', 'stock' => 15, 'cats' => ['sandbox-laundry'], 'featured' => true, 'sales' => 45], $cats);
-zx_simple(['name' => 'Sandbox Multi-Purpose Spray', 'slug' => 'sandbox-multi-purpose-spray', 'sku' => 'SBX-MULTI-500',
-    'price' => '720', 'stock' => 3, 'cats' => ['sandbox-kitchen', 'sandbox-surfaces'], 'sales' => 200], $cats);
-
-// Variable product: sizes, one variation out of stock, one on sale.
-$attr = new WC_Product_Attribute();
-$attr->set_name('Size');
-$attr->set_options(['500 ml', '1 L', '2 L']);
-$attr->set_visible(true);
-$attr->set_variation(true);
-
-$var = new WC_Product_Variable();
-$var->set_name('Sandbox Laundry Liquid');
-$var->set_slug('sandbox-laundry-liquid');
-$var->set_sku('SBX-LAUNDRY');
-$var->set_short_description('Sandbox placeholder variable product. Not real Zoom X data.');
-$var->set_description('<p>Invented test content with three sizes.</p>');
-$var->set_category_ids([$cats['sandbox-laundry']]);
-$var->set_attributes([$attr]);
-$var->set_featured(true);
-$var->set_total_sales(150);
-$parent = $var->save();
-
-foreach ([
-    ['500 ml', 'SBX-LAUNDRY-500', '700', '', 30],
-    ['1 L', 'SBX-LAUNDRY-1L', '1250', '1100', 20],
-    ['2 L', 'SBX-LAUNDRY-2L', '2300', '', 0],
-] as [$size, $sku, $price, $sale, $stock]) {
-    $v = new WC_Product_Variation();
-    $v->set_parent_id($parent);
-    $v->set_attributes(['size' => $size]);
-    $v->set_sku($sku);
-    $v->set_regular_price($price);
-    if ($sale) $v->set_sale_price($sale);
-    $v->set_manage_stock(true);
-    $v->set_stock_quantity($stock);
-    $v->set_stock_status($stock > 0 ? 'instock' : 'outofstock');
-    $v->set_weight('1');
-    $v->save();
+function zx_description(array $p): string {
+    $html = '<p>' . esc_html($p['tagline']) . '.</p>';
+    $html .= '<p>Key features:</p><ul>';
+    foreach ($p['features'] as $f) $html .= '<li>' . esc_html($f) . '</li>';
+    $html .= '</ul><p>Ideal for: ' . esc_html($p['idealFor']) . '.</p>';
+    $html .= '<p>' . esc_html($p['safety']) . '</p>';
+    return $html;
 }
-WC_Product_Variable::sync($parent);
+
+function zx_size_attribute(string $size): WC_Product_Attribute {
+    $a = new WC_Product_Attribute();
+    $a->set_name('Size');
+    $a->set_options([$size]);
+    $a->set_visible(true);
+    $a->set_variation(false);
+    return $a;
+}
+
+// SANDBOX-ONLY commerce fixtures: [sku, regular, sale, stock, total_sales].
+// Chosen to cover sale, low-stock and out-of-stock states for the e2e suite.
+$commerce = [
+    'dish-washing-liquid'     => ['SBX-DISH-550',  '650', '',    40, 120],
+    'laundry-detergent'       => ['SBX-LAUN-550',  '890', '',    30, 150],
+    'fabric-conditioner'      => ['SBX-FABC-550',  '820', '',    20, 90],
+    'all-purpose-all-surface' => ['SBX-APAS-550',  '720', '',    3,  200],
+    'general-purpose-cleaner' => ['SBX-GPC-550',   '690', '590', 25, 80],
+    'glass-cleaner'           => ['SBX-GLAS-550',  '640', '',    15, 60],
+    'tile-cleaner'            => ['SBX-TILE-550',  '760', '',    0,  40],
+    'toilet-bowl-cleaner'     => ['SBX-TOIL-550',  '780', '',    22, 70],
+    'hand-wash'               => ['SBX-HAND-550',  '560', '',    35, 110],
+];
+// Variable product: [sku, regular, sale, stock] per option.
+$variationCommerce = [
+    'Cinnamon'    => ['SBX-AIR-CIN-550', '750', '',    18],
+    'Green Apple' => ['SBX-AIR-GAP-550', '750', '650', 0],
+];
+
+foreach ($catalogue['products'] as $p) {
+    $gallery = array_map(fn($f) => zx_image($f, $p['name'] . ' ' . $p['size']), $p['images']);
+    // Category thumbnail = packshot of the first product listed in it.
+    if (!get_term_meta($cats[$p['category']], 'thumbnail_id', true)) {
+        update_term_meta($cats[$p['category']], 'thumbnail_id', $gallery[0]);
+    }
+    $product = empty($p['variations']) ? new WC_Product_Simple() : new WC_Product_Variable();
+    $product->set_name($p['name']);
+    $product->set_slug($p['slug']);
+    $product->set_short_description('<p>' . esc_html($p['size']) . ' · ' . esc_html($p['features'][0]) . '.</p>');
+    $product->set_description(zx_description($p));
+    $product->set_category_ids([$cats[$p['category']]]);
+    $product->set_featured(!empty($p['featured']));
+    $product->set_image_id($gallery[0]);
+    $product->set_gallery_image_ids(array_slice($gallery, 1));
+
+    if (empty($p['variations'])) {
+        [$sku, $regular, $sale, $stock, $sales] = $commerce[$p['slug']];
+        $product->set_sku($sku);
+        $product->set_regular_price($regular);
+        if ($sale) $product->set_sale_price($sale);
+        $product->set_manage_stock(true);
+        $product->set_stock_quantity($stock);
+        $product->set_stock_status($stock > 0 ? 'instock' : 'outofstock');
+        $product->set_total_sales($sales);
+        $product->set_attributes([zx_size_attribute($p['size'])]);
+        $product->save();
+        continue;
+    }
+
+    $v = $p['variations'];
+    $attr = new WC_Product_Attribute();
+    $attr->set_name($v['attribute']);
+    $attr->set_options(array_column($v['options'], 'value'));
+    $attr->set_visible(true);
+    $attr->set_variation(true);
+    $product->set_sku('SBX-AIR');
+    $product->set_attributes([zx_size_attribute($p['size']), $attr]);
+    $product->set_total_sales(95);
+    $parent = $product->save();
+
+    foreach ($v['options'] as $o) {
+        [$sku, $regular, $sale, $stock] = $variationCommerce[$o['value']];
+        $var = new WC_Product_Variation();
+        $var->set_parent_id($parent);
+        $var->set_attributes([sanitize_title($v['attribute']) => $o['value']]);
+        $var->set_sku($sku);
+        $var->set_regular_price($regular);
+        if ($sale) $var->set_sale_price($sale);
+        $var->set_manage_stock(true);
+        $var->set_stock_quantity($stock);
+        $var->set_stock_status($stock > 0 ? 'instock' : 'outofstock');
+        $var->set_image_id(zx_image($o['image'], $p['name'] . ' ' . $o['value']));
+        $var->save();
+    }
+    WC_Product_Variable::sync($parent);
+}
 
 // Test coupon.
 $c = new WC_Coupon();

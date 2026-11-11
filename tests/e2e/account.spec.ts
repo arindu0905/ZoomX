@@ -38,7 +38,7 @@ async function signIn(page: Page, email: string, password = PASSWORD) {
 }
 
 async function placeCodOrder(page: Page, email: string) {
-  await page.goto("/product/sandbox-dish-liquid");
+  await page.goto("/product/dish-washing-liquid");
   await page.getByRole("button", { name: "Add to bag" }).click();
   await expect(page.getByRole("dialog", { name: /Bag/ })).toBeVisible(slow);
   await page.goto("/checkout");
@@ -83,7 +83,7 @@ test("orders placed while signed in appear in the account; details can be saved"
   await expect(page.getByRole("link", { name: new RegExp(`Order #${orderId}`) })).toBeVisible(slow);
   await page.getByRole("link", { name: new RegExp(`Order #${orderId}`) }).click();
   await expect(page.getByRole("heading", { level: 1, name: `Order #${orderId}.` })).toBeVisible(slow);
-  await expect(page.getByText("Sandbox Dish Liquid")).toBeVisible();
+  await expect(page.getByText("Dish Washing Liquid")).toBeVisible();
 
   await page.goto("/account/details");
   await page.getByLabel("Phone").fill("077 765 4321");

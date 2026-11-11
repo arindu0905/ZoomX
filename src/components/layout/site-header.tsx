@@ -37,15 +37,15 @@ export function SiteHeader({ categories }: { categories: NavCategory[] }) {
       </Suspense>
       <div
         className={cn(
-          "relative z-20 border-b border-black/[0.06] backdrop-blur-xl backdrop-saturate-150 transition-colors duration-300",
-          panel ? "bg-canvas" : "bg-canvas/80",
+          "relative z-20 backdrop-blur-xl backdrop-saturate-[1.8] transition-colors duration-300",
+          panel ? "bg-canvas" : "bg-glass",
         )}
       >
-        <nav aria-label="Main" className="mx-auto flex h-nav max-w-page items-center gap-2 px-gutter">
-          <Logo className="h-8 md:h-9" priority />
+        <nav aria-label="Main" className="mx-auto flex h-nav max-w-[1024px] items-center gap-2 px-gutter lg:px-[22px]">
+          <Logo className="h-7" priority />
 
           {/* Desktop links */}
-          <ul className="ml-6 hidden flex-1 items-center justify-center gap-1 md:flex">
+          <ul className="ml-4 hidden flex-1 items-center justify-evenly md:flex">
             {[home, rest[0]].map((l) => (
               <NavItem key={l.href} href={l.href}>
                 {l.label}
@@ -58,14 +58,14 @@ export function SiteHeader({ categories }: { categories: NavCategory[] }) {
                 aria-controls="categories-flyout"
                 onClick={() => toggle("categories")}
                 className={cn(
-                  "inline-flex h-11 items-center gap-1 rounded-full px-3 text-sm text-ink/80 transition-colors hover:text-ink",
+                  "inline-flex h-11 items-center gap-1 px-2 text-nav tracking-[-0.01em] text-ink/80 transition-colors hover:text-ink",
                   panel === "categories" && "text-ink",
                 )}
               >
                 Categories
                 <ChevronDown
                   aria-hidden
-                  className={cn("size-3.5 transition-transform duration-300", panel === "categories" && "rotate-180")}
+                  className={cn("size-3 transition-transform duration-300", panel === "categories" && "rotate-180")}
                 />
               </button>
             </li>
@@ -85,10 +85,10 @@ export function SiteHeader({ categories }: { categories: NavCategory[] }) {
               onClick={() => toggle("search")}
               className={iconButton}
             >
-              <Search aria-hidden className="size-[18px]" strokeWidth={1.75} />
+              <Search aria-hidden className="size-4" strokeWidth={1.6} />
             </button>
             <Link href="/account" aria-label="Account" className={cn(iconButton, "max-md:hidden")}>
-              <User aria-hidden className="size-[18px]" strokeWidth={1.75} />
+              <User aria-hidden className="size-4" strokeWidth={1.6} />
             </Link>
             <BagLink />
             <button
@@ -157,7 +157,7 @@ function NavLink({ href, active, label }: { href: string; active: boolean; label
       href={href}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "inline-flex h-11 items-center rounded-full px-3 text-sm transition-colors hover:text-ink",
+        "inline-flex h-11 items-center px-2 text-nav tracking-[-0.01em] transition-colors hover:text-ink",
         active ? "text-ink" : "text-ink/80",
       )}
     >
@@ -182,7 +182,7 @@ function BagLink() {
       aria-label={count ? `Shopping bag, ${count} ${count === 1 ? "item" : "items"}` : "Shopping bag"}
       className={cn(iconButton, "relative")}
     >
-      <ShoppingBag aria-hidden className="size-[18px]" strokeWidth={1.75} />
+      <ShoppingBag aria-hidden className="size-4" strokeWidth={1.6} />
       {count > 0 && (
         <span
           aria-hidden
@@ -217,20 +217,23 @@ function CategoriesFlyout({
           {...panelMotion}
           className="absolute inset-x-0 top-full z-10 hidden bg-canvas pb-14 shadow-[0_24px_48px_-24px_rgba(0,0,0,0.18)] md:block"
         >
-          <div className="mx-auto grid max-w-page grid-cols-[1fr_2fr] gap-12 px-gutter pt-10">
+          <div className="mx-auto grid max-w-[1024px] grid-cols-[1fr_2fr] gap-12 px-[22px] pt-10">
             <div>
               <p className="text-caption text-ink-muted">Shop</p>
-              <Link href="/shop" className="mt-3 block text-title hover:text-brand-strong">
-                All products
+              <Link href="/shop" className="mt-3 block text-2xl font-semibold tracking-tight hover:text-brand-strong">
+                Shop all products
+              </Link>
+              <Link href="/for-businesses" className="mt-2 block text-2xl font-semibold tracking-tight hover:text-brand-strong">
+                For businesses
               </Link>
             </div>
             <div>
               <p className="text-caption text-ink-muted">Categories</p>
               {categories.length ? (
-                <ul className="mt-3 grid grid-cols-2 gap-x-10 gap-y-2">
+                <ul className="mt-3 grid grid-cols-2 gap-x-10 gap-y-3">
                   {categories.map((c) => (
                     <li key={c.slug}>
-                      <Link href={categoryHref(c.slug)} className="text-lead font-semibold hover:text-brand-strong">
+                      <Link href={categoryHref(c.slug)} className="text-sm font-semibold hover:text-brand-strong">
                         {c.name}
                       </Link>
                     </li>

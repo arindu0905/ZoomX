@@ -23,18 +23,22 @@ export function SiteFooter() {
     .filter((s): s is { key: keyof typeof site.social; href: string; label: string } => !!s.href);
 
   return (
-    <footer className="border-t border-line bg-canvas-alt text-caption text-ink-muted">
-      <Container className="pt-14 pb-10">
-        <div className="grid gap-10 md:grid-cols-[1.4fr_repeat(3,1fr)]">
+    <footer className="border-t border-line bg-canvas-alt text-xs leading-[1.33] text-ink-muted">
+      <Container className="max-w-[1024px] pt-8 pb-6 lg:px-[22px]">
+        <p className="border-b border-line pb-4 text-pretty">
+          Prices, stock and delivery options are confirmed at checkout. {site.name} products are made in Sri Lanka by{" "}
+          {site.legalEntity}.
+        </p>
+        <div className="mt-6 grid gap-8 md:grid-cols-[1.4fr_repeat(3,1fr)]">
           <div className="space-y-4">
-            <Logo className="h-12" />
+            <Logo className="h-9" />
             <p className="max-w-xs text-pretty">{site.tagline} Household cleaning and home care, made in Sri Lanka.</p>
           </div>
 
           {footerNav.map((group) => (
             <nav key={group.heading} aria-label={group.heading}>
               <h2 className="font-semibold text-ink">{group.heading}</h2>
-              <ul className="mt-3 space-y-2.5">
+              <ul className="mt-2.5 space-y-2">
                 {group.links.map((l) => (
                   <li key={l.href}>
                     <Link href={l.href} className="hover:text-ink hover:underline underline-offset-4">
@@ -47,7 +51,7 @@ export function SiteFooter() {
           ))}
         </div>
 
-        <address className="mt-12 grid gap-6 border-t border-line pt-8 not-italic sm:grid-cols-3">
+        <address className="mt-8 grid gap-6 border-t border-line pt-6 not-italic sm:grid-cols-3">
           <div>
             <h2 className="font-semibold text-ink">Office</h2>
             <p className="mt-1">{site.contact.office}</p>
@@ -73,7 +77,7 @@ export function SiteFooter() {
           </div>
         </address>
 
-        <div className="mt-8 flex flex-col gap-4 border-t border-line pt-6 md:flex-row md:items-center md:justify-between">
+        <div className="mt-6 flex flex-col gap-3 border-t border-line pt-4 md:flex-row md:items-center md:justify-between">
           <p>
             Copyright ©{" "}
             <Suspense>
@@ -81,7 +85,7 @@ export function SiteFooter() {
             </Suspense>{" "}
             {site.legalEntity}. All rights reserved.
           </p>
-          <ul className="flex flex-wrap gap-x-5 gap-y-2">
+          <ul className="flex flex-wrap gap-y-2 divide-x divide-line [&>li]:px-2.5 [&>li:first-child]:pl-0">
             {legalNav.map((l) => (
               <li key={l.href}>
                 <Link href={l.href} className="hover:text-ink hover:underline underline-offset-4">

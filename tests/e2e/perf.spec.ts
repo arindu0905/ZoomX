@@ -8,7 +8,7 @@ import { expect, test } from "@playwright/test";
 const BUDGET_JS_KB = 350; // compressed JavaScript per page
 const BUDGET_LCP_MS = 2500; // "good" LCP threshold
 
-for (const path of ["/", "/shop", "/product/sandbox-laundry-liquid"]) {
+for (const path of ["/", "/shop", "/product/air-freshener"]) {
   test(`performance budget: ${path}`, async ({ page }, info) => {
     test.skip(info.project.name !== "desktop-chromium", "measured once");
     await page.goto(path, { waitUntil: "networkidle" });

@@ -184,11 +184,11 @@ function OptionGroup({
   const terms = attribute.terms.filter((t) => exists(t.name));
   return (
     <fieldset>
-      <legend id={id} className="mb-3 text-body font-semibold">
-        {attribute.name}
-        {selected && <span className="ml-2 font-normal text-ink-muted">{selected}</span>}
+      <legend id={id} className="mb-4 text-lg font-semibold tracking-tight">
+        {attribute.name}.{" "}
+        <span className="text-ink-muted">{selected ? selected : "Which one is right for you?"}</span>
       </legend>
-      <div className="flex flex-wrap gap-2" role="radiogroup" aria-labelledby={id}>
+      <div className="grid gap-3 sm:grid-cols-2" role="radiogroup" aria-labelledby={id}>
         {terms.map((t) => {
           const available = isAvailable(t.name);
           const active = selected === t.name;
@@ -200,10 +200,10 @@ function OptionGroup({
               aria-checked={active}
               onClick={() => onSelect(t.name)}
               className={cn(
-                "min-w-20 rounded-2xl px-5 py-3 text-body transition-[box-shadow,color] focus-visible:outline-2 focus-visible:outline-offset-2",
+                "min-h-16 rounded-xl px-5 py-4 text-left text-body font-semibold transition-[box-shadow,color] focus-visible:outline-2 focus-visible:outline-offset-2",
                 active
-                  ? "shadow-[inset_0_0_0_2px_var(--color-ink)]"
-                  : "shadow-[inset_0_0_0_1px_var(--color-line)] hover:shadow-[inset_0_0_0_1px_var(--color-ink-muted)]",
+                  ? "shadow-[inset_0_0_0_2px_var(--color-brand-strong)]"
+                  : "shadow-[inset_0_0_0_1px_#86868b] hover:shadow-[inset_0_0_0_1px_var(--color-ink)]",
                 !available && "text-ink-muted line-through decoration-1",
               )}
             >

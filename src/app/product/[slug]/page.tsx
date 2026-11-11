@@ -96,12 +96,18 @@ async function ProductView({ params }: Pick<PageProps<"/product/[slug]">, "param
         <Breadcrumbs crumbs={crumbs} />
         <div className="mt-8 grid gap-10 lg:grid-cols-[1.2fr_1fr] lg:gap-16">
           <ProductGallery images={product.images} name={name} />
-          <div className="flex flex-col gap-8 lg:sticky lg:top-[calc(var(--spacing-nav)+2rem)] lg:self-start">
+          <div
+            id="buy"
+            className="flex scroll-mt-[calc(var(--spacing-nav)+2rem)] flex-col gap-8 lg:sticky lg:top-[calc(var(--spacing-nav)+2rem)] lg:self-start"
+          >
             <header>
-              {product.on_sale && product.is_in_stock && (
-                <p className="mb-2 text-caption font-semibold uppercase tracking-[0.08em] text-danger">Sale</p>
+              {category && !(product.on_sale && product.is_in_stock) && (
+                <p className="mb-1 text-sm font-semibold tracking-tight text-highlight">{decodeEntities(category.name)}</p>
               )}
-              <h1 className="text-headline text-balance">{name}</h1>
+              {product.on_sale && product.is_in_stock && (
+                <p className="mb-1 text-sm font-semibold tracking-tight text-highlight">Sale</p>
+              )}
+              <h1 className="text-hero text-balance">{name}</h1>
               {summary && <p className="mt-4 text-lead text-pretty text-ink-muted">{summary}</p>}
             </header>
             <ProductPurchase {...toPurchaseProps(detail)} />

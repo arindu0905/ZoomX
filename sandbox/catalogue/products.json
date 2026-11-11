@@ -1,0 +1,243 @@
+{
+  "$comment": [
+    "ZOOM X product range as published on https://zoomx.lk/products/ (product pop-ups), captured 2026-11-11.",
+    "Names, sizes, features, 'ideal for' and packshots are the brand's own. zoomx.lk publishes NO prices, SKUs or stock.",
+    "Left out pending evidence (docs/PHASE-1-AUDIT.md §3): 'biodegradable' feature lines and the 'Dermatologically tested and certified' / 'Lab tested and certified (for food contact surfaces)' notes — see withheldClaims.",
+    "Categories are the proposed taxonomy from the Phase 1 audit (client approval required).",
+    "Images: sandbox/catalogue/images/<slug>-1.webp = packshot, -2 = splash shot. Same files live on zoomx.lk (sourceImages)."
+  ],
+  "categories": [
+    { "slug": "laundry-care", "name": "Laundry Care", "description": "Detergent and conditioner that keep clothes fresh, soft and vibrant." },
+    { "slug": "kitchen-dish", "name": "Kitchen & Dish", "description": "Grease-cutting care for plates, pots, pans and every piece of kitchenware." },
+    { "slug": "surface-cleaners", "name": "Surface Cleaners", "description": "Everyday cleaners for countertops, floors, glass and tiles." },
+    { "slug": "bathroom-toilet", "name": "Bathroom & Toilet", "description": "Deep cleaning for toilet bowls, urinals and bathroom drains." },
+    { "slug": "air-care", "name": "Air Care", "description": "Long-lasting fragrances that neutralise odours at home, at work and on the road." },
+    { "slug": "personal-hygiene", "name": "Personal Hygiene", "description": "Gentle hand care for homes, offices, schools and kitchens." }
+  ],
+  "products": [
+    {
+      "slug": "dish-washing-liquid",
+      "name": "Dish Washing Liquid",
+      "category": "kitchen-dish",
+      "size": "550 ml",
+      "tagline": "Toxic-free cleans",
+      "features": [
+        "Powerful grease-cutting formula for spotless dishes",
+        "Non-toxic and gentle on hands",
+        "Leaves dishes sparkling clean with a refreshing scent"
+      ],
+      "idealFor": "Plates, glasses, cutlery, pots, pans, and all kitchenware",
+      "safety": "Safe around children and pets.",
+      "withheldClaims": ["Environmentally friendly & biodegradable", "Lab tested and certified for food contact surfaces"],
+      "images": ["dish-washing-liquid-1.webp", "dish-washing-liquid-2.webp"],
+      "sourceImages": [
+        "https://zoomx.lk/wp-content/uploads/2025/07/imgi_30_before-wash-new-e1750393984403-1-13-26.webp",
+        "https://zoomx.lk/wp-content/uploads/2025/07/imgi_30_before-wash-new-e1750393984403-1-13-25.webp"
+      ],
+      "featured": true
+    },
+    {
+      "slug": "laundry-detergent",
+      "name": "Laundry Detergent",
+      "category": "laundry-care",
+      "size": "550 ml",
+      "tagline": "Toxic-free cleans",
+      "features": [
+        "Powerful cleaning formula for all types of fabrics",
+        "Effectively removes stains, dirt, and odors",
+        "Non-toxic and gentle on skin, safe for daily use",
+        "Keeps clothes fresh, soft, and vibrant after every wash"
+      ],
+      "idealFor": "Everyday clothing, bed linens, towels, baby clothes, and delicates",
+      "safety": "Safe to use around children and pets.",
+      "withheldClaims": ["Dermatologically tested and certified"],
+      "images": ["laundry-detergent-1.webp", "laundry-detergent-2.webp"],
+      "sourceImages": [
+        "https://zoomx.lk/wp-content/uploads/2025/07/before-wash-new-e1750393984403-1-13.webp",
+        "https://zoomx.lk/wp-content/uploads/2025/07/before-wash-new-e1750393984403-1-14.webp"
+      ],
+      "featured": true
+    },
+    {
+      "slug": "fabric-conditioner",
+      "name": "Fabric Conditioner",
+      "category": "laundry-care",
+      "size": "550 ml",
+      "tagline": "Toxic-free cleans",
+      "features": [
+        "Gently softens all types of fabrics for lasting comfort",
+        "Non-toxic formula, safe for everyday home use",
+        "Anti-Static Shield – helps reduce cling and wrinkles"
+      ],
+      "idealFor": "Clothing, towels, bed linens, baby clothes, and more",
+      "safety": "Safe to use around children and pets.",
+      "withheldClaims": ["Eco-friendly & biodegradable ingredients", "Dermatologically tested and certified"],
+      "images": ["fabric-conditioner-1.webp", "fabric-conditioner-2.webp"],
+      "sourceImages": [
+        "https://zoomx.lk/wp-content/uploads/2025/07/imgi_30_before-wash-new-e1750393984403-1-13-10.webp",
+        "https://zoomx.lk/wp-content/uploads/2025/07/imgi_30_before-wash-new-e1750393984403-1-13-11.webp"
+      ],
+      "featured": true
+    },
+    {
+      "slug": "all-purpose-all-surface",
+      "name": "All Purpose & All Surface",
+      "category": "surface-cleaners",
+      "size": "550 ml",
+      "tagline": "Toxic-free cleans",
+      "features": [
+        "Versatile formula suitable for cleaning a wide range of surfaces",
+        "Non-toxic and safe for daily household use",
+        "Leaves a fresh, pleasant fragrance after each use"
+      ],
+      "idealFor": "Glass, countertops, tables, mirrors, cabinets, tiles, appliances, and more",
+      "safety": "Safe to use around children and pets.",
+      "withheldClaims": ["Eco-friendly & biodegradable ingredients", "Lab tested and certified"],
+      "images": ["all-purpose-all-surface-1.webp", "all-purpose-all-surface-2.webp"],
+      "sourceImages": [
+        "https://zoomx.lk/wp-content/uploads/2025/07/imgi_30_before-wash-new-e1750393984403-1-13-12.webp",
+        "https://zoomx.lk/wp-content/uploads/2025/07/imgi_30_before-wash-new-e1750393984403-1-13-13.webp"
+      ]
+    },
+    {
+      "slug": "general-purpose-cleaner",
+      "name": "General Purpose Cleaner",
+      "category": "surface-cleaners",
+      "size": "550 ml",
+      "tagline": "Toxic-free cleans",
+      "features": [
+        "Effective cleaning formula for multiple surfaces",
+        "Removes dirt, grease, and grime effortlessly",
+        "Non-toxic and safe for daily household use",
+        "Leaves surfaces fresh and streak-free"
+      ],
+      "idealFor": "Countertops, floors, glass, tiles, cabinets, appliances, and more",
+      "safety": "Safe to use around children and pets.",
+      "withheldClaims": ["Lab tested and certified"],
+      "images": ["general-purpose-cleaner-1.webp", "general-purpose-cleaner-2.webp"],
+      "sourceImages": [
+        "https://zoomx.lk/wp-content/uploads/2025/07/imgi_30_before-wash-new-e1750393984403-1-13-23.webp",
+        "https://zoomx.lk/wp-content/uploads/2025/07/imgi_30_before-wash-new-e1750393984403-1-13-24.webp"
+      ]
+    },
+    {
+      "slug": "glass-cleaner",
+      "name": "Glass Cleaner",
+      "category": "surface-cleaners",
+      "size": "550 ml",
+      "tagline": "Toxic-free cleans",
+      "features": [
+        "Streak-free formula for crystal-clear shine",
+        "Effectively removes fingerprints, smudges, dust, and stains",
+        "Non-toxic and safe for daily use",
+        "Quick-drying with a refreshing fragrance"
+      ],
+      "idealFor": "Glass windows, mirrors, tabletops, display cabinets, glass doors, and car windows",
+      "safety": "Safe to use around children and pets.",
+      "withheldClaims": ["Lab tested and certified"],
+      "images": ["glass-cleaner-1.webp", "glass-cleaner-2.webp"],
+      "sourceImages": [
+        "https://zoomx.lk/wp-content/uploads/2025/07/imgi_33_before-wash-new-e1750393984403-1-14-1.webp",
+        "https://zoomx.lk/wp-content/uploads/2025/07/imgi_33_before-wash-new-e1750393984403-1-14.webp"
+      ]
+    },
+    {
+      "slug": "tile-cleaner",
+      "name": "Tile Cleaner",
+      "category": "surface-cleaners",
+      "size": "550 ml",
+      "tagline": "Toxic-free cleans",
+      "features": [
+        "Tough on stains, grease, and grime",
+        "Restores natural shine to tiles and grout",
+        "Non-toxic, safe for everyday use",
+        "Leaves a fresh, clean fragrance after each use"
+      ],
+      "idealFor": "Bathroom tiles, kitchen backsplashes, floor tiles, wall tiles, and countertops",
+      "safety": "Safe around children and pets.",
+      "withheldClaims": ["Lab tested and certified"],
+      "images": ["tile-cleaner-1.webp", "tile-cleaner-2.webp"],
+      "sourceImages": [
+        "https://zoomx.lk/wp-content/uploads/2025/07/imgi_30_before-wash-new-e1750393984403-1-13-27.webp",
+        "https://zoomx.lk/wp-content/uploads/2025/07/imgi_30_before-wash-new-e1750393984403-1-13-28.webp"
+      ]
+    },
+    {
+      "slug": "toilet-bowl-cleaner",
+      "name": "Toilet Bowl Cleaner",
+      "category": "bathroom-toilet",
+      "size": "550 ml",
+      "tagline": "Toxic-free cleans",
+      "features": [
+        "Powerful formula removes stains, limescale, and odors",
+        "Thick gel clings to bowl surface for deep cleaning",
+        "Non-toxic and safe for septic systems",
+        "Leaves toilets sparkling clean with a fresh fragrance"
+      ],
+      "idealFor": "Toilet bowls, urinals, and bathroom drains",
+      "safety": "Safe around children and pets when used as directed.",
+      "withheldClaims": ["Lab tested and certified"],
+      "images": ["toilet-bowl-cleaner-1.webp", "toilet-bowl-cleaner-2.webp"],
+      "sourceImages": [
+        "https://zoomx.lk/wp-content/uploads/2025/07/imgi_30_before-wash-new-e1750393984403-1-13-14.webp",
+        "https://zoomx.lk/wp-content/uploads/2025/07/imgi_30_before-wash-new-e1750393984403-1-13-15.webp"
+      ]
+    },
+    {
+      "slug": "hand-wash",
+      "name": "Hand Wash",
+      "category": "personal-hygiene",
+      "size": "550 ml",
+      "tagline": "Toxic-free cleans",
+      "features": [
+        "Gentle yet effective formula that removes dirt and germs",
+        "Enriched with moisturizing agents to keep hands soft and smooth",
+        "Leaves hands clean with a refreshing fragrance"
+      ],
+      "idealFor": "Home, office, kitchens, bathrooms, schools, and healthcare settings",
+      "safety": "Safe for use by children and adults.",
+      "withheldClaims": ["Eco-friendly & biodegradable ingredients", "Dermatologically tested and certified"],
+      "images": ["hand-wash-1.webp", "hand-wash-2.webp"],
+      "sourceImages": [
+        "https://zoomx.lk/wp-content/uploads/2025/07/imgi_30_before-wash-new-e1750393984403-1-13-16.webp",
+        "https://zoomx.lk/wp-content/uploads/2025/07/imgi_30_before-wash-new-e1750393984403-1-13-17.webp"
+      ]
+    },
+    {
+      "slug": "air-freshener",
+      "name": "Air Freshener",
+      "category": "air-care",
+      "size": "550 ml",
+      "tagline": "Toxic-free cleans",
+      "features": [
+        "Instantly neutralizes unpleasant odors and freshens the air",
+        "Long-lasting fragrance in two scents: warm cinnamon or crisp green apple"
+      ],
+      "idealFor": "Living rooms, bedrooms, bathrooms, kitchens, cars, and office spaces",
+      "safety": "Safe to use around children and pets.",
+      "withheldClaims": ["Eco-friendly & biodegradable ingredients (Cinnamon)", "Lab tested and certified"],
+      "images": ["air-freshener-cinnamon-1.webp", "air-freshener-green-apple-1.webp", "air-freshener-cinnamon-2.webp", "air-freshener-green-apple-2.webp"],
+      "sourceImages": [
+        "https://zoomx.lk/wp-content/uploads/2025/07/imgi_30_before-wash-new-e1750393984403-1-13-1.webp",
+        "https://zoomx.lk/wp-content/uploads/2025/07/imgi_30_before-wash-new-e1750393984403-1-13-22.webp",
+        "https://zoomx.lk/wp-content/uploads/2025/07/imgi_30_before-wash-new-e1750393984403-1-13-4.webp",
+        "https://zoomx.lk/wp-content/uploads/2025/07/imgi_30_before-wash-new-e1750393984403-1-13-21.webp"
+      ],
+      "variations": {
+        "attribute": "Fragrance",
+        "options": [
+          {
+            "value": "Cinnamon",
+            "image": "air-freshener-cinnamon-1.webp",
+            "features": ["Infused with the warm, comforting scent of cinnamon", "Long-lasting fragrance with a cozy, spicy touch"]
+          },
+          {
+            "value": "Green Apple",
+            "image": "air-freshener-green-apple-1.webp",
+            "features": ["Infused with the crisp, refreshing scent of green apple", "Non-toxic formula, safe for everyday use", "Long-lasting fragrance with a fruity, energizing aroma"]
+          }
+        ]
+      }
+    }
+  ]
+}

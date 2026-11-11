@@ -36,14 +36,16 @@ export async function generateMetadata({ params }: PageProps<"/category/[slug]">
 
 export default function CategoryPage({ params, searchParams }: PageProps<"/category/[slug]">) {
   return (
-    <Container className="py-12 sm:py-16">
-      <Suspense fallback={<HeaderSkeleton />}>
-        <CategoryHeader params={params} />
-      </Suspense>
-      <Suspense fallback={<ProductGridSkeleton />}>
-        <CategoryProducts params={params} searchParams={searchParams} />
-      </Suspense>
-    </Container>
+    <div className="bg-canvas-alt">
+      <Container className="py-10 sm:py-14">
+        <Suspense fallback={<HeaderSkeleton />}>
+          <CategoryHeader params={params} />
+        </Suspense>
+        <Suspense fallback={<ProductGridSkeleton />}>
+          <CategoryProducts params={params} searchParams={searchParams} />
+        </Suspense>
+      </Container>
+    </div>
   );
 }
 
@@ -69,7 +71,7 @@ async function CategoryHeader({ params }: Pick<PageProps<"/category/[slug]">, "p
           {description && <p className="mt-4 text-lead text-pretty text-ink-muted">{description}</p>}
         </div>
         {category.image && (
-          <div className="relative aspect-square w-40 shrink-0 overflow-hidden rounded-3xl bg-canvas-alt md:w-56">
+          <div className="relative aspect-square w-40 shrink-0 overflow-hidden rounded-card bg-canvas shadow-card md:w-56">
             <Image
               src={category.image.src}
               alt={category.image.alt || name}
