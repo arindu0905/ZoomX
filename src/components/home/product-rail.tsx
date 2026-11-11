@@ -1,43 +1,55 @@
 import { ButtonLink } from "@/components/ui/button";
-import { Container, Section, SectionHeading } from "@/components/ui/layout";
+import { Container, Section } from "@/components/ui/layout";
 import { Reveal } from "@/components/ui/reveal";
 import { ProductCard } from "@/components/products/product-card";
 import type { StoreProduct } from "@/types/store-api";
 
-/** Horizontally scrolling product row. Renders nothing without live products. */
+/**
+ * Shopify-theme "featured collection": heading, four-up grid on desktop,
+ * swipeable row on phones, and a centred "View all" button.
+ * Renders nothing without live products.
+ */
 export function ProductRail({
   id,
-  eyebrow,
   title,
   products,
   tone = "default",
+  viewAll = { label: "View all", href: "/shop" },
 }: {
   id: string;
-  eyebrow: string;
+  /** Kept for callers; Shopify-style sections use the heading alone. */
+  eyebrow?: string;
   title: string;
   products: StoreProduct[];
   tone?: "default" | "alt";
+  viewAll?: { label: string; href: string } | null;
 }) {
   if (!products.length) return null;
   return (
     <Section tone={tone} aria-labelledby={`${id}-title`}>
       <Container>
-        <Reveal className="flex flex-col items-start justify-between gap-6 md:flex-row md:items-end">
-          <SectionHeading align="start" eyebrow={eyebrow} title={<span id={`${id}-title`}>{title}</span>} />
-          <ButtonLink href="/shop" variant="link" className="shrink-0 text-body">
-            Shop all
-          </ButtonLink>
+        <Reveal>
+          <h2 id={`${id}-title`} className="text-headline text-balance">
+            {title}
+          </h2>
         </Reveal>
       </Container>
-      <div className="mt-12 overflow-x-auto overscroll-x-contain [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        <ul className="mx-auto flex w-max max-w-none snap-x snap-mandatory gap-6 px-gutter pb-4 lg:w-full lg:max-w-page">
+      <div className="mt-8 overflow-x-auto overscroll-x-contain [scrollbar-width:none] md:overflow-visible [&::-webkit-scrollbar]:hidden">
+        <ul className="flex w-max snap-x snap-mandatory gap-3 px-gutter md:mx-auto md:grid md:w-full md:max-w-page md:grid-cols-4 md:gap-x-5 md:gap-y-10">
           {products.map((p) => (
-            <li key={p.id} className="w-[72vw] shrink-0 snap-start sm:w-[42vw] lg:w-[calc((100%-3*1.5rem)/4)]">
+            <li key={p.id} className="w-[44vw] shrink-0 snap-start sm:w-[30vw] md:w-auto">
               <ProductCard product={p} />
             </li>
           ))}
         </ul>
       </div>
+      {viewAll && (
+        <div className="mt-10 flex justify-center px-gutter">
+          <ButtonLink href={viewAll.href} variant="secondary">
+            {viewAll.label}
+          </ButtonLink>
+        </div>
+      )}
     </Section>
   );
 }

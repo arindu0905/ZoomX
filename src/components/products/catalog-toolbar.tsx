@@ -10,7 +10,7 @@ import type { NavCategory } from "@/lib/navigation";
 import { cn } from "@/utils/cn";
 
 const field =
-  "h-11 rounded-full bg-canvas px-4 shadow-[inset_0_0_0_1px_var(--color-line)] text-body text-ink outline-none focus-visible:ring-2 focus-visible:ring-brand-strong";
+  "h-11 rounded-none bg-canvas pr-9 pl-4 text-[0.9375rem] tracking-[0.04em] text-ink shadow-[inset_0_0_0_1px_var(--color-ink-muted)] outline-none hover:shadow-[inset_0_0_0_1px_var(--color-ink)] focus-visible:ring-2 focus-visible:ring-brand-strong";
 
 /**
  * Sort + filters as a plain GET form (works without JavaScript); next/form
@@ -54,7 +54,7 @@ export function CatalogToolbar({
       {query.search && <input type="hidden" name="search" value={query.search} />}
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-body text-ink-muted" role="status" aria-live="polite">
+        <p className="order-last text-sm tracking-[0.04em] text-ink-muted max-sm:w-full" role="status" aria-live="polite">
           {total === 1 ? "1 product" : `${total} products`}
         </p>
         <div className="flex flex-wrap items-center gap-2">
@@ -85,16 +85,16 @@ export function CatalogToolbar({
           <details className="group relative">
             <summary
               className={buttonClasses({
-                variant: "ghost",
+                variant: "secondary",
                 size: "md",
                 className:
-                  "h-11 cursor-pointer list-none bg-canvas shadow-[inset_0_0_0_1px_var(--color-line)] hover:bg-canvas [&::-webkit-details-marker]:hidden",
+                  "h-11 cursor-pointer list-none font-normal [&::-webkit-details-marker]:hidden",
               })}
             >
               <SlidersHorizontal aria-hidden className="size-4" />
               Price
             </summary>
-            <fieldset className="absolute right-0 z-10 mt-2 flex w-max max-w-[calc(100vw-2*var(--spacing-gutter))] flex-wrap items-end gap-3 rounded-card bg-canvas p-5 shadow-card-hover">
+            <fieldset className="absolute left-0 z-10 sm:right-auto mt-2 flex w-max max-w-[calc(100vw-2*var(--spacing-gutter))] flex-wrap items-end gap-3 bg-canvas p-5 shadow-[0_0_0_1px_var(--color-line),0_12px_24px_-12px_rgba(0,0,0,0.2)]">
               <legend className="sr-only">Price range in LKR</legend>
               <label className="flex flex-col gap-1.5 text-caption text-ink-muted">
                 Min (LKR)

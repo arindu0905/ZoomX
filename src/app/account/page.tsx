@@ -43,7 +43,7 @@ async function Account() {
           </div>
           <OrderList orders={orders} />
         </section>
-        <aside className="h-fit rounded-3xl bg-canvas-alt p-6">
+        <aside className="h-fit bg-canvas-alt p-6">
           <h2 className="text-lg font-semibold">Your details</h2>
           <p className="mt-2 text-body text-ink-muted">
             {customer.first_name} {customer.last_name}

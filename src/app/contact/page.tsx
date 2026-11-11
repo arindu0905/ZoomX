@@ -36,7 +36,7 @@ export default function ContactPage() {
         <div className="mt-12 grid gap-6 sm:grid-cols-2">
           <a
             href={site.contact.phoneHref}
-            className="group flex flex-col gap-3 rounded-3xl bg-canvas-alt p-8 transition-colors hover:bg-[#ececf0]"
+            className="group flex flex-col gap-3 bg-canvas-alt p-8 transition-colors hover:bg-[#ececf0]"
           >
             <Phone aria-hidden className="size-6 text-brand-strong" strokeWidth={1.75} />
             <span className="text-caption text-ink-muted">Call us</span>
@@ -46,7 +46,7 @@ export default function ContactPage() {
             href={mapsHref}
             target="_blank"
             rel="noopener noreferrer"
-            className="group flex flex-col gap-3 rounded-3xl bg-canvas-alt p-8 transition-colors hover:bg-[#ececf0]"
+            className="group flex flex-col gap-3 bg-canvas-alt p-8 transition-colors hover:bg-[#ececf0]"
           >
             <MapPin aria-hidden className="size-6 text-brand-strong" strokeWidth={1.75} />
             <span className="text-caption text-ink-muted">Office</span>

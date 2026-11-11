@@ -10,7 +10,7 @@ export function BusinessCampaign() {
     <section aria-labelledby="business-title" className="bg-canvas py-section">
       <Container>
         <Reveal>
-          <div className="overflow-hidden rounded-[2rem] bg-ink px-8 py-16 text-white md:px-16 md:py-20">
+          <div className="overflow-hidden bg-ink px-6 py-12 text-white sm:px-10 md:px-16 md:py-20">
             <div className="grid gap-12 md:grid-cols-[1.2fr_1fr] md:items-end">
               <div>
                 <p className="text-caption font-semibold uppercase tracking-[0.12em] text-[#5fd97d]">{business.eyebrow}</p>

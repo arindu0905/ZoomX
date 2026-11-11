@@ -3,7 +3,7 @@ import { CartView } from "@/components/cart/cart-view";
 import { Container } from "@/components/ui/layout";
 
 export const metadata: Metadata = {
-  title: "Your bag",
+  title: "Your cart",
   robots: { index: false, follow: true },
 };
 
@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function CartPage() {
   return (
     <Container className="py-12 sm:py-16">
-      <h1 className="mb-10 text-display">Bag.</h1>
+      <h1 className="mb-8 text-display">Your cart</h1>
       <CartView />
     </Container>
   );

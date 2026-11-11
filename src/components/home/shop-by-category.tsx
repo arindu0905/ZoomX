@@ -1,6 +1,8 @@
-import { ArrowUpRight } from "lucide-react";
+import { ArrowRight, ArrowUpRight } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
-import { CategoryRow } from "@/components/products/category-row";
+import { categoryHref } from "@/lib/navigation";
+import { decodeEntities } from "@/utils/text";
 import { Container, Section, SectionHeading } from "@/components/ui/layout";
 import { Reveal } from "@/components/ui/reveal";
 import { range } from "@/content/home";
@@ -16,17 +18,44 @@ export function ShopByCategory({ categories }: { categories: StoreCategory[] }) 
       <Container>
         <Reveal>
           <SectionHeading
-            eyebrow={categories.length ? "Shop by category" : range.eyebrow}
+            align={categories.length ? "start" : "center"}
+            eyebrow={categories.length ? undefined : range.eyebrow}
             title={<span id="range-title">{range.title}</span>}
             lead={range.lead}
           />
         </Reveal>
 
         {categories.length ? (
-          <CategoryRow categories={categories} className="mt-12 flex justify-center" />
+          // Shopify-theme "collection list": square image, title with arrow.
+          <ul className="mt-10 grid grid-cols-2 gap-x-3 gap-y-8 sm:gap-x-5 md:grid-cols-3">
+            {categories.map((c) => (
+              <li key={c.id}>
+                <Link href={categoryHref(c.slug)} className="group block">
+                  <span className="relative block aspect-square overflow-hidden bg-canvas-alt">
+                    {c.image && (
+                      <Image
+                        src={c.image.src}
+                        alt=""
+                        fill
+                        sizes="(min-width: 768px) 30vw, 46vw"
+                        className="object-contain p-6 transition-transform duration-500 ease-standard group-hover:scale-105 sm:p-10"
+                      />
+                    )}
+                  </span>
+                  <span className="mt-3 flex items-center gap-2 text-base font-semibold tracking-[0.04em] underline-offset-[0.3em] group-hover:underline sm:text-lg">
+                    {decodeEntities(c.name)}
+                    <ArrowRight aria-hidden className="size-4 transition-transform group-hover:translate-x-1" />
+                  </span>
+                  <span className="text-sm text-ink-muted">
+                    {c.count} {c.count === 1 ? "product" : "products"}
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
         ) : (
           <Reveal delay={0.1}>
-            <ul className="mx-auto mt-14 grid max-w-5xl gap-px overflow-hidden rounded-3xl bg-line sm:grid-cols-2">
+            <ul className="mx-auto mt-10 grid max-w-5xl gap-px overflow-hidden bg-line sm:grid-cols-2">
               {range.products.map((name) => (
                 <li key={name} className="bg-canvas">
                   <Link

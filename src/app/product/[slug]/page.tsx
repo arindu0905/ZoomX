@@ -1,4 +1,6 @@
+import { ChevronDown } from "lucide-react";
 import type { Metadata } from "next";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ProductRail } from "@/components/home/product-rail";
@@ -8,6 +10,7 @@ import { ProductPurchase, type PurchaseAttribute, type PurchaseVariant } from "@
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
 import { Container } from "@/components/ui/layout";
 import { categoryHref } from "@/lib/navigation";
+import { site } from "@/lib/site";
 import { jsonLdString, productJsonLd } from "@/lib/structured-data";
 import {
   getPopularProductSlugs,
@@ -92,62 +95,69 @@ async function ProductView({ params }: Pick<PageProps<"/product/[slug]">, "param
 
   return (
     <>
-      <Container className="py-8 sm:py-12">
+      <Container className="py-6 sm:py-10">
         <Breadcrumbs crumbs={crumbs} />
-        <div className="mt-8 grid gap-10 lg:grid-cols-[1.2fr_1fr] lg:gap-16">
+        <div className="mt-6 grid gap-8 md:grid-cols-[1.15fr_1fr] lg:gap-14">
           <ProductGallery images={product.images} name={name} />
           <div
             id="buy"
-            className="flex scroll-mt-[calc(var(--spacing-nav)+2rem)] flex-col gap-8 lg:sticky lg:top-[calc(var(--spacing-nav)+2rem)] lg:self-start"
+            className="flex scroll-mt-[calc(var(--spacing-nav)+2rem)] flex-col gap-6 md:sticky md:top-[calc(5rem+2rem)] md:self-start"
           >
             <header>
-              {category && !(product.on_sale && product.is_in_stock) && (
-                <p className="mb-1 text-sm font-semibold tracking-tight text-highlight">{decodeEntities(category.name)}</p>
-              )}
+              <p className="text-xs font-semibold tracking-[0.16em] text-ink-muted uppercase">{site.name}</p>
+              <h1 className="mt-2 text-headline text-balance">{name}</h1>
               {product.on_sale && product.is_in_stock && (
-                <p className="mb-1 text-sm font-semibold tracking-tight text-highlight">Sale</p>
+                <span className="mt-3 inline-block rounded-full bg-brand-strong px-3 py-1 text-xs font-semibold tracking-[0.06em] text-white">
+                  Sale
+                </span>
               )}
-              <h1 className="text-hero text-balance">{name}</h1>
-              {summary && <p className="mt-4 text-lead text-pretty text-ink-muted">{summary}</p>}
+              {category && (
+                <p className="mt-2 text-sm text-ink-muted">
+                  <Link href={categoryHref(category.slug)} className="underline underline-offset-[0.3em] hover:text-ink">
+                    {decodeEntities(category.name)}
+                  </Link>
+                </p>
+              )}
             </header>
             <ProductPurchase {...toPurchaseProps(detail)} />
+
+            {summary && <p className="text-body text-pretty text-ink-muted">{summary}</p>}
+
+            {/* Shopify-theme collapsible rows */}
+            <div className="border-t border-line">
+              {description.length > 0 && (
+                <details open className="group border-b border-line">
+                  <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 text-base font-semibold tracking-[0.04em] [&::-webkit-details-marker]:hidden">
+                    <h2 id="details-heading">Description</h2>
+                    <ChevronDown aria-hidden className="size-4 transition-transform group-open:rotate-180" />
+                  </summary>
+                  <div className="flex flex-col gap-3 pb-6 text-body text-ink-muted">
+                    {description.map((p, i) => (
+                      <p key={i}>{p}</p>
+                    ))}
+                  </div>
+                </details>
+              )}
+              {specs.length > 0 && (
+                <details className="group border-b border-line">
+                  <summary className="flex min-h-14 cursor-pointer list-none items-center justify-between gap-4 text-base font-semibold tracking-[0.04em] [&::-webkit-details-marker]:hidden">
+                    <h2>Specifications</h2>
+                    <ChevronDown aria-hidden className="size-4 transition-transform group-open:rotate-180" />
+                  </summary>
+                  <dl className="divide-y divide-line pb-4">
+                    {specs.map((s) => (
+                      <div key={s.label} className="flex justify-between gap-6 py-3 text-body">
+                        <dt className="text-ink-muted">{s.label}</dt>
+                        <dd className="text-right">{s.value}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </details>
+              )}
+            </div>
           </div>
         </div>
       </Container>
-
-      {(description.length > 0 || specs.length > 0) && (
-        <section aria-labelledby="details-heading" className="bg-canvas-alt py-section">
-          <Container className="grid gap-12 lg:grid-cols-[1fr_1fr]">
-            {description.length > 0 && (
-              <div className="max-w-prose">
-                <h2 id="details-heading" className="text-title">
-                  About this product
-                </h2>
-                <div className="mt-6 flex flex-col gap-4 text-body text-ink-muted">
-                  {description.map((p, i) => (
-                    <p key={i}>{p}</p>
-                  ))}
-                </div>
-              </div>
-            )}
-            {specs.length > 0 && (
-              <div>
-                <h2 className="text-title" id={description.length ? undefined : "details-heading"}>
-                  Specifications
-                </h2>
-                <dl className="mt-6 divide-y divide-line">
-                  {specs.map((s) => (
-                    <div key={s.label} className="flex justify-between gap-6 py-3 text-body">
-                      <dt className="text-ink-muted">{s.label}</dt>
-                      <dd className="text-right font-medium">{s.value}</dd>
-                    </div>
-                  ))}
-                </dl>
-              </div>
-            )}
-          </Container>
-        </section>
-      )}
 
       <Suspense fallback={null}>
         <RelatedProducts product={product} />
@@ -165,7 +175,7 @@ async function ProductView({ params }: Pick<PageProps<"/product/[slug]">, "param
 
 async function RelatedProducts({ product }: { product: StoreProduct }) {
   const related = await getRelatedProducts(product);
-  return <ProductRail id="related" eyebrow="You may also like" title="More from the range." products={related} />;
+  return <ProductRail id="related" title="You may also like" products={related} viewAll={null} />;
 }
 
 function toPurchaseProps({ product, variants }: ProductDetail) {
@@ -220,7 +230,7 @@ function ProductSkeleton() {
     <Container className="py-8 sm:py-12" aria-hidden>
       <div className="h-4 w-48 rounded-full bg-canvas-alt" />
       <div className="mt-8 grid gap-10 lg:grid-cols-[1.2fr_1fr] lg:gap-16">
-        <div className="aspect-square animate-pulse rounded-[32px] bg-canvas-alt motion-reduce:animate-none" />
+        <div className="aspect-square animate-pulse bg-canvas-alt motion-reduce:animate-none" />
         <div className="flex flex-col gap-4">
           <div className="h-12 w-3/4 rounded-full bg-canvas-alt" />
           <div className="h-6 w-1/3 rounded-full bg-canvas-alt" />

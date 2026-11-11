@@ -11,7 +11,7 @@ export const metadata: Metadata = {
 export default function CheckoutPage() {
   return (
     <Container className="py-12 sm:py-16">
-      <h1 className="mb-10 text-display">Checkout.</h1>
+      <h1 className="mb-8 text-display">Checkout</h1>
       <CheckoutForm configuredMethods={getConfiguredPaymentMethods()} />
     </Container>
   );

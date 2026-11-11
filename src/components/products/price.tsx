@@ -11,7 +11,7 @@ export function Price({ prices, onSale, className }: { prices: StorePrices; onSa
   if (range && range.min_amount !== range.max_amount) {
     return (
       <p className={className}>
-        From <span className="font-semibold text-ink">{fmt(range.min_amount)}</span>
+        From <span className="text-ink">{fmt(range.min_amount)}</span>
       </p>
     );
   }
@@ -19,11 +19,11 @@ export function Price({ prices, onSale, className }: { prices: StorePrices; onSa
   if (onSale && prices.regular_price !== prices.price) {
     return (
       <p className={cn("flex flex-wrap items-baseline gap-x-2", className)}>
-        <span className="font-semibold text-danger">
+        <span className="font-semibold text-ink">
           <span className="sr-only">Sale price </span>
           {fmt(prices.price)}
         </span>
-        <s className="text-ink-muted">
+        <s className="order-first text-ink-muted">
           <span className="sr-only">Regular price </span>
           {fmt(prices.regular_price)}
         </s>
@@ -31,5 +31,5 @@ export function Price({ prices, onSale, className }: { prices: StorePrices; onSa
     );
   }
 
-  return <p className={cn("font-semibold text-ink", className)}>{fmt(prices.price)}</p>;
+  return <p className={cn("text-ink", className)}>{fmt(prices.price)}</p>;
 }

@@ -36,16 +36,14 @@ export async function generateMetadata({ params }: PageProps<"/category/[slug]">
 
 export default function CategoryPage({ params, searchParams }: PageProps<"/category/[slug]">) {
   return (
-    <div className="bg-canvas-alt">
-      <Container className="py-10 sm:py-14">
+    <Container className="py-8 sm:py-12">
         <Suspense fallback={<HeaderSkeleton />}>
           <CategoryHeader params={params} />
         </Suspense>
         <Suspense fallback={<ProductGridSkeleton />}>
           <CategoryProducts params={params} searchParams={searchParams} />
         </Suspense>
-      </Container>
-    </div>
+    </Container>
   );
 }
 
@@ -57,7 +55,7 @@ async function CategoryHeader({ params }: Pick<PageProps<"/category/[slug]">, "p
   const description = htmlToText(category.description);
 
   return (
-    <header className="mb-10">
+    <header className="mb-8">
       <Breadcrumbs
         crumbs={[
           { name: "Home", href: "/" },
@@ -67,11 +65,11 @@ async function CategoryHeader({ params }: Pick<PageProps<"/category/[slug]">, "p
       />
       <div className="mt-6 flex flex-col gap-8 md:flex-row md:items-end md:justify-between">
         <div className="max-w-prose">
-          <h1 className="text-display">{name}.</h1>
+          <h1 className="text-display">{name}</h1>
           {description && <p className="mt-4 text-lead text-pretty text-ink-muted">{description}</p>}
         </div>
         {category.image && (
-          <div className="relative aspect-square w-40 shrink-0 overflow-hidden rounded-card bg-canvas shadow-card md:w-56">
+          <div className="relative aspect-square w-32 shrink-0 overflow-hidden bg-canvas-alt md:w-48">
             <Image
               src={category.image.src}
               alt={category.image.alt || name}

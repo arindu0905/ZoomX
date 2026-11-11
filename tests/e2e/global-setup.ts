@@ -11,16 +11,34 @@ export default async function globalSetup() {
   const { WOOCOMMERCE_STORE_URL: store, WOOCOMMERCE_CONSUMER_KEY: ck, WOOCOMMERCE_CONSUMER_SECRET: cs } = process.env;
   if (store?.replace(/\/$/, "") !== SANDBOX || !ck || !cs) return;
   const auth = `Basic ${Buffer.from(`${ck}:${cs}`).toString("base64")}`;
-  for (const label of RESTOCK) {
-    try {
-      // Ids depend on seed order, so find each item by SKU first.
-      const lookup = await fetch(`${SANDBOX}/wp-json/wc/v3/products?sku=${label}`, { headers: { Authorization: auth } });
-      const [item] = (await lookup.json()) as { id: number; parent_id: number }[];
-      if (!item) {
-        console.warn(`[global-setup] restock ${label}: not found`);
-        continue;
+  // Ids depend on seed order, so map SKU → REST path (variations included:
+  // the products endpoint does not return variations by SKU).
+  const paths = new Map<string, string>();
+  try {
+    const get = async (p: string) =>
+      (await (await fetch(`${SANDBOX}/wp-json/wc/v3/${p}`, { headers: { Authorization: auth } })).json()) as {
+        id: number;
+        sku: string;
+        type?: string;
+      }[];
+    for (const product of await get("products?per_page=100")) {
+      paths.set(product.sku, `products/${product.id}`);
+      if (product.type === "variable") {
+        for (const v of await get(`products/${product.id}/variations?per_page=100`)) {
+          paths.set(v.sku, `products/${product.id}/variations/${v.id}`);
+        }
       }
-      const path = item.parent_id ? `products/${item.parent_id}/variations/${item.id}` : `products/${item.id}`;
+    }
+  } catch {
+    console.warn("[global-setup] restock: sandbox unreachable");
+  }
+  for (const label of RESTOCK) {
+    const path = paths.get(label);
+    if (!path) {
+      console.warn(`[global-setup] restock ${label}: not found`);
+      continue;
+    }
+    try {
       const res = await fetch(`${SANDBOX}/wp-json/wc/v3/${path}`, {
         method: "PUT",
         headers: { Authorization: auth, "Content-Type": "application/json" },

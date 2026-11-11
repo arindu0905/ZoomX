@@ -222,6 +222,17 @@ if (isset($_SERVER['REQUEST_URI']) && strpos($_SERVER['REQUEST_URI'], '/wp-json/
 }
 PHP);
 
+// In the WordPress Playground build of WooCommerce 11.2 (SQLite), the
+// "hold stock during checkout" reservation rejects every stock-managed
+// product with "Not enough units… available". Skip only that reservation in
+// the sandbox; stock is still validated and reduced when the order is placed.
+// Sandbox only — never on a real store.
+file_put_contents('/wordpress/wp-content/mu-plugins/zoomx-sandbox-stock-hold.php', <<<'PHP'
+<?php
+/* ZOOM X local sandbox only: work around Playground/SQLite stock reservation. */
+add_filter('woocommerce_hold_stock_for_checkout', '__return_false');
+PHP);
+
 flush_rewrite_rules();
 update_option('zoomx_sandbox_seeded', 1);
 echo "ZOOM X sandbox seeded\n";

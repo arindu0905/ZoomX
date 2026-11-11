@@ -33,9 +33,12 @@ export const site = {
     office: "No 419, Galle Road, Ratmalana, Sri Lanka",
     factory: "No 49, 10th Cross Lane, Borupona, Sri Lanka",
   },
-  // Announcement bar copy. Null until the client approves a real promotion or
-  // delivery message — delivery coverage and timeframes must not be guessed.
-  announcement: null as Announcement | null,
+  // Announcement bar copy. Factual brand line only — replace with an approved
+  // promotion or delivery message; coverage and timeframes must not be guessed.
+  announcement: {
+    message: "Household cleaning, made in Sri Lanka.",
+    link: { label: "Shop the range", href: "/shop" },
+  } as Announcement | null,
   // Icons exist on the current site but have no real URLs — awaiting client.
   social: {
     facebook: null as string | null,

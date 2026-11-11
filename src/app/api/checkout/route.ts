@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
 
   try {
     const cart = await getCart();
-    if (cart.items_count === 0) return apiError(409, "empty_cart", "Your bag is empty.");
+    if (cart.items_count === 0) return apiError(409, "empty_cart", "Your cart is empty.");
     if (cart.errors.length) return apiError(409, cart.errors[0].code, cart.errors[0].message);
     if (!cart.payment_methods.includes(data.paymentMethod)) {
       return apiError(400, "payment_method_unavailable", "That payment method isn’t available.");

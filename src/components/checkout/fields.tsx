@@ -4,7 +4,7 @@ import { forwardRef, useId, type ComponentProps, type ReactNode } from "react";
 import { cn } from "@/utils/cn";
 
 const control =
-  "h-12 w-full rounded-xl bg-canvas px-4 text-body text-ink shadow-[inset_0_0_0_1px_var(--color-line)] outline-none transition-shadow focus-visible:shadow-[inset_0_0_0_2px_var(--color-brand-strong)] aria-[invalid=true]:shadow-[inset_0_0_0_2px_var(--color-danger)]";
+  "h-12 w-full bg-canvas px-4 text-body text-ink shadow-[inset_0_0_0_1px_var(--color-ink-muted)] outline-none transition-shadow focus-visible:shadow-[inset_0_0_0_2px_var(--color-brand-strong)] aria-[invalid=true]:shadow-[inset_0_0_0_2px_var(--color-danger)]";
 
 interface FieldProps {
   label: string;

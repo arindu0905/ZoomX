@@ -56,7 +56,7 @@ export function SectionHeading({
         className,
       )}
     >
-      {eyebrow && <p className="text-caption font-semibold uppercase tracking-[0.08em] text-brand-strong">{eyebrow}</p>}
+      {eyebrow && <p className="text-sm font-semibold tracking-[0.12em] text-brand-strong uppercase">{eyebrow}</p>}
       <Heading className="text-headline text-balance">{title}</Heading>
       {lead && <p className="text-lead text-pretty text-ink-muted">{lead}</p>}
     </header>

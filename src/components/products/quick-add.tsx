@@ -1,11 +1,10 @@
 "use client";
 
-import { Plus } from "lucide-react";
 import { useState } from "react";
 import { useCartStore } from "@/store/cart";
 import { useUiStore } from "@/store/ui";
 
-/** One-tap add for simple, in-stock products on product cards. */
+/** Shopify-style quick add for simple, in-stock products on product cards. */
 export function QuickAdd({ productId, name }: { productId: number; name: string }) {
   const add = useCartStore((s) => s.add);
   const open = useUiStore((s) => s.open);
@@ -25,11 +24,10 @@ export function QuickAdd({ productId, name }: { productId: number; name: string 
           if (r.ok) open("bag");
           else setError(r.message);
         }}
-        className="inline-flex h-9 items-center gap-1 rounded-full bg-canvas-alt px-4 text-sm font-medium transition-colors hover:bg-ink hover:text-white disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2"
+        className="flex min-h-10 w-full items-center justify-center text-sm font-semibold tracking-[0.06em] shadow-[inset_0_0_0_1px_var(--color-ink)] transition-shadow hover:shadow-[inset_0_0_0_2px_var(--color-ink)] disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2"
       >
-        <Plus aria-hidden className="size-4" />
-        {busy ? "Adding…" : "Add"}
-        <span className="sr-only"> {name} to bag</span>
+        {busy ? "Adding…" : "Add to cart"}
+        <span className="sr-only"> {name}</span>
       </button>
       {error && (
         <p role="alert" className="mt-1 text-caption text-danger">

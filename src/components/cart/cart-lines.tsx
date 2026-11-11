@@ -48,7 +48,7 @@ function CartLine({ item, cart, compact }: { item: CartItem; cart: Cart; compact
     <li className="flex gap-4 py-5">
       <div
         className={cn(
-          "relative shrink-0 overflow-hidden rounded-2xl bg-canvas-alt",
+          "relative shrink-0 overflow-hidden bg-canvas-alt",
           compact ? "size-20" : "size-24 sm:size-28",
         )}
       >
@@ -84,13 +84,13 @@ function CartLine({ item, cart, compact }: { item: CartItem; cart: Cart; compact
         <div className="mt-2 flex items-center justify-between gap-3">
           {editable ? (
             <div
-              className="flex items-center rounded-full bg-canvas-alt"
+              className="flex items-center shadow-[inset_0_0_0_1px_var(--color-ink-muted)]"
               role="group"
               aria-label={`Quantity for ${name}`}
             >
               <button
                 type="button"
-                className="inline-flex size-9 items-center justify-center rounded-full hover:bg-[#e8e8ed] disabled:opacity-30"
+                className="inline-flex size-9 items-center justify-center hover:text-ink disabled:opacity-30"
                 aria-label="Decrease quantity"
                 disabled={pending || item.quantity - step < min}
                 onClick={() => run(update(item.key, item.quantity - step))}
@@ -102,7 +102,7 @@ function CartLine({ item, cart, compact }: { item: CartItem; cart: Cart; compact
               </span>
               <button
                 type="button"
-                className="inline-flex size-9 items-center justify-center rounded-full hover:bg-[#e8e8ed] disabled:opacity-30"
+                className="inline-flex size-9 items-center justify-center hover:text-ink disabled:opacity-30"
                 aria-label="Increase quantity"
                 disabled={pending || item.quantity + step > max}
                 onClick={() => run(update(item.key, item.quantity + step))}

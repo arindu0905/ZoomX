@@ -14,6 +14,10 @@ import { useCartStore } from "@/store/cart";
 import { useUiStore } from "@/store/ui";
 import { cn } from "@/utils/cn";
 
+/** Shopify-theme menu link: plain text, underline when hovered or current. */
+const navText =
+  "inline-flex h-11 items-center gap-1 px-3 text-[0.9375rem] tracking-[0.04em] text-ink/75 underline-offset-[0.3em] transition-colors hover:text-ink hover:underline";
+
 const isActive = (pathname: string, href: string) =>
   href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
 
@@ -35,17 +39,36 @@ export function SiteHeader({ categories }: { categories: NavCategory[] }) {
       <Suspense fallback={null}>
         <CloseOnNavigate onNavigate={close} />
       </Suspense>
-      <div
-        className={cn(
-          "relative z-20 backdrop-blur-xl backdrop-saturate-[1.8] transition-colors duration-300",
-          panel ? "bg-canvas" : "bg-glass",
-        )}
-      >
-        <nav aria-label="Main" className="mx-auto flex h-nav max-w-[1024px] items-center gap-2 px-gutter lg:px-[22px]">
-          <Logo className="h-7" priority />
+      <div className="relative z-20 border-b border-line bg-canvas">
+        {/*
+          Shopify-theme header. Desktop: logo, inline menu, icons.
+          Mobile: menu button, centred logo, search + cart.
+        */}
+        <nav
+          aria-label="Main"
+          className="mx-auto grid h-nav max-w-page grid-cols-[1fr_auto_1fr] items-center px-gutter md:flex md:h-20 md:gap-8"
+        >
+          <div className="flex items-center md:hidden">
+            <button
+              type="button"
+              aria-label={panel === "menu" ? "Close menu" : "Open menu"}
+              aria-expanded={panel === "menu"}
+              aria-controls="mobile-menu"
+              onClick={() => toggle("menu")}
+              className={cn(iconButton, "-ml-3")}
+            >
+              {panel === "menu" ? (
+                <X aria-hidden className="size-5" strokeWidth={1.5} />
+              ) : (
+                <Menu aria-hidden className="size-5" strokeWidth={1.5} />
+              )}
+            </button>
+          </div>
 
-          {/* Desktop links */}
-          <ul className="ml-4 hidden flex-1 items-center justify-evenly md:flex">
+          <Logo className="h-10 justify-self-center md:h-12" priority />
+
+          {/* Desktop menu */}
+          <ul className="hidden flex-1 items-center gap-1 md:flex">
             {[home, rest[0]].map((l) => (
               <NavItem key={l.href} href={l.href}>
                 {l.label}
@@ -57,15 +80,12 @@ export function SiteHeader({ categories }: { categories: NavCategory[] }) {
                 aria-expanded={panel === "categories"}
                 aria-controls="categories-flyout"
                 onClick={() => toggle("categories")}
-                className={cn(
-                  "inline-flex h-11 items-center gap-1 px-2 text-nav tracking-[-0.01em] text-ink/80 transition-colors hover:text-ink",
-                  panel === "categories" && "text-ink",
-                )}
+                className={cn(navText, panel === "categories" && "text-ink underline")}
               >
                 Categories
                 <ChevronDown
                   aria-hidden
-                  className={cn("size-3 transition-transform duration-300", panel === "categories" && "rotate-180")}
+                  className={cn("size-3.5 transition-transform duration-300", panel === "categories" && "rotate-180")}
                 />
               </button>
             </li>
@@ -76,7 +96,7 @@ export function SiteHeader({ categories }: { categories: NavCategory[] }) {
             ))}
           </ul>
 
-          <div className="ml-auto flex items-center md:ml-0">
+          <div className="-mr-3 flex items-center justify-self-end">
             <button
               type="button"
               aria-label="Search products"
@@ -85,26 +105,12 @@ export function SiteHeader({ categories }: { categories: NavCategory[] }) {
               onClick={() => toggle("search")}
               className={iconButton}
             >
-              <Search aria-hidden className="size-4" strokeWidth={1.6} />
+              <Search aria-hidden className="size-5" strokeWidth={1.5} />
             </button>
             <Link href="/account" aria-label="Account" className={cn(iconButton, "max-md:hidden")}>
-              <User aria-hidden className="size-4" strokeWidth={1.6} />
+              <User aria-hidden className="size-5" strokeWidth={1.5} />
             </Link>
             <BagLink />
-            <button
-              type="button"
-              aria-label={panel === "menu" ? "Close menu" : "Open menu"}
-              aria-expanded={panel === "menu"}
-              aria-controls="mobile-menu"
-              onClick={() => toggle("menu")}
-              className={cn(iconButton, "md:hidden")}
-            >
-              {panel === "menu" ? (
-                <X aria-hidden className="size-5" strokeWidth={1.75} />
-              ) : (
-                <Menu aria-hidden className="size-5" strokeWidth={1.75} />
-              )}
-            </button>
           </div>
         </nav>
       </div>
@@ -156,10 +162,7 @@ function NavLink({ href, active, label }: { href: string; active: boolean; label
     <Link
       href={href}
       aria-current={active ? "page" : undefined}
-      className={cn(
-        "inline-flex h-11 items-center px-2 text-nav tracking-[-0.01em] transition-colors hover:text-ink",
-        active ? "text-ink" : "text-ink/80",
-      )}
+      className={cn(navText, active && "text-ink underline")}
     >
       {label}
     </Link>
@@ -179,14 +182,14 @@ function BagLink() {
         e.preventDefault();
         toggle("bag");
       }}
-      aria-label={count ? `Shopping bag, ${count} ${count === 1 ? "item" : "items"}` : "Shopping bag"}
+      aria-label={count ? `Cart, ${count} ${count === 1 ? "item" : "items"}` : "Cart"}
       className={cn(iconButton, "relative")}
     >
-      <ShoppingBag aria-hidden className="size-4" strokeWidth={1.6} />
+      <ShoppingBag aria-hidden className="size-5" strokeWidth={1.5} />
       {count > 0 && (
         <span
           aria-hidden
-          className="absolute right-1.5 bottom-1.5 flex min-w-4 items-center justify-center rounded-full bg-ink px-1 text-[10px] leading-4 font-semibold text-white tabular-nums"
+          className="absolute right-1.5 bottom-1.5 flex min-w-[1.125rem] items-center justify-center rounded-full bg-brand-strong px-1 text-[10px] leading-[1.125rem] font-semibold text-white tabular-nums"
         >
           {count > 99 ? "99+" : count}
         </span>
@@ -215,12 +218,12 @@ function CategoriesFlyout({
           aria-modal="true"
           aria-label="Shop by category"
           {...panelMotion}
-          className="absolute inset-x-0 top-full z-10 hidden bg-canvas pb-14 shadow-[0_24px_48px_-24px_rgba(0,0,0,0.18)] md:block"
+          className="absolute inset-x-0 top-full z-10 hidden border-b border-line bg-canvas pb-10 md:block"
         >
-          <div className="mx-auto grid max-w-[1024px] grid-cols-[1fr_2fr] gap-12 px-[22px] pt-10">
+          <div className="mx-auto grid max-w-page grid-cols-[1fr_2fr] gap-12 px-gutter pt-8">
             <div>
               <p className="text-caption text-ink-muted">Shop</p>
-              <Link href="/shop" className="mt-3 block text-2xl font-semibold tracking-tight hover:text-brand-strong">
+              <Link href="/shop" className="mt-3 block text-lg font-semibold underline-offset-[0.3em] hover:underline">
                 Shop all products
               </Link>
               <Link href="/for-businesses" className="mt-2 block text-2xl font-semibold tracking-tight hover:text-brand-strong">
@@ -233,7 +236,7 @@ function CategoriesFlyout({
                 <ul className="mt-3 grid grid-cols-2 gap-x-10 gap-y-3">
                   {categories.map((c) => (
                     <li key={c.slug}>
-                      <Link href={categoryHref(c.slug)} className="text-sm font-semibold hover:text-brand-strong">
+                      <Link href={categoryHref(c.slug)} className="text-[0.9375rem] text-ink/75 underline-offset-[0.3em] hover:text-ink hover:underline">
                         {c.name}
                       </Link>
                     </li>
@@ -267,13 +270,14 @@ function MobileMenu({ open, categories, onClose }: { open: boolean; categories: 
           role="dialog"
           aria-modal="true"
           aria-label="Menu"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0, transition: { duration: 0.2 } }}
-          className="fixed inset-x-0 top-nav bottom-0 z-10 overflow-y-auto bg-canvas md:hidden"
+          initial={{ x: "-100%" }}
+          animate={{ x: 0 }}
+          exit={{ x: "-100%", transition: { duration: 0.2 } }}
+          transition={{ type: "tween", duration: 0.3, ease: [0.32, 0.72, 0, 1] }}
+          className="fixed top-nav bottom-0 left-0 z-10 w-[min(100%,24rem)] overflow-y-auto border-t border-line bg-canvas md:hidden"
         >
           <motion.ul
-            className="px-gutter pt-6 pb-16"
+            className="px-gutter pt-4 pb-16"
             initial="hidden"
             animate="show"
             variants={{
@@ -292,7 +296,7 @@ function MobileMenu({ open, categories, onClose }: { open: boolean; categories: 
               >
                 {item.href === "#categories" ? (
                   <details className="group">
-                    <summary className="flex h-14 cursor-pointer list-none items-center justify-between text-title [&::-webkit-details-marker]:hidden">
+                    <summary className="flex h-14 cursor-pointer list-none items-center justify-between text-lg [&::-webkit-details-marker]:hidden">
                       Categories
                       <ChevronDown
                         aria-hidden
@@ -336,7 +340,7 @@ function MobileNavLink({ href, label }: { href: string; label: string }) {
     <Link
       href={href}
       aria-current={isActive(pathname, href) ? "page" : undefined}
-      className="flex h-14 items-center text-title aria-[current=page]:text-brand-strong"
+      className="flex h-14 items-center text-lg aria-[current=page]:underline aria-[current=page]:underline-offset-[0.3em]"
     >
       {label}
     </Link>

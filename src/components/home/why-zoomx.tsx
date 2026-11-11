@@ -12,7 +12,7 @@ export function WhyZoomX() {
         <ul className="mt-14 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {why.items.map((item, i) => (
             <li key={item.title}>
-              <Reveal delay={i * 0.06} className="h-full rounded-3xl bg-canvas p-8">
+              <Reveal delay={i * 0.06} className="h-full border-t-2 border-ink pt-6">
                 <p aria-hidden className="text-caption font-semibold text-brand-strong tabular-nums">
                   {String(i + 1).padStart(2, "0")}
                 </p>

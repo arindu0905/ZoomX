@@ -30,7 +30,7 @@ test.describe("homepage", () => {
   test("hides product rails and unverifiable content without WooCommerce data", async ({ page, request }) => {
     test.skip(await hasSandboxCatalogue(request), "requires an app without WooCommerce data");
     await page.goto("/");
-    await expect(page.getByRole("heading", { name: "Our most popular products." })).toHaveCount(0);
+    await expect(page.getByRole("heading", { name: "Best sellers" })).toHaveCount(0);
     await expect(page.getByText(/99\.9%|dermatologically/i)).toHaveCount(0);
     await expect(page.getByText(/testimonial/i)).toHaveCount(0);
   });

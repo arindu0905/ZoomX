@@ -21,7 +21,7 @@ export const footerNav: { heading: string; links: NavLink[] }[] = [
     heading: "Shop",
     links: [
       { label: "All products", href: "/shop" },
-      { label: "Shopping bag", href: "/cart" },
+      { label: "Cart", href: "/cart" },
       { label: "Track an order", href: "/orders/track" },
     ],
   },

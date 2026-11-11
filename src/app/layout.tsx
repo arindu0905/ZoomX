@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Assistant } from "next/font/google";
 import { CartProvider } from "@/components/cart/cart-provider";
 import { AnnouncementBar } from "@/components/layout/announcement-bar";
 import { MotionProvider } from "@/components/layout/motion-provider";
@@ -11,8 +11,8 @@ import { getCategories } from "@/services/woocommerce/catalog";
 import { decodeEntities } from "@/utils/text";
 import "./globals.css";
 
-const inter = Inter({
-  variable: "--font-inter",
+const assistant = Assistant({
+  variable: "--font-assistant",
   subsets: ["latin"],
   display: "swap",
 });
@@ -38,7 +38,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
   }));
 
   return (
-    <html lang="en-LK" className={inter.variable}>
+    <html lang="en-LK" className={assistant.variable}>
       <body className="flex min-h-dvh flex-col">
         <a
           href="#main"

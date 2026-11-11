@@ -25,7 +25,7 @@ export function ContentPageView({ page, href, children }: { page: ContentPage; h
         </header>
 
         {page.status === "draft" && (
-          <p role="note" className="mb-10 flex gap-3 rounded-2xl bg-[#fff6e5] px-5 py-4 text-body text-[#7a4b00]">
+          <p role="note" className="mb-10 flex gap-3 bg-[#fff6e5] px-5 py-4 text-body text-[#7a4b00]">
             <FileWarning aria-hidden className="mt-0.5 size-5 shrink-0" />
             <span>
               <strong>Draft — awaiting approval.</strong> This page has not been approved by ZOOM X yet.

@@ -16,7 +16,7 @@ export function OrderDetails({ order }: { order: Order }) {
 
   return (
     <>
-      <dl className="mt-12 grid grid-cols-2 gap-6 rounded-3xl bg-canvas-alt p-6 sm:grid-cols-4 sm:p-8">
+      <dl className="mt-12 grid grid-cols-2 gap-6 bg-canvas-alt p-6 sm:grid-cols-4 sm:p-8">
         <Fact label="Order number" value={`#${order.number}`} />
         <Fact label="Date" value={date} />
         <Fact label="Status" value={status} />
@@ -24,7 +24,7 @@ export function OrderDetails({ order }: { order: Order }) {
       </dl>
 
       {order.payment_method === "cod" && (
-        <p className="mt-6 rounded-2xl bg-brand-tint px-5 py-4 text-body text-brand-strong">
+        <p className="mt-6 bg-brand-tint px-5 py-4 text-body text-brand-strong">
           Please have <strong>{fmt(order.total)}</strong> ready in cash when your order is delivered.
         </p>
       )}

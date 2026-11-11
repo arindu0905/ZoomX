@@ -33,7 +33,7 @@ function useApiForm<S extends z.ZodType<FieldValues, FieldValues>>(schema: S) {
 function FormError({ message }: { message: string | null }) {
   if (!message) return null;
   return (
-    <p role="alert" className="rounded-2xl bg-[#fdecec] px-4 py-3 text-body text-danger">
+    <p role="alert" className="bg-[#fdecec] px-4 py-3 text-body text-danger">
       {message}
     </p>
   );
@@ -131,7 +131,7 @@ export function ForgotForm() {
 
   if (sent) {
     return (
-      <p role="status" className="rounded-2xl bg-brand-tint px-5 py-4 text-body text-brand-strong">
+      <p role="status" className="bg-brand-tint px-5 py-4 text-body text-brand-strong">
         If an account exists for that email, we’ve sent a link to reset your password. Check your inbox.
       </p>
     );
@@ -168,7 +168,7 @@ export function ResetForm({ login, resetKey }: { login: string; resetKey: string
   if (done) {
     return (
       <div className="flex flex-col gap-4">
-        <p role="status" className="rounded-2xl bg-brand-tint px-5 py-4 text-body text-brand-strong">
+        <p role="status" className="bg-brand-tint px-5 py-4 text-body text-brand-strong">
           Your password has been changed.
         </p>
         <Link href="/account" className="text-center text-body text-brand-strong hover:underline">

@@ -1,6 +1,6 @@
 /** Styles and motion shared by the header and its panels. */
 export const iconButton =
-  "inline-flex size-11 items-center justify-center rounded-full text-ink/80 transition-colors hover:bg-black/5 hover:text-ink";
+  "inline-flex size-11 items-center justify-center text-ink transition-transform duration-150 hover:scale-110";
 
 export const panelMotion = {
   initial: { opacity: 0, y: -8 },
