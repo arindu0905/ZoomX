@@ -15,19 +15,18 @@ Questions for the client:
 
 Switching the accent colour means changing only `--color-brand*` tokens.
 
-## Shopify storefront patterns
+## apple.com patterns
 
-The storefront follows the conventions of Shopify themes (modelled on the default "Dawn" theme), with ZOOM X branding. Responsive from 360px phones up.
+The storefront follows apple.com layout conventions with ZOOM X branding (the brand green stays the action colour; the Apple blue is not used):
 
-- **Type & shape** — Assistant (next/font), near-black ink (#121212), square corners, flat surfaces, no shadows. Buttons are rectangular: solid brand green (primary) or 1px ink outline (secondary) that thickens on hover.
-- **Announcement bar** — green strip above the header (`site.announcement`; factual copy only).
-- **Header** — white, bordered. Desktop: logo, inline menu with underline hover, search / account / cart icons with a count bubble. Mobile: menu button, centred logo, search + cart; the menu slides in from the left.
-- **Homepage** — image banner (copy + product splash shot, stacked on mobile), "Best sellers" featured collection (4-up grid, swipeable row on phones, "View all"), collection list (square category images), dark "For businesses" block, "Featured products", brand story and multicolumn values.
-- **Product card** — square grey media with the second image on hover, "Sale" / "Sold out" badges, title underlined on hover, struck-through regular price, full-width "Add to cart" (or "Choose options").
-- **Collection pages** — "All products" / category title, outlined filter and sort controls, product count, 2 / 3 / 4-column grid.
-- **Product page** — square gallery with thumbnails, vendor line, title, price, pill options, quantity box, "Add to cart" + "Buy it now" (adds then goes to checkout), collapsible Description / Specifications rows, "You may also like".
-- **Cart** — "Cart" wording throughout; slide-in cart drawer with subtotal, "Check out" and "View cart".
-- **Footer** — link columns, addresses, copyright and policy links.
+- **Global nav** — 44px frosted bar (`bg-glass`), 12px links spread evenly across a 1024px column.
+- **Homepage** — hero with a product line-up; full-width product tiles then a two-up tile grid with 12px gutters (`ProductTiles`); each tile = eyebrow, name, one line, "Learn more" + "Buy" pills, packshot.
+- **Store pages** — `/shop` and categories sit on `canvas-alt` with white cards (`rounded-card`, `shadow-card`, lift on hover), a bold title with a muted second line, and an image category row (`CategoryRow`).
+- **Buy page** — large rounded gallery (`rounded-tile`), options as full-width selectable tiles, `#buy` anchor for tile "Buy" links.
+- **Footer** — 12px type, fine-print line, directory columns.
+- **10% curve** — corners are ≈10% of a surface's shorter side: `rounded-[10%]` on square media (gallery, thumbnails), `rounded-card` on product cards, `rounded-tile` on homepage tiles and the business block. Change the two tokens in `globals.css` to adjust.
+
+Tokens added: `glass`, `highlight` (#B64400 eyebrow orange), `radius-card` (~10% of a card), `radius-tile` (~10% of a tile), `shadow-card(-hover)`, `text-hero`, `text-tile`, `text-nav`, `tile-gap`.
 
 ## Colour
 
@@ -61,7 +60,7 @@ Inter (self-hosted by `next/font`), tight negative tracking at display sizes.
 - `max-w-page` 1280px · `max-w-prose` 672px
 - `px-gutter` 16 → 40px responsive side padding
 - `py-section` 72 → 128px between sections
-- `h-nav` / `top-nav` 64px header on mobile (80px on desktop)
+- `h-nav` / `top-nav` 44px global navigation
 - Separate sections by alternating `Section tone="default" | "alt"`, not with borders or cards.
 
 ## Components (`src/components/ui`)

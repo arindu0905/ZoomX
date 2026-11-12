@@ -53,15 +53,15 @@ export function CheckoutForm({ configuredMethods }: { configuredMethods: Payment
   if (status === "error" && !cart) {
     return (
       <p role="alert" className="py-16 text-center text-body text-ink-muted">
-        We couldn’t load your cart. Please refresh the page.
+        We couldn’t load your bag. Please refresh the page.
       </p>
     );
   }
   if (!cart) return <p className="py-16 text-center text-body text-ink-muted">Loading checkout…</p>;
   if (cart.items_count === 0) {
     return (
-      <div className="flex flex-col items-center gap-5 bg-canvas-alt px-6 py-20 text-center">
-        <h2 className="text-title">Your cart is empty.</h2>
+      <div className="flex flex-col items-center gap-5 rounded-card bg-canvas-alt px-6 py-20 text-center">
+        <h2 className="text-title">Your bag is empty.</h2>
         <ButtonLink href="/shop">Continue shopping</ButtonLink>
       </div>
     );
@@ -155,7 +155,7 @@ export function CheckoutForm({ configuredMethods }: { configuredMethods: Payment
               {methods.map((m) => (
                 <label
                   key={m}
-                  className="flex cursor-pointer gap-3 px-4 py-4 shadow-[inset_0_0_0_1px_var(--color-line)] has-[:checked]:shadow-[inset_0_0_0_2px_var(--color-ink)]"
+                  className="flex cursor-pointer gap-3 rounded-card px-4 py-4 shadow-[inset_0_0_0_1px_var(--color-line)] has-[:checked]:shadow-[inset_0_0_0_2px_var(--color-ink)]"
                 >
                   <input
                     type="radio"
@@ -175,7 +175,7 @@ export function CheckoutForm({ configuredMethods }: { configuredMethods: Payment
         </Section>
       </div>
 
-      <aside aria-labelledby="order-summary" className="h-fit bg-canvas-alt p-6 sm:p-8 lg:sticky lg:top-24">
+      <aside aria-labelledby="order-summary" className="h-fit rounded-card bg-canvas-alt p-6 sm:p-8 lg:sticky lg:top-24">
         <h2 id="order-summary" className="text-title">
           Order summary
         </h2>
@@ -207,7 +207,7 @@ export function CheckoutForm({ configuredMethods }: { configuredMethods: Payment
         )}
 
         {submitError && (
-          <p role="alert" className="mt-4 bg-[#fdecec] px-4 py-3 text-body text-danger">
+          <p role="alert" className="mt-4 rounded-card bg-[#fdecec] px-4 py-3 text-body text-danger">
             {submitError}
           </p>
         )}

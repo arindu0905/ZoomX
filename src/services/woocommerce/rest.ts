@@ -9,11 +9,27 @@ import { StoreApiError } from "./store-api";
  * consumer key/secret never leave the server. Never cached.
  */
 export async function restRequest<S extends z.ZodType>(
-  method: "GET" | "POST" | "PUT",
+  method: "GET" | "POST" | "PUT" | "DELETE",
   path: string,
   schema: S,
   options: { query?: Record<string, string | number>; body?: unknown } = {},
 ): Promise<z.infer<S>> {
+  return (await restRequestWithMeta(method, path, schema, options)).data;
+}
+
+export interface RestPage<T> {
+  data: T;
+  total: number;
+  totalPages: number;
+}
+
+/** Same as restRequest, plus WooCommerce's X-WP-Total / X-WP-TotalPages for list endpoints. */
+export async function restRequestWithMeta<S extends z.ZodType>(
+  method: "GET" | "POST" | "PUT" | "DELETE",
+  path: string,
+  schema: S,
+  options: { query?: Record<string, string | number>; body?: unknown } = {},
+): Promise<RestPage<z.infer<S>>> {
   const { WOOCOMMERCE_STORE_URL, WOOCOMMERCE_CONSUMER_KEY, WOOCOMMERCE_CONSUMER_SECRET } = requireEnv(
     "WOOCOMMERCE_STORE_URL",
     "WOOCOMMERCE_CONSUMER_KEY",
@@ -44,5 +60,9 @@ export async function restRequest<S extends z.ZodType>(
   if (!res.ok) throw new StoreApiError(`REST ${res.status} for ${url.pathname}`, res.status);
   const parsed = schema.safeParse(await res.json());
   if (!parsed.success) throw new StoreApiError(`Unexpected REST response shape for ${url.pathname}`, 502);
-  return parsed.data;
+  return {
+    data: parsed.data,
+    total: Number(res.headers.get("x-wp-total") ?? 0),
+    totalPages: Number(res.headers.get("x-wp-totalpages") ?? 0),
+  };
 }

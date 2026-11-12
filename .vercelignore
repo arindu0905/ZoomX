@@ -1,0 +1,9 @@
+# Never upload local secrets or build/test output.
+.env*
+!.env.example
+sandbox/.rest-keys.env
+.next
+node_modules
+test-results
+playwright-report
+*.tsbuildinfo

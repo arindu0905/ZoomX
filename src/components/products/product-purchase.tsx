@@ -1,7 +1,6 @@
 "use client";
 
 import { Minus, Plus } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { useId, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { findVariant, isOptionAvailable, optionExists, type Selection } from "@/lib/variations";
@@ -79,14 +78,13 @@ export function ProductPurchase({
 
   const add = useCartStore((s) => s.add);
   const openPanel = useUiStore((s) => s.open);
-  const router = useRouter();
-  const [adding, setAdding] = useState<false | "cart" | "buy">(false);
+  const [adding, setAdding] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
 
   /** Sends only the product/variation id, quantity and chosen attributes. */
-  const addToBag = async (buyNow = false) => {
+  const addToBag = async () => {
     if (!canBuy) return;
-    setAdding(buyNow ? "buy" : "cart");
+    setAdding(true);
     setAddError(null);
     const r = await add({
       id: variant?.id ?? product.id,
@@ -94,8 +92,7 @@ export function ProductPurchase({
       ...(variant ? { variation: names.map((n) => ({ attribute: n, value: selection[n]! })) } : {}),
     });
     setAdding(false);
-    if (r.ok && buyNow) router.push("/checkout");
-    else if (r.ok) openPanel("bag");
+    if (r.ok) openPanel("bag");
     else setAddError(r.message);
   };
 
@@ -111,9 +108,9 @@ export function ProductPurchase({
     <div className="flex flex-col gap-8">
       <div>
         {variant ? (
-          <Price prices={variant.prices} onSale={variant.onSale} className="text-xl tracking-[0.04em]" />
+          <Price prices={variant.prices} onSale={variant.onSale} className="text-title" />
         ) : (
-          <Price prices={product.prices} onSale={product.onSale} className="text-xl tracking-[0.04em]" />
+          <Price prices={product.prices} onSale={product.onSale} className="text-title" />
         )}
         {view.sku && <p className="mt-2 text-caption text-ink-muted">SKU: {view.sku}</p>}
       </div>
@@ -142,7 +139,7 @@ export function ProductPurchase({
         {status}
       </p>
 
-      <div className="flex flex-col gap-3">
+      <div className="flex flex-wrap items-center gap-4">
         <QuantityStepper
           value={qty}
           min={product.minQty}
@@ -153,21 +150,16 @@ export function ProductPurchase({
         />
         <Button
           size="lg"
-          variant="secondary"
-          className="mt-2 w-full"
-          disabled={!canBuy || !!adding}
+          className="min-w-56 flex-1 sm:flex-none"
+          disabled={!canBuy || adding}
           aria-describedby={addError ? "add-error" : undefined}
-          onClick={() => addToBag()}
+          onClick={addToBag}
         >
-          {adding === "cart" ? "Adding…" : canBuy || !complete ? "Add to cart" : "Sold out"}
-        </Button>
-        {/* Shopify "Buy it now": add, then go straight to checkout. */}
-        <Button size="lg" className="w-full" disabled={!canBuy || !!adding} onClick={() => addToBag(true)}>
-          {adding === "buy" ? "Going to checkout…" : "Buy it now"}
+          {adding ? "Adding…" : "Add to bag"}
         </Button>
       </div>
       {addError && (
-        <p id="add-error" role="alert" className="-mt-2 text-body text-danger">
+        <p id="add-error" role="alert" className="-mt-4 text-body text-danger">
           {addError}
         </p>
       )}
@@ -192,11 +184,11 @@ function OptionGroup({
   const terms = attribute.terms.filter((t) => exists(t.name));
   return (
     <fieldset>
-      <legend id={id} className="mb-3 text-sm tracking-[0.04em] text-ink-muted">
-        {attribute.name}
-        {selected && <span className="ml-1 text-ink">: {selected}</span>}
+      <legend id={id} className="mb-4 text-lg font-semibold tracking-tight">
+        {attribute.name}.{" "}
+        <span className="text-ink-muted">{selected ? selected : "Which one is right for you?"}</span>
       </legend>
-      <div className="flex flex-wrap gap-2" role="radiogroup" aria-labelledby={id}>
+      <div className="grid gap-3 sm:grid-cols-2" role="radiogroup" aria-labelledby={id}>
         {terms.map((t) => {
           const available = isAvailable(t.name);
           const active = selected === t.name;
@@ -208,10 +200,10 @@ function OptionGroup({
               aria-checked={active}
               onClick={() => onSelect(t.name)}
               className={cn(
-                "min-h-11 rounded-full px-5 py-2 text-[0.9375rem] tracking-[0.04em] transition-[box-shadow,color,background-color] focus-visible:outline-2 focus-visible:outline-offset-2",
+                "min-h-16 rounded-xl px-5 py-4 text-left text-body font-semibold transition-[box-shadow,color] focus-visible:outline-2 focus-visible:outline-offset-2",
                 active
-                  ? "bg-ink text-white"
-                  : "shadow-[inset_0_0_0_1px_var(--color-ink-muted)] hover:shadow-[inset_0_0_0_1px_var(--color-ink)]",
+                  ? "shadow-[inset_0_0_0_2px_var(--color-brand-strong)]"
+                  : "shadow-[inset_0_0_0_1px_#86868b] hover:shadow-[inset_0_0_0_1px_var(--color-ink)]",
                 !available && "text-ink-muted line-through decoration-1",
               )}
             >
@@ -242,9 +234,9 @@ function QuantityStepper({
 }) {
   const clamp = (n: number) => Math.min(max, Math.max(min, n));
   const btn =
-    "inline-flex size-11 items-center justify-center hover:text-ink disabled:opacity-30 focus-visible:outline-2 focus-visible:outline-offset-2";
+    "inline-flex size-11 items-center justify-center rounded-full hover:bg-[#e8e8ed] disabled:opacity-30 focus-visible:outline-2 focus-visible:outline-offset-2";
   return (
-    <div className="flex w-36 items-center justify-between shadow-[inset_0_0_0_1px_var(--color-ink-muted)]" role="group" aria-label="Quantity">
+    <div className="flex items-center rounded-full bg-canvas-alt" role="group" aria-label="Quantity">
       <button
         type="button"
         className={btn}

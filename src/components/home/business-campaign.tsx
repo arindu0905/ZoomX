@@ -2,15 +2,15 @@ import { Check } from "lucide-react";
 import { ButtonLink } from "@/components/ui/button";
 import { Container } from "@/components/ui/layout";
 import { Reveal } from "@/components/ui/reveal";
-import { business } from "@/content/home";
+import { business as defaultBusiness } from "@/content/home";
 
 /** Promotional campaign band — currently the real For Businesses offer. */
-export function BusinessCampaign() {
+export function BusinessCampaign({ business = defaultBusiness }: { business?: typeof defaultBusiness }) {
   return (
     <section aria-labelledby="business-title" className="bg-canvas py-section">
       <Container>
         <Reveal>
-          <div className="overflow-hidden bg-ink px-6 py-12 text-white sm:px-10 md:px-16 md:py-20">
+          <div className="overflow-hidden rounded-tile bg-ink px-8 py-16 text-white md:px-16 md:py-20">
             <div className="grid gap-12 md:grid-cols-[1.2fr_1fr] md:items-end">
               <div>
                 <p className="text-caption font-semibold uppercase tracking-[0.12em] text-[#5fd97d]">{business.eyebrow}</p>

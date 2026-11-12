@@ -66,3 +66,22 @@ export function jwtSecondsRemaining(token: string, now = Date.now()): number | n
     return null;
   }
 }
+
+/**
+ * Verifies a request signed by the zoomx-headless WordPress plugin:
+ * X-ZoomX-Signature = hex(HMAC-SHA256(timestamp + "." + body, secret)),
+ * with X-ZoomX-Timestamp (unix seconds) within maxSkew seconds of now.
+ */
+export function verifyWordPressSignature(
+  rawBody: string,
+  timestamp: string | null,
+  signature: string | null,
+  secret: string,
+  now = Date.now(),
+  maxSkew = 300,
+): boolean {
+  if (!timestamp || !signature || !/^\d{1,12}$/.test(timestamp)) return false;
+  if (Math.abs(now / 1000 - Number(timestamp)) > maxSkew) return false;
+  const expected = createHmac("sha256", secret).update(`${timestamp}.${rawBody}`).digest("hex");
+  return safeEqual(signature, expected);
+}

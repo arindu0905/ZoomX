@@ -1,9 +1,9 @@
 import type { MetadataRoute } from "next";
 import { productHref } from "@/components/products/product-card";
-import { policies } from "@/content/pages";
 import { categoryHref } from "@/lib/navigation";
 import { siteUrl } from "@/lib/site";
 import { getAllProductSlugs, getCategories } from "@/services/woocommerce/catalog";
+import { getContentPages, POLICY_SLUGS } from "@/services/wordpress/pages";
 
 /**
  * XML sitemap: indexable pages only. Draft policy pages, the FAQ draft and
@@ -13,16 +13,17 @@ import { getAllProductSlugs, getCategories } from "@/services/woocommerce/catalo
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const url = (path: string) => new URL(path, siteUrl).toString();
-  const [categories, products] = await Promise.all([getCategories(), getAllProductSlugs()]);
+  const [categories, products, pages] = await Promise.all([getCategories(), getAllProductSlugs(), getContentPages()]);
 
-  const approvedPolicies = Object.values(policies)
-    .filter((p) => p.status !== "draft")
-    .map((p) => `/policies/${p.slug}`);
+  // Content pages approved in WordPress (ZOOM X → Pages); drafts stay out.
+  const approved = (slug: string) => pages[slug]?.status !== "draft";
+  const approvedPolicies = POLICY_SLUGS.filter(approved).map((s) => `/policies/${s}`);
+  const approvedPages = ["about", "sustainability", "for-businesses", "faqs"].filter(approved).map((s) => `/${s}`);
 
   return [
     { url: url("/"), changeFrequency: "weekly", priority: 1 },
     { url: url("/shop"), changeFrequency: "daily", priority: 0.9 },
-    ...["/about", "/sustainability", "/for-businesses", "/contact", ...approvedPolicies].map((p) => ({
+    ...[...approvedPages, "/contact", ...approvedPolicies].map((p) => ({
       url: url(p),
       changeFrequency: "monthly" as const,
       priority: 0.5,

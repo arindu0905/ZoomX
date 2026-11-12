@@ -19,8 +19,8 @@ const slow = { timeout: 20_000 };
 async function addCinnamon(page: Page) {
   await page.goto("/product/air-freshener");
   await page.getByRole("radio", { name: "Cinnamon" }).click();
-  await page.getByRole("button", { name: "Add to cart" }).click();
-  const bag = page.getByRole("dialog", { name: /Your cart/ });
+  await page.getByRole("button", { name: "Add to bag" }).click();
+  const bag = page.getByRole("dialog", { name: /Bag/ });
   await expect(bag.getByText("Fragrance: Cinnamon")).toBeVisible(slow);
   return bag;
 }
@@ -29,7 +29,7 @@ test("add to bag opens the drawer and updates the badge", async ({ page }) => {
   const bag = await addCinnamon(page);
   await expect(bag.getByText("LKR 750.00").first()).toBeVisible();
   await expect(
-    page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Cart, 1 item" }),
+    page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Shopping bag, 1 item" }),
   ).toBeAttached();
   await page.keyboard.press("Escape");
   await expect(bag).toBeHidden();
@@ -55,7 +55,7 @@ test("bag page: persistence, quantity, coupons and WooCommerce totals", async ({
   await expect(page.getByText("LKR 1,700.00")).toBeVisible();
 
   await page.getByRole("button", { name: "Remove", exact: false }).first().click();
-  await expect(page.getByRole("heading", { name: "Your cart is empty." })).toBeVisible(slow);
+  await expect(page.getByRole("heading", { name: "Your bag is empty." })).toBeVisible(slow);
 });
 
 test("checkout validates, places a Cash on Delivery order and shows the confirmation", async ({ page }) => {
@@ -91,7 +91,7 @@ test("checkout validates, places a Cash on Delivery order and shows the confirma
 
   // WooCommerce emptied the cart.
   await expect(
-    page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Cart", exact: true }),
+    page.getByRole("navigation", { name: "Main" }).getByRole("link", { name: "Shopping bag", exact: true }),
   ).toBeAttached(slow);
 });
 

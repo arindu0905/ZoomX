@@ -14,12 +14,12 @@ const names = (page: import("@playwright/test").Page) => page.locator("main ul h
 test.describe("shop", () => {
   test("lists products with prices, sale and stock state", async ({ page }) => {
     await page.goto("/shop");
-    await expect(page.getByRole("heading", { level: 1, name: "All products" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Shop." })).toBeVisible();
     await expect(page.getByRole("status").filter({ hasText: "10 products" })).toBeVisible();
     const onSale = page.locator("article", { hasText: "General Purpose Cleaner" });
     await expect(onSale.getByText("Sale", { exact: true })).toBeVisible();
     await expect(onSale.getByText("LKR 590.00")).toBeVisible();
-    await expect(page.locator("article", { hasText: "Tile Cleaner" }).getByText("Sold out")).toBeVisible();
+    await expect(page.locator("article", { hasText: "Tile Cleaner" }).getByText("Out of stock")).toBeVisible();
   });
 
   test("sorts by price", async ({ page }) => {
@@ -86,7 +86,7 @@ test.describe("search", () => {
 test.describe("category page", () => {
   test("shows the category with breadcrumbs and only its products", async ({ page }) => {
     await page.goto("/category/surface-cleaners");
-    await expect(page.getByRole("heading", { level: 1, name: "Surface Cleaners" })).toBeVisible();
+    await expect(page.getByRole("heading", { level: 1, name: "Surface Cleaners." })).toBeVisible();
     await expect(
       page.getByRole("navigation", { name: "Breadcrumb" }).getByRole("link", { name: "Shop" }),
     ).toBeVisible();
@@ -112,8 +112,7 @@ test.describe("product page", () => {
   test("out-of-stock product cannot be bought", async ({ page }) => {
     await page.goto("/product/tile-cleaner");
     await expect(page.getByRole("status").filter({ hasText: "Out of stock" })).toBeVisible();
-    await expect(page.getByRole("button", { name: "Sold out" })).toBeDisabled();
-    await expect(page.getByRole("button", { name: "Buy it now" })).toBeDisabled();
+    await expect(page.getByRole("button", { name: "Add to bag" })).toBeDisabled();
   });
 
   test("variable product updates price, SKU and stock per fragrance", async ({ page }) => {

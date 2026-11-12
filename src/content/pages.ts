@@ -148,7 +148,7 @@ export const faqs: ContentPage = {
     {
       heading: "How do I place an order?",
       paragraphs: [
-        "Add products to your cart, then choose Check out. Enter your contact details and delivery address, choose a payment method and place your order. You’ll see a confirmation page with your order number.",
+        "Add products to your bag, then choose Check out. Enter your contact details and delivery address, choose a payment method and place your order. You’ll see a confirmation page with your order number.",
       ],
     },
     {
@@ -172,7 +172,7 @@ export const faqs: ContentPage = {
     {
       heading: "Where do you deliver, and how much does it cost?",
       paragraphs: [
-        "Delivery options and charges for your address are shown in your cart and at checkout before you pay. See our Delivery Policy. [Coverage and timeframes to be confirmed by ZOOM X.]",
+        "Delivery options and charges for your address are shown in your bag and at checkout before you pay. See our Delivery Policy. [Coverage and timeframes to be confirmed by ZOOM X.]",
       ],
     },
     {
@@ -200,7 +200,7 @@ export const policies: Record<string, ContentPage> = {
       {
         heading: "Delivery charges",
         paragraphs: [
-          "Delivery options and their charges are calculated for your address and shown in your cart and at checkout before you place your order. [Confirm any free-delivery threshold.]",
+          "Delivery options and their charges are calculated for your address and shown in your bag and at checkout before you place your order. [Confirm any free-delivery threshold.]",
         ],
       },
       {
@@ -276,7 +276,7 @@ export const policies: Record<string, ContentPage> = {
       {
         heading: "Cookies",
         bullets: [
-          "zx_cart — keeps your shopping cart between pages and visits (essential).",
+          "zx_cart — keeps your shopping bag between pages and visits (essential).",
           "zx_session — keeps you signed in to your account (essential, only if you sign in).",
           "[List any analytics or marketing cookies if added later — none are used at present.]",
         ],

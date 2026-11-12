@@ -2,9 +2,9 @@ import { ArrowRight } from "lucide-react";
 import { ButtonLink } from "@/components/ui/button";
 import { Container, Section } from "@/components/ui/layout";
 import { Reveal } from "@/components/ui/reveal";
-import { story } from "@/content/home";
+import { story as defaultStory } from "@/content/home";
 
-export function BrandStory() {
+export function BrandStory({ story = defaultStory }: { story?: typeof defaultStory }) {
   return (
     <Section aria-labelledby="story-title">
       <Container>

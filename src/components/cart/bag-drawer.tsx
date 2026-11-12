@@ -9,7 +9,7 @@ import { useCartStore } from "@/store/cart";
 import { useUiStore } from "@/store/ui";
 import { CartLines, money } from "./cart-lines";
 
-/** Slide-in cart drawer. Opens after "Add to cart" and from the header icon. */
+/** Slide-in shopping bag. Opens after "Add to bag" and from the header icon. */
 export function BagDrawer() {
   const open = useUiStore((s) => s.panel === "bag");
   const close = useUiStore((s) => s.close);
@@ -44,20 +44,20 @@ export function BagDrawer() {
           >
             <header className="flex items-center justify-between px-6 pt-5 pb-3">
               <h2 id="bag-title" className="text-title">
-                Your cart
+                Bag
                 {!empty && <span className="ml-2 text-body font-normal text-ink-muted">({cart.items_count})</span>}
               </h2>
-              <button type="button" onClick={close} aria-label="Close cart" className={iconButton}>
+              <button type="button" onClick={close} aria-label="Close bag" className={iconButton}>
                 <X aria-hidden className="size-5" strokeWidth={1.75} />
               </button>
             </header>
 
             {status === "loading" && !cart ? (
-              <p className="px-6 text-body text-ink-muted">Loading your cart…</p>
+              <p className="px-6 text-body text-ink-muted">Loading your bag…</p>
             ) : empty ? (
               <div className="flex flex-1 flex-col items-center justify-center gap-4 px-6 text-center">
                 <ShoppingBag aria-hidden className="size-10 text-ink-muted" strokeWidth={1.25} />
-                <p className="text-lead">Your cart is empty.</p>
+                <p className="text-lead">Your bag is empty.</p>
                 <ButtonLink href="/shop" onClick={close} variant="secondary">
                   Continue shopping
                 </ButtonLink>
@@ -77,7 +77,7 @@ export function BagDrawer() {
                     Check out
                   </ButtonLink>
                   <ButtonLink href="/cart" onClick={close} variant="ghost" className="w-full">
-                    View cart
+                    View bag
                   </ButtonLink>
                 </footer>
               </>

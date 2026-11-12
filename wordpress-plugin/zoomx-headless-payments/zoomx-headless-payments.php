@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: ZOOM X Headless
- * Description: Server-side support for the ZOOM X Next.js storefront: (1) payment methods whose payment step the storefront runs (PayHere) — orders stay "Pending payment" until the storefront verifies the gateway's signed notification; (2) signed server-to-server customer login, registration and password reset using WordPress core authentication.
- * Version: 1.1.0
+ * Description: Server-side support for the ZOOM X Next.js storefront: (1) payment methods whose payment step the storefront runs (PayHere) — orders stay "Pending payment" until the storefront verifies the gateway's signed notification; (2) signed server-to-server customer login, registration and password reset using WordPress core authentication; (3) editable site content and pages (ZOOM X → Site content, ZOOM X → Pages) served to the storefront; (4) signed endpoints for the Next.js admin dashboard (staff sign-in, content saves).
+ * Version: 1.4.0
  * Requires Plugins: woocommerce
  * Author: ZOOM X
  * License: GPL-2.0-or-later
@@ -17,6 +17,9 @@
 defined('ABSPATH') || exit;
 
 require_once __DIR__ . '/includes/auth.php';
+require_once __DIR__ . '/includes/content.php';
+require_once __DIR__ . '/includes/pages.php';
+require_once __DIR__ . '/includes/admin-api.php';
 
 add_action('plugins_loaded', function () {
     if (!class_exists('WC_Payment_Gateway')) {

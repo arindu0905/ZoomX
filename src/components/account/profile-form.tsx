@@ -112,8 +112,8 @@ export function ProfileForm({ defaults }: { defaults: ProfileInput }) {
           role={message.ok ? "status" : "alert"}
           className={
             message.ok
-              ? "bg-brand-tint px-4 py-3 text-body text-brand-strong"
-              : "bg-[#fdecec] px-4 py-3 text-body text-danger"
+              ? "rounded-card bg-brand-tint px-4 py-3 text-body text-brand-strong"
+              : "rounded-card bg-[#fdecec] px-4 py-3 text-body text-danger"
           }
         >
           {message.text}

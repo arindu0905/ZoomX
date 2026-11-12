@@ -29,7 +29,8 @@ const customerSchema = z.object({
 });
 export type AuthCustomer = z.infer<typeof customerSchema>;
 
-async function call<S extends z.ZodType>(path: string, body: Record<string, string>, schema: S): Promise<z.infer<S>> {
+/** Signed POST to the zoomx-headless plugin (also used by the admin dashboard). */
+export async function wpSignedCall<S extends z.ZodType>(path: string, body: Record<string, unknown>, schema: S): Promise<z.infer<S>> {
   const { WOOCOMMERCE_STORE_URL, WORDPRESS_AUTH_SECRET } = requireEnv("WOOCOMMERCE_STORE_URL", "WORDPRESS_AUTH_SECRET");
   const raw = JSON.stringify(body);
   const ts = Math.floor(Date.now() / 1000).toString();
@@ -75,17 +76,17 @@ async function call<S extends z.ZodType>(path: string, body: Record<string, stri
   return parsed.data;
 }
 
-export const wpLogin = (login: string, password: string) => call("auth/login", { login, password }, customerSchema);
+export const wpLogin = (login: string, password: string) => wpSignedCall("auth/login", { login, password }, customerSchema);
 
 export const wpRegister = (input: { email: string; password: string; firstName: string; lastName: string }) =>
-  call(
+  wpSignedCall(
     "auth/register",
     { email: input.email, password: input.password, first_name: input.firstName, last_name: input.lastName },
     customerSchema,
   );
 
 export const wpLostPassword = (login: string) =>
-  call("auth/lost-password", { login }, z.object({ ok: z.literal(true) }));
+  wpSignedCall("auth/lost-password", { login }, z.object({ ok: z.literal(true) }));
 
 export const wpResetPassword = (login: string, key: string, password: string) =>
-  call("auth/reset-password", { login, key, password }, z.object({ ok: z.literal(true) }));
+  wpSignedCall("auth/reset-password", { login, key, password }, z.object({ ok: z.literal(true) }));

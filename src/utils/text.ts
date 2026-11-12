@@ -12,6 +12,9 @@ const NAMED: Record<string, string> = {
   ldquo: "“",
   rdquo: "”",
   hellip: "…",
+  rarr: "→",
+  larr: "←",
+  times: "×",
 };
 
 /**

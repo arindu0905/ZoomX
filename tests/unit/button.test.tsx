@@ -8,15 +8,15 @@ describe("Button", () => {
     expect(screen.getByRole("button", { name: "Add" })).toHaveAttribute("type", "button");
   });
 
-  it("renders links with square Shopify-style buttons", () => {
+  it("renders links with pill styling", () => {
     render(<ButtonLink href="/shop">Shop</ButtonLink>);
     const link = screen.getByRole("link", { name: "Shop" });
     expect(link).toHaveAttribute("href", "/shop");
-    expect(link.className).toContain("rounded-none");
+    expect(link.className).toContain("rounded-full");
   });
 
   it("omits size padding for the link variant", () => {
-    expect(buttonClasses({ variant: "link" })).not.toContain("px-7");
-    expect(buttonClasses({ variant: "primary", size: "lg" })).toContain("min-h-[3.25rem]");
+    expect(buttonClasses({ variant: "link" })).not.toContain("px-6");
+    expect(buttonClasses({ variant: "primary", size: "lg" })).toContain("h-14");
   });
 });

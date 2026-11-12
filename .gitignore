@@ -49,3 +49,6 @@ next-env.d.ts
 
 # Local sandbox REST keys (generated)
 sandbox/.rest-keys.env
+
+.vercel
+.env*

@@ -30,7 +30,7 @@ export async function CatalogResults({
   const toolbarQuery = category ? { ...query, category: undefined } : query;
 
   return (
-    <div className="flex flex-col gap-8">
+    <div className="flex flex-col gap-10">
       <CatalogToolbar action={basePath} query={toolbarQuery} categories={categories} total={result.total} />
 
       {!result.ok ? (
@@ -72,7 +72,7 @@ function EmptyState({
   action?: { label: string; href: string };
 }) {
   return (
-    <div className="flex flex-col items-center gap-4 bg-canvas-alt px-6 py-20 text-center">
+    <div className="flex flex-col items-center gap-4 rounded-card bg-canvas px-6 py-20 text-center shadow-card">
       <SearchX aria-hidden className="size-8 text-ink-muted" strokeWidth={1.5} />
       <h2 className="text-title">{title}</h2>
       <p className="max-w-prose text-body text-ink-muted">{body}</p>

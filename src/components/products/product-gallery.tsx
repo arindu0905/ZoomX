@@ -12,7 +12,7 @@ export function ProductGallery({ images, name }: { images: StoreImage[]; name: s
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="relative aspect-square overflow-hidden bg-canvas-alt">
+      <div className="relative aspect-square overflow-hidden rounded-[10%] bg-canvas-alt">
         {current ? (
           <Image
             key={current.id}
@@ -21,7 +21,7 @@ export function ProductGallery({ images, name }: { images: StoreImage[]; name: s
             fill
             priority={active === 0}
             sizes="(min-width: 1024px) 55vw, 100vw"
-            className="object-contain p-6 sm:p-12"
+            className="object-contain p-10 sm:p-16"
           />
         ) : (
           <div aria-hidden className="flex h-full items-center justify-center text-body text-ink-muted">
@@ -40,8 +40,8 @@ export function ProductGallery({ images, name }: { images: StoreImage[]; name: s
                 aria-label={`Show image ${i + 1} of ${images.length}`}
                 aria-current={i === active}
                 className={cn(
-                  "relative block size-16 overflow-hidden bg-canvas-alt transition sm:size-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-strong",
-                  i === active ? "shadow-[inset_0_0_0_2px_var(--color-ink)]" : "opacity-70 hover:opacity-100",
+                  "relative block size-20 overflow-hidden rounded-[10%] bg-canvas-alt ring-offset-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-strong",
+                  i === active ? "ring-2 ring-ink" : "opacity-70 hover:opacity-100",
                 )}
               >
                 <Image src={img.thumbnail ?? img.src} alt="" fill sizes="80px" className="object-contain p-2" />

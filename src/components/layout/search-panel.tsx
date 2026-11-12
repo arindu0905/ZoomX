@@ -118,9 +118,9 @@ export function SearchPanel({
                           <li key={r.id}>
                             <Link
                               href={productHref(r.slug)}
-                              className="-mx-3 flex items-center gap-4 px-3 py-2 hover:bg-canvas-alt"
+                              className="-mx-3 flex items-center gap-4 rounded-card px-3 py-2 hover:bg-canvas-alt"
                             >
-                              <span className="relative size-12 shrink-0 overflow-hidden bg-canvas-alt">
+                              <span className="relative size-12 shrink-0 overflow-hidden rounded-xl bg-canvas-alt">
                                 {r.image && (
                                   <Image src={r.image} alt="" fill sizes="48px" className="object-contain p-1" />
                                 )}

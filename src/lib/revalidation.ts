@@ -5,7 +5,7 @@
  * Tags are those assigned in services/woocommerce/catalog.ts.
  */
 
-export const ALLOWED_TAG = /^(products|categories|product:\d{1,12})$/;
+export const ALLOWED_TAG = /^(products|categories|content|product:\d{1,12})$/;
 
 interface WebhookPayload {
   id?: unknown;

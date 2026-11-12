@@ -61,7 +61,7 @@ describe("ProductCard", () => {
 
   it("flags out-of-stock products and hides the sale badge", () => {
     render(<ProductCard product={{ ...base, is_in_stock: false, on_sale: true }} />);
-    expect(screen.getByText("Sold out")).toBeInTheDocument();
+    expect(screen.getByText("Out of stock")).toBeInTheDocument();
     expect(screen.queryByText("Sale")).toBeNull();
   });
 });

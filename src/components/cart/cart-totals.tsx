@@ -106,7 +106,7 @@ function CouponForm({ cart }: { cart: Cart }) {
           maxLength={50}
           aria-describedby={message ? `${id}-msg` : undefined}
           aria-invalid={!!message}
-          className="h-11 min-w-0 flex-1 bg-canvas px-4 text-body shadow-[inset_0_0_0_1px_var(--color-ink-muted)] outline-none focus-visible:ring-2 focus-visible:ring-brand-strong"
+          className="h-11 min-w-0 flex-1 rounded-full bg-canvas-alt px-4 text-body outline-none focus-visible:ring-2 focus-visible:ring-brand-strong"
         />
         <Button type="button" variant="ghost" onClick={submit} disabled={pending || !code.trim()}>
           Apply
@@ -137,7 +137,7 @@ function ShippingOptions({ cart, editable }: { cart: Cart; editable: boolean }) 
             {pkg.shipping_rates.map((rate) => (
               <label
                 key={rate.rate_id}
-                className="flex cursor-pointer items-center justify-between gap-3 px-4 py-3 shadow-[inset_0_0_0_1px_var(--color-line)] has-[:checked]:shadow-[inset_0_0_0_2px_var(--color-ink)]"
+                className="flex cursor-pointer items-center justify-between gap-3 rounded-card px-4 py-3 shadow-[inset_0_0_0_1px_var(--color-line)] has-[:checked]:shadow-[inset_0_0_0_2px_var(--color-ink)]"
               >
                 <span className="flex items-center gap-3">
                   <input

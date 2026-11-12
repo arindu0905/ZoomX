@@ -1,18 +1,11 @@
 import type { Metadata, Viewport } from "next";
-import { Assistant } from "next/font/google";
-import { CartProvider } from "@/components/cart/cart-provider";
-import { AnnouncementBar } from "@/components/layout/announcement-bar";
+import { Inter } from "next/font/google";
 import { MotionProvider } from "@/components/layout/motion-provider";
-import { SiteFooter } from "@/components/layout/site-footer";
-import { SiteHeader } from "@/components/layout/site-header";
-import type { NavCategory } from "@/lib/navigation";
 import { site, siteUrl } from "@/lib/site";
-import { getCategories } from "@/services/woocommerce/catalog";
-import { decodeEntities } from "@/utils/text";
 import "./globals.css";
 
-const assistant = Assistant({
-  variable: "--font-assistant",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
   display: "swap",
 });
@@ -29,16 +22,9 @@ export const viewport: Viewport = {
   themeColor: "#ffffff",
 };
 
-export default async function RootLayout({ children }: LayoutProps<"/">) {
-  // Live WooCommerce categories (cached). Empty until the store exists, in
-  // which case the navigation offers "All products" only.
-  const navCategories: NavCategory[] = (await getCategories()).map((c) => ({
-    name: decodeEntities(c.name),
-    slug: c.slug,
-  }));
-
+export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en-LK" className={assistant.variable}>
+    <html lang="en-LK" className={inter.variable}>
       <body className="flex min-h-dvh flex-col">
         <a
           href="#main"
@@ -46,15 +32,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         >
           Skip to content
         </a>
-        <MotionProvider>
-          <AnnouncementBar announcement={site.announcement} />
-          <SiteHeader categories={navCategories} />
-          <main id="main" className="flex-1">
-            {children}
-          </main>
-          <SiteFooter />
-          <CartProvider />
-        </MotionProvider>
+        <MotionProvider>{children}</MotionProvider>
       </body>
     </html>
   );

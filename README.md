@@ -9,7 +9,7 @@ Next.js storefront for ZOOM X (Capital Wills Holdings (Pvt) Ltd), backed by Word
 | Concern | Choice |
 |---|---|
 | Framework | Next.js 16 (App Router, Cache Components) · React 19 · TypeScript |
-| Styling | Tailwind CSS 4 (PostCSS) · Assistant via `next/font` · Shopify-theme look ([docs/DESIGN-SYSTEM.md](docs/DESIGN-SYSTEM.md)) |
+| Styling | Tailwind CSS 4 (PostCSS) · Inter via `next/font` · apple.com-style look ([docs/DESIGN-SYSTEM.md](docs/DESIGN-SYSTEM.md)) |
 | UI | Framer Motion · Lucide React |
 | Forms | React Hook Form · Zod |
 | Client UI state | Zustand (cart contents live in WooCommerce, never localStorage) |
@@ -107,9 +107,10 @@ Copy lives in [`src/content/home.ts`](src/content/home.ts), taken from the curre
 
 | Section | Source | Behaviour without WooCommerce |
 |---|---|---|
-| Hero | zoomx.lk tagline + intro, Shopify-style image banner with a product splash shot | Typographic. Set `heroImage` once a real packshot is approved (the AI renders on zoomx.lk have garbled label text, so they aren't used). |
+| Hero | zoomx.lk tagline + intro, apple.com-style line-up of best-seller packshots | Typographic. Set `heroImage` once a real packshot is approved (the AI renders on zoomx.lk have garbled label text, so they aren't used). |
 | Shop by category | Live Store API categories | Falls back to the 10 product names from zoomx.lk/products, each linking to a shop search |
-| Best sellers / Featured products | Shopify-style featured collections (4-up grid, swipe on mobile) | Hidden |
+| Product tiles | apple.com-style tiles: featured products full-width, then best sellers two-up, each with Learn more / Buy | Hidden |
+| The full range | Best-seller card carousel | Hidden |
 | Campaign | zoomx.lk/for-businesses | Always shown |
 | Brand story / Why ZOOM X | zoomx.lk/about-us, home "Why We Care" | Always shown |
 | Testimonials | — | Omitted until verified reviews exist |
@@ -118,6 +119,38 @@ Copy lives in [`src/content/home.ts`](src/content/home.ts), taken from the curre
 Left out on purpose, pending evidence: "99.9% germ kill", "dermatologically tested and certified", "food-contact certified" and "phosphate/paraben free".
 
 Catalogue data comes from [`src/services/woocommerce/catalog.ts`](src/services/woocommerce/catalog.ts). Reads are cached for hours and tagged `products` and `categories` for webhook revalidation (Phase 6). Responses are validated with Zod. If WooCommerce is unconfigured or down, product sections are hidden rather than breaking the page. Product names are decoded to plain text and never rendered as HTML.
+
+## Editable site content
+
+The ZOOM X team edits the announcement bar and homepage copy in WordPress, at **ZOOM X → Site content**, without a developer. This comes from the `zoomx-headless-payments` plugin, v1.2 (`includes/content.php`).
+
+- Fields: announcement (or hide it), top banner, For businesses, Our story (paragraphs + 4 values), Why ZOOM X (4 reasons). **An empty field keeps the built-in copy** from `src/content/home.ts`.
+- WordPress serves it read-only at `GET /wp-json/zoomx/v1/content`. The storefront validates it with Zod, merges it over the defaults (`src/services/wordpress/content.ts`), caches it for hours under the `content` tag, and falls back to the defaults if WordPress is down.
+- **Save** calls `POST /api/content/refresh` on the storefront, signed with the same shared secret as customer sign-in (`ZOOMX_HEADLESS_SECRET` = `WORDPRESS_AUTH_SECRET`), so changes appear immediately. If that call fails, the change still appears within an hour.
+- Links accept only site paths (`/shop`) or http(s) URLs, and all text is plain (no HTML).
+- **Pages** (**ZOOM X → Pages**, `includes/pages.php`): About, Sustainability, For businesses, FAQs, and the Delivery, Returns, Privacy and Terms policies. Each page has a title, search description, small heading, headline, Draft/Approved status and a plain-text body (`## Heading`, `- bullet`, blank line between paragraphs). The editor is pre-filled from `GET /api/content/pages` (the built-in text). Only fields that differ from the built-in text are stored, and **Restore standard text** removes them. Approved pages lose the Draft notice and `noindex` and join the sitemap. Served at `GET /wp-json/zoomx/v1/pages` and merged in `src/services/wordpress/pages.ts`.
+- Still in code: the Contact page (it uses the business details in `src/lib/site.ts`). Product data lives in WooCommerce.
+
+## Admin dashboard (`/admin`)
+
+A Shopify-style back office built in Next.js, so the ZOOM X team never needs to open WordPress. WooCommerce stays the engine behind it: stock, order emails, payments and the database.
+
+| Screen | What it does |
+|---|---|
+| Home | Orders and sales for the last 30 days, orders waiting to be packed, recent orders, low stock |
+| Orders | Filter by status, search, open an order: items, totals, customer, address, change status, add private or customer notes |
+| Products | Search and filter by stock. Edit name, short description, price, sale price, stock, published/draft and featured. Products with options (e.g. Air Freshener) edit price and stock per option |
+| Customers | Accounts with contact details and a link to their orders |
+| Discounts | Create (% or LKR off, minimum spend, expiry, max uses) and delete codes |
+| Site content / Pages | Homepage text, announcement bar and content pages (same data as the WordPress screens) |
+
+**How it works**
+- **Sign in:** staff use their WordPress login. Only users who can manage WooCommerce (Shop manager or Administrator) are accepted, checked by the plugin's signed `auth/staff-login` endpoint. Customers can't sign in here, and staff can't sign in to the storefront account area.
+- **Session:** `zx_admin` cookie: HttpOnly, SameSite=Strict, 8 hours, signed with a key separate from the customer session. Staff status is re-checked with WordPress on **every** admin page and action (`admin/staff`), so removing someone's role locks them out immediately.
+- **Saving:** every change is a Server Action (`src/app/admin/actions.ts`) that re-checks the staff member, validates with Zod, and saves through WooCommerce REST v3 (`src/services/admin/woo.ts`) or the plugin's signed `admin/content` / `admin/page` endpoints. The storefront cache is then refreshed, so changes show on the website immediately.
+- **Layout:** the storefront lives in the `src/app/(shop)` route group (same URLs), and the admin has its own frame. `/admin` renders per request (`instant = false`), is `noindex`, and is disallowed in robots.txt.
+- **Not in the dashboard yet:** creating new products or uploading photos (use the CSV import or WordPress), gateway refunds, staff management, and delivery/tax settings. These stay in WordPress → WooCommerce.
+- **Local sandbox:** sign in at http://localhost:3000/admin with `admin` / `password` (sandbox only).
 
 ## Business data policy
 
@@ -218,7 +251,7 @@ E2E: `tests/e2e/account.spec.ts` covers register, sign-out, wrong password, sign
 | `/faqs` | Draft: describes how this site works. `noindex` |
 | `/policies/delivery`, `/returns`, `/privacy`, `/terms` | **Drafts awaiting client approval**: a visible "Draft" notice, `noindex`, kept out of the sitemap. [Bracketed] text marks facts only the business can provide; no fees, timeframes or windows are invented. The privacy draft lists the site's real cookies and data flows |
 
-To approve a page: replace the bracketed text and set `status: "approved-copy"`. It then becomes indexable and is added to the sitemap.
+To approve a page: in WordPress, **ZOOM X → Pages**, replace the bracketed text and set Status to **Approved**. It then becomes indexable and is added to the sitemap. (Without WordPress, set `status: "approved-copy"` in `src/content/pages.ts`.)
 
 ### SEO
 - `/sitemap.xml`: home, shop, content pages, approved policies, and every WooCommerce category and product (refreshed by the `products`/`categories` cache tags).

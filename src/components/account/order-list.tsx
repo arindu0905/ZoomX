@@ -6,7 +6,7 @@ import { formatDecimalPrice } from "@/utils/currency";
 export function OrderList({ orders }: { orders: Order[] }) {
   if (orders.length === 0) {
     return (
-      <p className="bg-canvas-alt px-6 py-12 text-center text-body text-ink-muted">
+      <p className="rounded-card bg-canvas-alt px-6 py-12 text-center text-body text-ink-muted">
         You haven’t placed any orders yet.{" "}
         <Link href="/shop" className="text-brand-strong underline underline-offset-4">
           Start shopping
@@ -20,7 +20,7 @@ export function OrderList({ orders }: { orders: Order[] }) {
         <li key={o.id}>
           <Link
             href={`/account/orders/${o.id}`}
-            className="-mx-3 grid grid-cols-2 gap-x-4 gap-y-1 px-3 py-4 hover:bg-canvas-alt sm:grid-cols-4 sm:items-center"
+            className="-mx-3 grid grid-cols-2 gap-x-4 gap-y-1 rounded-card px-3 py-4 hover:bg-canvas-alt sm:grid-cols-4 sm:items-center"
           >
             <span className="font-semibold">Order #{o.number}</span>
             <span className="text-right text-body text-ink-muted sm:text-left">{formatOrderDate(o.date_created)}</span>

@@ -39,8 +39,8 @@ async function signIn(page: Page, email: string, password = PASSWORD) {
 
 async function placeCodOrder(page: Page, email: string) {
   await page.goto("/product/dish-washing-liquid");
-  await page.getByRole("button", { name: "Add to cart" }).click();
-  await expect(page.getByRole("dialog", { name: /Your cart/ })).toBeVisible(slow);
+  await page.getByRole("button", { name: "Add to bag" }).click();
+  await expect(page.getByRole("dialog", { name: /Bag/ })).toBeVisible(slow);
   await page.goto("/checkout");
   await expect(page.getByRole("button", { name: /Place order/ })).toBeVisible(slow);
   await page.getByLabel("Email").fill(email);

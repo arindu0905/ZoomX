@@ -97,3 +97,29 @@ These pages are part of the website's design, so text changes go through your de
 | Website is down or shows errors | Contact your developer: they'll check Vercel logs and can roll back instantly |
 
 Technical documentation for developers: `README.md` and the `docs/` folder in the code repository.
+
+## Editing the website text yourself
+
+In WordPress, go to **ZOOM X → Site content**. You can change the announcement bar (or hide it), the homepage banner, the For businesses block, Our story and the Why ZOOM X reasons. Leave a box empty to keep the standard wording. Click **Save and update website**; the message confirms when the website has updated. Only publish claims the business can prove.
+
+### Editing pages and policies
+
+Go to **ZOOM X → Pages** and pick a tab: About, Sustainability, For businesses, FAQs, Delivery, Returns, Privacy or Terms. The boxes already contain the current website text.
+
+- In **Page text**, start a heading with `## `, start a bullet point with `- `, and leave a blank line between paragraphs.
+- Policy pages start as **Draft**: they show a "Draft" notice and are hidden from Google. Replace every [bracketed] note with the real details, then set **Status → Approved** and save.
+- **Restore standard text** undoes all your edits to that page.
+
+Products, prices, stock, categories, coupons, delivery charges and orders are managed in WooCommerce as usual.
+
+## Running the shop from the ZOOM X dashboard
+
+Go to **yourwebsite/admin** and sign in with your WordPress shop manager login. It works on phones too.
+
+- **Home:** orders and sales for the last 30 days, orders waiting to be packed, and low stock.
+- **Orders:** open an order to see what to pack and where to deliver it. Change the status (for example Processing → Completed once delivered) and add notes. Tick "Email this note to the customer" to send it to them.
+- **Products:** change prices, sale prices and stock, hide a product (Draft), or feature it on the homepage. For the Air Freshener, each fragrance has its own price and stock.
+- **Discounts:** create codes like SAVE10 for customers to enter in their bag.
+- **Site content / Pages:** edit the homepage text, the announcement bar and the About, policy and FAQ pages.
+
+Every change appears on the website straight away. A few things still happen in WordPress: adding new products and photos, delivery charges, payment settings and staff accounts.

@@ -25,11 +25,11 @@ describe("SiteHeader", () => {
     expect(nav.querySelector('a[href="/"][aria-current]')).toBeNull();
   });
 
-  it("announces the cart count accessibly", () => {
+  it("announces the bag count accessibly", () => {
     render(<SiteHeader categories={[]} />);
-    expect(screen.getByRole("link", { name: "Cart" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Shopping bag" })).toBeInTheDocument();
     act(() => useCartStore.setState({ cart: { items_count: 3 } as never }));
-    expect(screen.getByRole("link", { name: "Cart, 3 items" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Shopping bag, 3 items" })).toBeInTheDocument();
   });
 
   it("opens the categories flyout with real categories and closes on Escape", async () => {

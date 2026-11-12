@@ -6,21 +6,20 @@ export type ButtonVariant = "primary" | "secondary" | "ghost" | "link";
 export type ButtonSize = "sm" | "md" | "lg";
 
 const base =
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap font-semibold tracking-[0.06em] transition-[background-color,color,box-shadow] duration-200 ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-40";
+  "inline-flex items-center justify-center gap-1.5 whitespace-nowrap font-medium transition-[background-color,color,box-shadow,transform] duration-200 ease-standard focus-visible:outline-2 focus-visible:outline-offset-2 disabled:pointer-events-none disabled:opacity-40 active:scale-[0.98]";
 
 const variants: Record<ButtonVariant, string> = {
-  // Shopify-theme buttons: square, solid or 1px outline that thickens on hover.
-  primary: "rounded-none bg-brand-strong text-white shadow-[inset_0_0_0_1px_var(--color-brand-strong)] hover:shadow-[inset_0_0_0_2px_#00591a]",
+  primary: "rounded-full bg-brand-strong text-white hover:bg-[#006618]",
   secondary:
-    "rounded-none bg-transparent text-ink shadow-[inset_0_0_0_1px_var(--color-ink)] hover:shadow-[inset_0_0_0_2px_var(--color-ink)]",
-  ghost: "rounded-none bg-canvas-alt text-ink hover:bg-line",
-  link: "rounded-none text-ink underline underline-offset-[0.3em] decoration-1 hover:decoration-2",
+    "rounded-full bg-transparent text-brand-strong shadow-[inset_0_0_0_1px_var(--color-brand-strong)] hover:bg-brand-strong hover:text-white",
+  ghost: "rounded-full bg-canvas-alt text-ink hover:bg-[#e8e8ed]",
+  link: "rounded-sm text-brand-strong underline-offset-4 hover:underline active:scale-100",
 };
 
 const sizes: Record<ButtonSize, string> = {
-  sm: "min-h-10 px-5 text-sm",
-  md: "min-h-[2.875rem] px-7 text-[0.9375rem]",
-  lg: "min-h-[3.25rem] px-9 text-base",
+  sm: "h-8 px-4 text-sm",
+  md: "h-11 px-6 text-body",
+  lg: "h-14 px-8 text-lg",
 };
 
 export function buttonClasses({
