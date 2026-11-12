@@ -430,3 +430,28 @@ select:not([multiple]):not([size]) {
     animation-delay: 0s !important;
   }
 }
+
+/* Pop-in for small panels (price filter, menus). */
+@keyframes zx-pop {
+  from { opacity: 0; transform: translateY(-6px) scale(0.98); }
+}
+
+/* Loading shimmer for skeletons. */
+.shimmer {
+  background: linear-gradient(100deg, var(--color-canvas-alt) 30%, #ffffff 50%, var(--color-canvas-alt) 70%);
+  background-size: 300% 100%;
+  animation: zx-shimmer 1.4s ease-in-out infinite;
+}
+@keyframes zx-shimmer {
+  from { background-position: 100% 0; }
+  to { background-position: 0 0; }
+}
+
+/* Phones: product tiles become a swipeable rail. Scroll-linked effects follow
+   vertical page scroll, which a sideways rail doesn't have — show tiles as is. */
+@media (max-width: 767px) {
+  .tile-rail .reveal,
+  .tile-rail .float-in {
+    animation: none !important;
+  }
+}

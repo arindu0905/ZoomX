@@ -1,3 +1,4 @@
+import type React from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { categoryHref } from "@/lib/navigation";
@@ -18,9 +19,9 @@ export function CategoryRow({
   if (!categories.length) return null;
   return (
     <nav aria-label="Categories" className={className}>
-      <ul className="flex min-w-0 max-w-full snap-x snap-mandatory gap-2 overflow-x-auto pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {categories.map((c) => (
-          <li key={c.id} className="shrink-0 snap-start">
+      <ul className="flex min-w-0 max-w-full snap-x snap-mandatory gap-2 overflow-x-auto pb-2 [mask-image:linear-gradient(to_right,#000_85%,transparent)] [scrollbar-width:none] sm:[mask-image:none] [&::-webkit-scrollbar]:hidden">
+        {categories.map((c, i) => (
+          <li key={c.id} className="animate-rise shrink-0 snap-start" style={{ "--i": i + 2 } as React.CSSProperties}>
             <Link
               href={categoryHref(c.slug)}
               aria-current={c.slug === active ? "page" : undefined}
@@ -36,7 +37,7 @@ export function CategoryRow({
                     alt=""
                     fill
                     sizes="128px"
-                    className="object-contain transition-transform duration-500 ease-standard group-hover:scale-105"
+                    className="object-contain drop-shadow-[0_10px_10px_rgba(0,0,0,0.12)] transition-transform duration-500 ease-emphasized group-hover:-translate-y-1.5 group-hover:scale-110 group-hover:-rotate-6 group-active:scale-95"
                   />
                 )}
               </span>

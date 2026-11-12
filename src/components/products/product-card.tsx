@@ -36,7 +36,7 @@ export function ProductCard({ product, morph = false }: { product: StoreProduct;
   const rating = Number.parseFloat(product.average_rating);
   const name = decodeEntities(product.name);
   return (
-    <article className="group relative flex h-full flex-col rounded-card bg-canvas p-5 shadow-card transition-[box-shadow,transform] duration-300 ease-standard hover:scale-[1.01] hover:shadow-card-hover sm:p-7">
+    <article className="group relative flex h-full flex-col rounded-card bg-canvas p-5 shadow-card transition-[box-shadow,transform] duration-300 ease-standard hover:scale-[1.01] hover:shadow-card-hover active:scale-[0.98] sm:p-7">
       {product.on_sale && product.is_in_stock && (
         <p className="mb-1 text-caption font-semibold tracking-tight text-highlight">Sale</p>
       )}

@@ -57,11 +57,11 @@ export function CatalogToolbar({
         <p className="text-body text-ink-muted" role="status" aria-live="polite">
           {total === 1 ? "1 product" : `${total} products`}
         </p>
-        <div className="flex flex-wrap items-center gap-2">
+        <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:flex-wrap sm:items-center">
           {categories && categories.length > 0 && (
-            <label className="flex items-center">
+            <label className="flex min-w-0 items-center">
               <span className="sr-only">Category</span>
-              <select name="category" defaultValue={query.category ?? ""} onChange={submit} className={field}>
+              <select name="category" defaultValue={query.category ?? ""} onChange={submit} className={cn(field, "w-full min-w-0 truncate sm:w-auto")}>
                 <option value="">All categories</option>
                 {categories.map((c) => (
                   <option key={c.slug} value={c.slug}>
@@ -73,7 +73,7 @@ export function CatalogToolbar({
           )}
           <label className="flex items-center">
             <span className="sr-only">Sort by</span>
-            <select name="sort" defaultValue={query.sort} onChange={submit} className={field}>
+            <select name="sort" defaultValue={query.sort} onChange={submit} className={cn(field, "w-full min-w-0 truncate sm:w-auto")}>
               {SORT_OPTIONS.map((o) => (
                 <option key={o.value} value={o.value}>
                   {o.label}
@@ -82,19 +82,19 @@ export function CatalogToolbar({
             </select>
           </label>
           {/* Native disclosure: works before hydration and without JavaScript. */}
-          <details className="group relative">
+          <details className="group relative col-span-2 sm:col-span-1">
             <summary
               className={buttonClasses({
                 variant: "ghost",
                 size: "md",
                 className:
-                  "h-11 cursor-pointer list-none bg-canvas shadow-[inset_0_0_0_1px_var(--color-line)] hover:bg-canvas [&::-webkit-details-marker]:hidden",
+                  "h-11 w-full cursor-pointer list-none bg-canvas sm:w-auto shadow-[inset_0_0_0_1px_var(--color-line)] hover:bg-canvas [&::-webkit-details-marker]:hidden",
               })}
             >
               <SlidersHorizontal aria-hidden className="size-4" />
               Price
             </summary>
-            <fieldset className="absolute right-0 z-10 mt-2 flex w-max max-w-[calc(100vw-2*var(--spacing-gutter))] flex-wrap items-end gap-3 rounded-card bg-canvas p-5 shadow-card-hover">
+            <fieldset className="absolute inset-x-0 z-10 mt-2 grid grid-cols-2 items-end gap-3 rounded-card bg-canvas p-4 shadow-card-hover animate-[zx-pop_0.25s_var(--ease-emphasized)_both] sm:inset-x-auto sm:right-0 sm:flex sm:w-max sm:p-5">
               <legend className="sr-only">Price range in LKR</legend>
               <label className="flex flex-col gap-1.5 text-caption text-ink-muted">
                 Min (LKR)
@@ -105,7 +105,7 @@ export function CatalogToolbar({
                   min={0}
                   step={1}
                   defaultValue={query.min}
-                  className={cn(field, "w-36 bg-canvas")}
+                  className={cn(field, "w-full bg-canvas sm:w-36")}
                 />
               </label>
               <label className="flex flex-col gap-1.5 text-caption text-ink-muted">
@@ -117,10 +117,10 @@ export function CatalogToolbar({
                   min={0}
                   step={1}
                   defaultValue={query.max}
-                  className={cn(field, "w-36 bg-canvas")}
+                  className={cn(field, "w-full bg-canvas sm:w-36")}
                 />
               </label>
-              <button type="submit" className={buttonClasses({ size: "md" })}>
+              <button type="submit" className={buttonClasses({ size: "md", className: "col-span-2 sm:col-span-1" })}>
                 Apply
               </button>
             </fieldset>

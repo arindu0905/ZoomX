@@ -161,9 +161,9 @@ function ShippingOptions({ cart, editable }: { cart: Cart; editable: boolean }) 
             {pkg.shipping_rates.map((rate) => (
               <label
                 key={rate.rate_id}
-                className="flex cursor-pointer items-center justify-between gap-3 rounded-card px-4 py-3 shadow-[inset_0_0_0_1px_var(--color-line)] has-[:checked]:shadow-[inset_0_0_0_2px_var(--color-ink)]"
+                className="flex cursor-pointer items-center justify-between gap-3 rounded-card px-4 py-3 shadow-[inset_0_0_0_1px_var(--color-line)] transition-[box-shadow,background-color] duration-200 has-[:checked]:bg-canvas has-[:checked]:shadow-[inset_0_0_0_2px_var(--color-ink)]"
               >
-                <span className="flex items-center gap-3">
+                <span className="flex min-w-0 items-center gap-3">
                   <input
                     type="radio"
                     name={`shipping-${pkg.package_id}`}
@@ -180,7 +180,9 @@ function ShippingOptions({ cart, editable }: { cart: Cart; editable: boolean }) 
                     )}
                   </span>
                 </span>
-                <span className="tabular-nums">{money(rate.price, cart)}</span>
+                <span className="shrink-0 whitespace-nowrap tabular-nums">
+                  {Number.parseInt(rate.price, 10) === 0 ? <span className="font-semibold text-brand-strong">Free</span> : money(rate.price, cart)}
+                </span>
               </label>
             ))}
           </fieldset>

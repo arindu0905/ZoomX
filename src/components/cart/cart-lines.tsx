@@ -1,5 +1,6 @@
 "use client";
 
+import { AnimatePresence, motion } from "framer-motion";
 import { Minus, Plus, Trash2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -19,9 +20,11 @@ const slugFromPermalink = (permalink?: string) => permalink?.match(/\/product\/(
 export function CartLines({ cart, compact = false }: { cart: Cart; compact?: boolean }) {
   return (
     <ul className="divide-y divide-line">
-      {cart.items.map((item) => (
-        <CartLine key={item.key} item={item} cart={cart} compact={compact} />
-      ))}
+      <AnimatePresence initial={false}>
+        {cart.items.map((item) => (
+          <CartLine key={item.key} item={item} cart={cart} compact={compact} />
+        ))}
+      </AnimatePresence>
     </ul>
   );
 }
@@ -45,7 +48,14 @@ function CartLine({ item, cart, compact }: { item: CartItem; cart: Cart; compact
   };
 
   return (
-    <li className="flex gap-4 py-5">
+    <motion.li
+      layout
+      initial={{ opacity: 0, x: -16 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 40, height: 0, paddingTop: 0, paddingBottom: 0 }}
+      transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+      className="flex gap-4 overflow-hidden py-5"
+    >
       <div
         className={cn(
           "relative shrink-0 overflow-hidden rounded-card bg-canvas-alt",
@@ -129,6 +139,6 @@ function CartLine({ item, cart, compact }: { item: CartItem; cart: Cart; compact
           </p>
         )}
       </div>
-    </li>
+    </motion.li>
   );
 }

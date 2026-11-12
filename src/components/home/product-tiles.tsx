@@ -27,11 +27,14 @@ export function ProductTiles({ products, title }: { products: StoreProduct[]; ti
         <ProductTile product={lead} size="wide" />
       </div>
       {grid.length > 0 && (
-        <ul className="grid gap-tile-gap px-tile-gap md:grid-cols-2">
+        <ul
+          aria-label="More products — swipe for more"
+          className="tile-rail flex snap-x snap-mandatory gap-tile-gap overflow-x-auto scroll-px-tile-gap px-tile-gap pb-1 [scrollbar-width:none] md:grid md:snap-none md:grid-cols-2 md:overflow-visible md:pb-0 [&::-webkit-scrollbar]:hidden"
+        >
           {grid.map((p, i) => {
             const closing = grid.length % 2 === 1 && i === grid.length - 1;
             return (
-              <li key={p.id} className={cn(closing && "md:col-span-2")}>
+              <li key={p.id} className={cn("w-[84%] shrink-0 snap-start md:w-auto", closing && "md:col-span-2")}>
                 <ProductTile product={p} size={closing ? "wide" : "half"} flip={closing} />
               </li>
             );
