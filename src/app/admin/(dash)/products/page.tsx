@@ -27,7 +27,7 @@ export default async function ProductsPage({ searchParams }: PageProps<"/admin/p
       <PageHeader
         title="Products"
         actions={
-          <AdminLinkButton href="/admin/products/new" className="bg-[#1a1a1a] text-white shadow-none hover:bg-black">
+          <AdminLinkButton href="/admin/products/new" variant="primary">
             Add product
           </AdminLinkButton>
         }

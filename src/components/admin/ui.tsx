@@ -80,11 +80,22 @@ export function AdminButton({ variant = "primary", className, ...props }: Compon
   );
 }
 
-export function AdminLinkButton({ className, ...props }: ComponentProps<typeof Link>) {
+/**
+ * Link styled as a button. Use `variant` rather than overriding colours in
+ * className — cn() doesn't merge conflicting Tailwind classes.
+ */
+export function AdminLinkButton({
+  className,
+  variant = "secondary",
+  ...props
+}: ComponentProps<typeof Link> & { variant?: "primary" | "secondary" }) {
   return (
     <Link
       className={cn(
-        "inline-flex min-h-9 items-center justify-center rounded-lg bg-canvas px-4 text-sm font-semibold shadow-[inset_0_0_0_1px_var(--color-line)] hover:bg-canvas-alt",
+        "inline-flex min-h-9 items-center justify-center rounded-lg px-4 text-sm font-semibold transition-colors",
+        variant === "primary"
+          ? "bg-[#1a1a1a] text-white hover:bg-black"
+          : "bg-canvas text-ink shadow-[inset_0_0_0_1px_var(--color-line)] hover:bg-canvas-alt",
         className,
       )}
       {...props}

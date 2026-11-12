@@ -27,7 +27,7 @@ export default async function OrdersPage({ searchParams }: PageProps<"/admin/ord
       <PageHeader
         title="Orders"
         actions={
-          <AdminLinkButton href="/admin/orders/new" className="bg-[#1a1a1a] text-white shadow-none hover:bg-black">
+          <AdminLinkButton href="/admin/orders/new" variant="primary">
             Create order
           </AdminLinkButton>
         }

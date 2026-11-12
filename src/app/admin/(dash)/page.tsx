@@ -29,7 +29,9 @@ export default async function AdminHome() {
         title={`Hello, ${staff.name.split(" ")[0]}.`}
         actions={
           <>
-            <AdminLinkButton href="/admin/orders/new">Create order</AdminLinkButton>
+            <AdminLinkButton href="/admin/orders/new" variant="primary">
+              Create order
+            </AdminLinkButton>
             <AdminLinkButton href="/admin/products/new">Add product</AdminLinkButton>
             <AdminLinkButton href="/admin/coupons">New discount</AdminLinkButton>
           </>
