@@ -14,7 +14,8 @@ const ROWS = 5;
 
 /** Manual order (phone / WhatsApp / walk-in). WooCommerce prices the items, totals the order and reduces stock. */
 export default async function NewOrderPage({ searchParams }: PageProps<"/admin/orders/new">) {
-  const [, sp, products] = await Promise.all([requireStaff(), searchParams, listAllProducts()]);
+  await requireStaff(); // first: keeps the store call out of the build and away from signed-out visitors
+  const [sp, products] = await Promise.all([searchParams, listAllProducts()]);
   // Expand products with options into one choice per option.
   const choices = (
     await Promise.all(

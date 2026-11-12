@@ -15,7 +15,9 @@ const fileInput =
   "text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-canvas-alt file:px-3 file:py-2 file:text-sm file:font-semibold";
 
 export default async function CategoriesPage({ searchParams }: PageProps<"/admin/categories">) {
-  const [, sp, all] = await Promise.all([requireStaff(), searchParams, listCategories()]);
+  // Staff check first: it reads the session cookie, so nothing below is fetched at build time or for signed-out visitors.
+  await requireStaff();
+  const [sp, all] = await Promise.all([searchParams, listCategories()]);
   const categories = all.filter((c) => c.slug !== "uncategorized");
 
   return (

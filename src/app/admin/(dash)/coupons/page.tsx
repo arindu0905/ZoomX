@@ -12,7 +12,8 @@ import { listCoupons } from "@/services/admin/woo";
 export const metadata: Metadata = { title: "Discounts" };
 
 export default async function CouponsPage({ searchParams }: PageProps<"/admin/coupons">) {
-  const [, sp, coupons] = await Promise.all([requireStaff(), searchParams, listCoupons()]);
+  await requireStaff(); // first: keeps the store call out of the build and away from signed-out visitors
+  const [sp, coupons] = await Promise.all([searchParams, listCoupons()]);
   return (
     <>
       <PageHeader title="Discounts" />

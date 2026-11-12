@@ -133,9 +133,12 @@ export const getStaff = cache(async (): Promise<Staff | null> => {
 });
 
 async function sessionStaffId(): Promise<number | null> {
-  if (!getServerEnv().SESSION_SECRET) return null;
+  // Read the request first, even when unconfigured: that is what marks admin
+  // pages as per-request. Returning early here made them look static, so a
+  // build without SESSION_SECRET tried to prerender the sign-in redirect and failed.
   const raw = (await cookies()).get(ADMIN_COOKIE)?.value;
   await connection();
+  if (!getServerEnv().SESSION_SECRET) return null;
   return decodeAdminSession(raw);
 }
 

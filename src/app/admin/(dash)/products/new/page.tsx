@@ -8,7 +8,8 @@ import { listCategories } from "@/services/admin/woo";
 export const metadata: Metadata = { title: "Add product" };
 
 export default async function NewProductPage({ searchParams }: PageProps<"/admin/products/new">) {
-  const [, categories, sp] = await Promise.all([requireStaff(), listCategories(), searchParams]);
+  await requireStaff(); // first: keeps the store call out of the build and away from signed-out visitors
+  const [categories, sp] = await Promise.all([listCategories(), searchParams]);
   return (
     <>
       <PageHeader title="Add product" back={{ href: "/admin/products", label: "Products" }} />
