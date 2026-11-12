@@ -17,7 +17,7 @@ export function ConfirmButton({
         if (!window.confirm(message)) e.preventDefault();
       }}
       className={cn(
-        "inline-flex min-h-9 items-center justify-center rounded-lg bg-canvas px-4 text-sm font-semibold text-danger shadow-[inset_0_0_0_1px_var(--color-line)] transition-colors hover:bg-[#fdecec]",
+        "inline-flex min-h-9 items-center justify-center btn-motion rounded-button bg-canvas px-4 text-sm font-semibold text-danger shadow-[inset_0_0_0_1px_var(--color-line)] transition-colors hover:bg-[#fdecec]",
         className,
       )}
       {...props}

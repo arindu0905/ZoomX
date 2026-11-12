@@ -71,7 +71,7 @@ export function SearchPanel({
                     setTerm("");
                     inputRef.current?.focus();
                   }}
-                  className="shrink-0 rounded-full px-3 py-1.5 text-caption text-ink-muted hover:bg-black/5 hover:text-ink"
+                  className="shrink-0 rounded-button px-3 py-1.5 text-caption text-ink-muted hover:bg-black/5 hover:text-ink"
                 >
                   Clear
                 </button>

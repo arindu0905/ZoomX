@@ -10,7 +10,7 @@ import type { NavCategory } from "@/lib/navigation";
 import { cn } from "@/utils/cn";
 
 const field =
-  "h-11 rounded-full bg-canvas px-4 shadow-[inset_0_0_0_1px_var(--color-line)] text-body text-ink outline-none focus-visible:ring-2 focus-visible:ring-brand-strong";
+  "h-11 rounded-button bg-canvas px-4 shadow-[inset_0_0_0_1px_var(--color-line)] text-body text-ink outline-none focus-visible:ring-2 focus-visible:ring-brand-strong";
 
 /**
  * Sort + filters as a plain GET form (works without JavaScript); next/form
@@ -133,7 +133,7 @@ export function CatalogToolbar({
           {query.search && <span className="text-ink-muted">Results for “{query.search}”</span>}
           <Link
             href={action}
-            className="inline-flex items-center gap-1 rounded-full px-3 py-1.5 text-brand-strong hover:underline"
+            className="inline-flex items-center gap-1 rounded-button px-3 py-1.5 text-brand-strong hover:underline"
           >
             <X aria-hidden className="size-3.5" />
             Clear all

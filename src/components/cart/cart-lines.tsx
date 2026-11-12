@@ -84,7 +84,7 @@ function CartLine({ item, cart, compact }: { item: CartItem; cart: Cart; compact
         <div className="mt-2 flex items-center justify-between gap-3">
           {editable ? (
             <div
-              className="flex items-center rounded-full bg-canvas-alt"
+              className="flex items-center rounded-button bg-canvas-alt"
               role="group"
               aria-label={`Quantity for ${name}`}
             >
@@ -117,7 +117,7 @@ function CartLine({ item, cart, compact }: { item: CartItem; cart: Cart; compact
             type="button"
             onClick={() => run(remove(item.key))}
             disabled={pending}
-            className="inline-flex items-center gap-1.5 rounded-full px-2 py-1 text-caption text-ink-muted hover:text-ink disabled:opacity-40"
+            className="inline-flex items-center gap-1.5 rounded-button px-2 py-1 text-caption text-ink-muted hover:text-ink disabled:opacity-40"
           >
             <Trash2 aria-hidden className="size-3.5" />
             Remove<span className="sr-only"> {name}</span>

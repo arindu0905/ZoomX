@@ -69,7 +69,7 @@ export function AdminButton({ variant = "primary", className, ...props }: Compon
     <button
       type="submit"
       className={cn(
-        "inline-flex min-h-9 items-center justify-center rounded-lg px-4 text-sm font-semibold transition-colors disabled:opacity-50",
+        "inline-flex min-h-9 items-center justify-center btn-motion rounded-button px-4 text-sm font-semibold transition-colors disabled:opacity-50",
         variant === "primary" && "bg-[#1a1a1a] text-white hover:bg-black",
         variant === "secondary" && "bg-canvas shadow-[inset_0_0_0_1px_var(--color-line)] hover:bg-canvas-alt",
         variant === "danger" && "bg-canvas text-danger shadow-[inset_0_0_0_1px_var(--color-line)] hover:bg-[#fdecec]",
@@ -92,7 +92,7 @@ export function AdminLinkButton({
   return (
     <Link
       className={cn(
-        "inline-flex min-h-9 items-center justify-center rounded-lg px-4 text-sm font-semibold transition-colors",
+        "inline-flex min-h-9 items-center justify-center btn-motion rounded-button px-4 text-sm font-semibold transition-colors",
         variant === "primary"
           ? "bg-[#1a1a1a] text-white hover:bg-black"
           : "bg-canvas text-ink shadow-[inset_0_0_0_1px_var(--color-line)] hover:bg-canvas-alt",

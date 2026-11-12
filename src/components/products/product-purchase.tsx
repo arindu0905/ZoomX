@@ -236,7 +236,7 @@ function QuantityStepper({
   const btn =
     "inline-flex size-11 items-center justify-center rounded-full hover:bg-[#e8e8ed] disabled:opacity-30 focus-visible:outline-2 focus-visible:outline-offset-2";
   return (
-    <div className="flex items-center rounded-full bg-canvas-alt" role="group" aria-label="Quantity">
+    <div className="flex items-center rounded-button bg-canvas-alt" role="group" aria-label="Quantity">
       <button
         type="button"
         className={btn}

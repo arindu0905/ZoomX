@@ -25,7 +25,7 @@ export function QuickAdd({ productId, name }: { productId: number; name: string 
           if (r.ok) open("bag");
           else setError(r.message);
         }}
-        className="inline-flex h-9 items-center gap-1 rounded-full bg-canvas-alt px-4 text-sm font-medium transition-colors hover:bg-ink hover:text-white disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2"
+        className="inline-flex h-9 items-center gap-1 btn-motion rounded-button bg-canvas-alt px-4 text-sm font-medium transition-colors hover:bg-ink hover:text-white disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2"
       >
         <Plus aria-hidden className="size-4" />
         {busy ? "Adding…" : "Add"}

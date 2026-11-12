@@ -67,6 +67,7 @@
    */
   --radius-card: clamp(1.25rem, 0.9rem + 1.1vw, 1.875rem); /* ~10% of a product card */
   --radius-tile: clamp(1.5rem, 0.6rem + 3.6vw, 3.5rem); /* ~10% of a homepage tile */
+  --radius-button: 10px; /* every button and button-like control */
   --shadow-card: 2px 4px 12px rgb(0 0 0 / 0.08);
   --shadow-card-hover: 2px 4px 16px rgb(0 0 0 / 0.16);
 
@@ -149,4 +150,53 @@ body {
 }
 .animate-bump {
   animation: zx-bump 0.4s var(--ease-emphasized);
+}
+
+/* ── Buttons: small motion ─────────────────────────────────────────────── */
+/* Hover lift + soft shadow, icon nudge, and a quick press. */
+.btn-motion {
+  transition:
+    background-color 200ms var(--ease-standard),
+    color 200ms var(--ease-standard),
+    box-shadow 200ms var(--ease-standard),
+    transform 200ms var(--ease-emphasized);
+}
+@media (hover: hover) {
+  .btn-motion:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px -6px rgb(0 0 0 / 0.25);
+  }
+  .btn-motion:hover:not(:disabled) svg {
+    transform: translateX(2px);
+  }
+}
+.btn-motion svg {
+  transition: transform 250ms var(--ease-emphasized);
+}
+.btn-motion:active:not(:disabled) {
+  transform: translateY(0) scale(0.97);
+  box-shadow: none;
+  transition-duration: 80ms;
+}
+
+/* Light sweep across primary buttons on hover. */
+.btn-shine {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+.btn-shine::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: linear-gradient(110deg, transparent 30%, rgb(255 255 255 / 0.28) 50%, transparent 70%);
+  transform: translateX(-120%);
+  pointer-events: none;
+}
+@media (hover: hover) {
+  .btn-shine:hover::after {
+    transform: translateX(120%);
+    transition: transform 700ms var(--ease-standard);
+  }
 }
