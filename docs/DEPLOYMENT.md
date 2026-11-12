@@ -4,6 +4,8 @@ Target setup: **storefront on Vercel at `zoomx.lk`**, and **WordPress + WooComme
 
 Related guides: [WooCommerce integration](WOOCOMMERCE-INTEGRATION.md) · [Payments](PAYMENT-CONFIGURATION.md) · [Client handover](CLIENT-HANDOVER.md)
 
+> **Preview mode (no store connected yet).** If `WOOCOMMERCE_STORE_URL` is not set — e.g. the first Vercel deployment, before WordPress is hosted — the storefront shows the real ZOOM X range from `sandbox/catalogue/` (names, sizes, copy, packshots in `public/catalogue/`) with **"Price coming soon"**, buying turned off, and a banner pointing customers to the phone number. No prices are invented. Setting `WOOCOMMERCE_STORE_URL` (and the keys below) and redeploying switches to the live store automatically. The local sandbox (`127.0.0.1:9400`) only exists on the developer's machine and can never be used from Vercel.
+
 ---
 
 ## 0. What you need

@@ -8,6 +8,11 @@ export function Price({ prices, onSale, className }: { prices: StorePrices; onSa
     formatPrice({ amount, minorUnit: prices.currency_minor_unit, currencyCode: prices.currency_code });
   const range = prices.price_range;
 
+  // No price yet (preview catalogue before the live store is connected).
+  if (prices.price === "") {
+    return <p className={cn("font-medium text-ink-muted", className)}>Price coming soon</p>;
+  }
+
   if (range && range.min_amount !== range.max_amount) {
     return (
       <p className={className}>

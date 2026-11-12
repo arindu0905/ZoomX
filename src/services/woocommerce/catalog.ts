@@ -10,6 +10,7 @@ import {
   type StoreProduct,
   type StoreProductDetail,
 } from "@/types/store-api";
+import { preview } from "./preview";
 import { isStoreConfigured, StoreApiError, storeGet, storeGetPage, type Page } from "./store-api";
 
 /** Cache tags revalidated by WooCommerce webhooks (Phase 6). */
@@ -24,8 +25,8 @@ export const CACHE_TAGS = {
  * invented products. Errors are logged (without secrets) and degrade to empty
  * so a backend outage never takes down marketing pages.
  */
-async function safely<T>(label: string, fn: () => Promise<T[]>): Promise<T[]> {
-  if (!isStoreConfigured()) return [];
+async function safely<T>(label: string, fn: () => Promise<T[]>, previewData: () => T[] = () => []): Promise<T[]> {
+  if (!isStoreConfigured()) return previewData();
   try {
     return await fn();
   } catch (err) {
@@ -83,7 +84,7 @@ export interface ProductListResult extends Page<StoreProduct> {
 
 /** One page of products for the shop / category / search pages. */
 export async function getProducts(query: CatalogQuery): Promise<ProductListResult> {
-  if (!isStoreConfigured()) return { ...EMPTY_PAGE, ok: false };
+  if (!isStoreConfigured()) return { ...preview.page(query), ok: true };
   try {
     return await cachedProducts(query);
   } catch (err) {
@@ -107,7 +108,7 @@ async function cachedProducts(query: CatalogQuery): Promise<ProductListResult> {
 }
 
 export async function getCategory(slug: string): Promise<StoreCategory | null> {
-  if (!isStoreConfigured()) return null;
+  if (!isStoreConfigured()) return preview.category(slug);
   try {
     return await cachedCategory(slug);
   } catch (err) {
@@ -150,7 +151,10 @@ export async function getProductBySlug(slug: string): Promise<ProductDetail | nu
   "use cache";
   cacheLife("minutes");
   cacheTag(CACHE_TAGS.products);
-  if (!isStoreConfigured()) return null;
+  if (!isStoreConfigured()) {
+    const product = preview.bySlug(slug);
+    return product ? { product, variants: [] } : null;
+  }
   try {
     const [product] = await storeGet("products", z.array(storeProductDetailSchema), { slug });
     if (!product) return null;
@@ -238,14 +242,14 @@ async function cached_getAllProductSlugs(): Promise<{ slug: string }[]> {
 
 const run = <T>(fn: () => Promise<T>): Promise<T> => fn();
 
-export const getCategories = (): Promise<StoreCategory[]> => safely("categories", () => cached_getCategories());
+export const getCategories = (): Promise<StoreCategory[]> => safely("categories", () => cached_getCategories(), preview.categories);
 export const getBestSellers = (limit = 8): Promise<StoreProduct[]> =>
-  safely("best sellers", () => cached_getBestSellers(limit));
+  safely("best sellers", () => cached_getBestSellers(limit), () => preview.bestSellers(limit));
 export const getFeaturedProducts = (limit = 4): Promise<StoreProduct[]> =>
-  safely("featured", () => cached_getFeaturedProducts(limit));
+  safely("featured", () => cached_getFeaturedProducts(limit), () => preview.featured(limit));
 export const getRelatedProducts = (product: StoreProduct, limit = 4): Promise<StoreProduct[]> =>
-  safely("related", () => cached_getRelatedProducts(product, limit));
+  safely("related", () => cached_getRelatedProducts(product, limit), () => preview.related(product, limit));
 export const searchProducts = (term: string, limit = 6): Promise<StoreProduct[]> =>
-  safely("search", () => cached_searchProducts(term, limit));
+  safely("search", () => cached_searchProducts(term, limit), () => preview.search(term, limit));
 export const getAllProductSlugs = (): Promise<{ slug: string }[]> =>
-  safely("all products", () => cached_getAllProductSlugs());
+  safely("all products", () => cached_getAllProductSlugs(), preview.slugs);

@@ -4,7 +4,9 @@ import { AnnouncementBar } from "@/components/layout/announcement-bar";
 import { SiteFooter } from "@/components/layout/site-footer";
 import { SiteHeader } from "@/components/layout/site-header";
 import type { NavCategory } from "@/lib/navigation";
+import { site } from "@/lib/site";
 import { getCategories } from "@/services/woocommerce/catalog";
+import { isStoreConfigured } from "@/services/woocommerce/store-api";
 import { getSiteContent } from "@/services/wordpress/content";
 import { decodeEntities } from "@/utils/text";
 
@@ -19,6 +21,15 @@ export async function ShopChrome({ children }: { children: ReactNode }) {
   }));
   return (
     <>
+      {!isStoreConfigured() && (
+        <p className="bg-ink px-gutter py-2 text-center text-caption text-white/85">
+          Preview of the new ZOOM X website — online ordering opens soon. Call{" "}
+          <a href={site.contact.phoneHref} className="font-semibold text-white underline underline-offset-2">
+            {site.contact.phone}
+          </a>{" "}
+          to order today.
+        </p>
+      )}
       <AnnouncementBar announcement={content.announcement} />
       <SiteHeader categories={navCategories} />
       <main id="main" className="flex-1">

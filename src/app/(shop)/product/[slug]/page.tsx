@@ -63,9 +63,9 @@ async function ProductView({ params }: Pick<PageProps<"/product/[slug]">, "param
   const specs = [
     product.formatted_weight &&
       product.formatted_weight !== "N/A" && {
-      label: "Weight",
-      value: decodeEntities(product.formatted_weight),
-    },
+        label: "Weight",
+        value: decodeEntities(product.formatted_weight),
+      },
     product.formatted_dimensions &&
       product.formatted_dimensions !== "N/A" && {
         label: "Dimensions",
@@ -110,7 +110,9 @@ async function ProductView({ params }: Pick<PageProps<"/product/[slug]">, "param
           >
             <header>
               {category && !(product.on_sale && product.is_in_stock) && (
-                <p className="mb-1 text-sm font-semibold tracking-tight text-highlight">{decodeEntities(category.name)}</p>
+                <p className="mb-1 text-sm font-semibold tracking-tight text-highlight">
+                  {decodeEntities(category.name)}
+                </p>
               )}
               {product.on_sale && product.is_in_stock && (
                 <p className="mb-1 text-sm font-semibold tracking-tight text-highlight">Sale</p>
@@ -118,7 +120,11 @@ async function ProductView({ params }: Pick<PageProps<"/product/[slug]">, "param
               <h1 className="text-hero text-balance">{name}</h1>
               {summary && <p className="mt-4 text-lead text-pretty text-ink-muted">{summary}</p>}
             </header>
-            <ProductPurchase {...toPurchaseProps(detail)} name={name} image={product.images[0]?.thumbnail ?? product.images[0]?.src} />
+            <ProductPurchase
+              {...toPurchaseProps(detail)}
+              name={name}
+              image={product.images[0]?.thumbnail ?? product.images[0]?.src}
+            />
           </div>
         </div>
       </Container>
@@ -215,13 +221,15 @@ function toPurchaseProps({ product, variants }: ProductDetail) {
 }
 
 function toJsonLd({ product, variants }: ProductDetail, name: string) {
-  const offers = (variants.length ? variants : [null]).map((v) => ({
-    sku: v?.sku || product.sku || undefined,
-    price: (v ?? product).prices.price,
-    minorUnit: product.prices.currency_minor_unit,
-    currency: product.prices.currency_code,
-    inStock: v ? v.inStock : product.is_in_stock,
-  }));
+  const offers = (variants.length ? variants : [null])
+    .map((v) => ({
+      sku: v?.sku || product.sku || undefined,
+      price: (v ?? product).prices.price,
+      minorUnit: product.prices.currency_minor_unit,
+      currency: product.prices.currency_code,
+      inStock: v ? v.inStock : product.is_in_stock,
+    }))
+    .filter((o) => o.price !== ""); // no offer without a real price (preview catalogue)
   const rating = Number.parseFloat(product.average_rating);
   return productJsonLd({
     name,
