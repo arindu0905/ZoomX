@@ -34,22 +34,22 @@ async function safely<T>(label: string, fn: () => Promise<T[]>): Promise<T[]> {
   }
 }
 
-export async function getCategories(): Promise<StoreCategory[]> {
+async function cached_getCategories(): Promise<StoreCategory[]> {
   "use cache";
   cacheLife("hours");
   cacheTag(CACHE_TAGS.categories);
-  return safely("categories", async () => {
+  return run(async () => {
     const all = await storeGet("products/categories", z.array(storeCategorySchema));
     // Top-level, non-empty, excluding WooCommerce's default "Uncategorized".
     return all.filter((c) => c.parent === 0 && c.count > 0 && c.slug !== "uncategorized");
   });
 }
 
-export async function getBestSellers(limit = 8): Promise<StoreProduct[]> {
+async function cached_getBestSellers(limit = 8): Promise<StoreProduct[]> {
   "use cache";
   cacheLife("hours");
   cacheTag(CACHE_TAGS.products);
-  return safely("best sellers", () =>
+  return run(() =>
     storeGet("products", z.array(storeProductSchema), {
       orderby: "popularity",
       order: "desc",
@@ -58,11 +58,11 @@ export async function getBestSellers(limit = 8): Promise<StoreProduct[]> {
   );
 }
 
-export async function getFeaturedProducts(limit = 4): Promise<StoreProduct[]> {
+async function cached_getFeaturedProducts(limit = 4): Promise<StoreProduct[]> {
   "use cache";
   cacheLife("hours");
   cacheTag(CACHE_TAGS.products);
-  return safely("featured", () =>
+  return run(() =>
     storeGet("products", z.array(storeProductSchema), {
       featured: true,
       per_page: limit,
@@ -83,33 +83,45 @@ export interface ProductListResult extends Page<StoreProduct> {
 
 /** One page of products for the shop / category / search pages. */
 export async function getProducts(query: CatalogQuery): Promise<ProductListResult> {
+  if (!isStoreConfigured()) return { ...EMPTY_PAGE, ok: false };
+  try {
+    return await cachedProducts(query);
+  } catch (err) {
+    console.warn("[catalog] products:", err instanceof Error ? err.message : "unknown error");
+    return { ...EMPTY_PAGE, ok: false };
+  }
+}
+
+async function cachedProducts(query: CatalogQuery): Promise<ProductListResult> {
   "use cache";
   cacheLife("minutes");
   cacheTag(CACHE_TAGS.products);
-  if (!isStoreConfigured()) return { ...EMPTY_PAGE, ok: false };
   try {
     const page = await storeGetPage("products", storeProductSchema, toStoreApiParams(query));
     return { ...page, ok: true };
   } catch (err) {
     // WooCommerce answers 400 for an out-of-range page; treat as empty, not as an outage.
     if (err instanceof StoreApiError && err.status === 400) return { ...EMPTY_PAGE, ok: true };
-    console.warn("[catalog] products:", err instanceof Error ? err.message : "unknown error");
-    return { ...EMPTY_PAGE, ok: false };
+    throw err; // not cached — the next request retries
   }
 }
 
 export async function getCategory(slug: string): Promise<StoreCategory | null> {
-  "use cache";
-  cacheLife("hours");
-  cacheTag(CACHE_TAGS.categories);
   if (!isStoreConfigured()) return null;
   try {
-    const all = await storeGet("products/categories", z.array(storeCategorySchema));
-    return all.find((c) => c.slug === slug) ?? null;
+    return await cachedCategory(slug);
   } catch (err) {
     console.warn("[catalog] category:", err instanceof Error ? err.message : "unknown error");
     return null;
   }
+}
+
+async function cachedCategory(slug: string): Promise<StoreCategory | null> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(CACHE_TAGS.categories);
+  const all = await storeGet("products/categories", z.array(storeCategorySchema));
+  return all.find((c) => c.slug === slug) ?? null;
 }
 
 export interface ProductVariant {
@@ -167,13 +179,13 @@ export async function getProductBySlug(slug: string): Promise<ProductDetail | nu
 }
 
 /** Other products from the first shared category. */
-export async function getRelatedProducts(product: StoreProduct, limit = 4): Promise<StoreProduct[]> {
+async function cached_getRelatedProducts(product: StoreProduct, limit = 4): Promise<StoreProduct[]> {
   "use cache";
   cacheLife("hours");
   cacheTag(CACHE_TAGS.products);
   const category = product.categories[0]?.slug;
   if (!category) return [];
-  return safely("related", async () => {
+  return run(async () => {
     const items = await storeGet("products", z.array(storeProductSchema), {
       category,
       per_page: limit + 1,
@@ -190,11 +202,11 @@ export async function getPopularProductSlugs(limit = 24): Promise<string[]> {
 }
 
 /** Lightweight search for the header suggestions. */
-export async function searchProducts(term: string, limit = 6): Promise<StoreProduct[]> {
+async function cached_searchProducts(term: string, limit = 6): Promise<StoreProduct[]> {
   "use cache";
   cacheLife("minutes");
   cacheTag(CACHE_TAGS.products);
-  return safely("search", () =>
+  return run(() =>
     storeGet("products", z.array(storeProductSchema), {
       search: term,
       per_page: limit,
@@ -203,11 +215,11 @@ export async function searchProducts(term: string, limit = 6): Promise<StoreProd
 }
 
 /** Every published product's slug + modified date, for the XML sitemap. */
-export async function getAllProductSlugs(): Promise<{ slug: string }[]> {
+async function cached_getAllProductSlugs(): Promise<{ slug: string }[]> {
   "use cache";
   cacheLife("hours");
   cacheTag(CACHE_TAGS.products);
-  return safely("all products", async () => {
+  return run(async () => {
     const out: { slug: string }[] = [];
     for (let page = 1; page <= 50; page++) {
       const batch = await storeGetPage("products", storeProductSchema, { per_page: 100, page });
@@ -217,3 +229,23 @@ export async function getAllProductSlugs(): Promise<{ slug: string }[]> {
     return out;
   });
 }
+
+// ── Uncached wrappers ─────────────────────────────────────────────────────
+// Errors thrown inside a "use cache" function are not cached. The cached
+// loaders above therefore throw on failure, and these wrappers fall back to
+// empty outside the cache — otherwise an outage (e.g. the local sandbox not
+// started yet) would be served as "no products" for hours after it recovers.
+
+const run = <T>(fn: () => Promise<T>): Promise<T> => fn();
+
+export const getCategories = (): Promise<StoreCategory[]> => safely("categories", () => cached_getCategories());
+export const getBestSellers = (limit = 8): Promise<StoreProduct[]> =>
+  safely("best sellers", () => cached_getBestSellers(limit));
+export const getFeaturedProducts = (limit = 4): Promise<StoreProduct[]> =>
+  safely("featured", () => cached_getFeaturedProducts(limit));
+export const getRelatedProducts = (product: StoreProduct, limit = 4): Promise<StoreProduct[]> =>
+  safely("related", () => cached_getRelatedProducts(product, limit));
+export const searchProducts = (term: string, limit = 6): Promise<StoreProduct[]> =>
+  safely("search", () => cached_searchProducts(term, limit));
+export const getAllProductSlugs = (): Promise<{ slug: string }[]> =>
+  safely("all products", () => cached_getAllProductSlugs());

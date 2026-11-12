@@ -99,30 +99,29 @@ export function mergePage(base: ContentPage, remote: RemotePage | undefined): Co
   };
 }
 
+/** Cached on success only: a thrown error is not cached, so an outage is retried on the next request. */
 async function fetchRemotePages(): Promise<Record<string, RemotePage>> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(CONTENT_TAG);
   const { WOOCOMMERCE_STORE_URL, WOOCOMMERCE_REQUEST_TIMEOUT_MS } = getServerEnv();
   if (!WOOCOMMERCE_STORE_URL) return {};
-  try {
-    const res = await fetch(new URL("/wp-json/zoomx/v1/pages", WOOCOMMERCE_STORE_URL), {
-      headers: { Accept: "application/json" },
-      signal: AbortSignal.timeout(WOOCOMMERCE_REQUEST_TIMEOUT_MS),
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const parsed = remotePagesSchema.safeParse(await res.json());
-    if (!parsed.success) throw new Error("unexpected pages shape");
-    return parsed.data;
-  } catch (err) {
-    console.warn("[content] pages:", err instanceof Error ? err.message : "unknown error");
-    return {};
-  }
+  const res = await fetch(new URL("/wp-json/zoomx/v1/pages", WOOCOMMERCE_STORE_URL), {
+    headers: { Accept: "application/json" },
+    signal: AbortSignal.timeout(WOOCOMMERCE_REQUEST_TIMEOUT_MS),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const parsed = remotePagesSchema.safeParse(await res.json());
+  if (!parsed.success) throw new Error("unexpected pages shape");
+  return parsed.data;
 }
 
 /** Every content page, WordPress edits merged over the built-in copy. Refreshed on save. */
 export async function getContentPages(): Promise<Record<string, ContentPage>> {
-  "use cache";
-  cacheLife("hours");
-  cacheTag(CONTENT_TAG);
-  const remote = await fetchRemotePages();
+  const remote = await fetchRemotePages().catch((err: unknown) => {
+    console.warn("[content] pages:", err instanceof Error ? err.message : "unknown error");
+    return {} as Record<string, RemotePage>;
+  });
   return Object.fromEntries(Object.entries(DEFAULT_PAGES).map(([slug, page]) => [slug, mergePage(page, remote[slug])]));
 }
 

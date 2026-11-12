@@ -67,22 +67,21 @@ export function mergeContent(remote: RemoteContent | null, base: SiteContent = D
   };
 }
 
+/** Cached on success only: a thrown error is not cached, so an outage is retried on the next request. */
 async function fetchRemote(): Promise<RemoteContent | null> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag(CONTENT_TAG);
   const { WOOCOMMERCE_STORE_URL, WOOCOMMERCE_REQUEST_TIMEOUT_MS } = getServerEnv();
   if (!WOOCOMMERCE_STORE_URL) return null;
-  try {
-    const res = await fetch(new URL("/wp-json/zoomx/v1/content", WOOCOMMERCE_STORE_URL), {
-      headers: { Accept: "application/json" },
-      signal: AbortSignal.timeout(WOOCOMMERCE_REQUEST_TIMEOUT_MS),
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const parsed = contentSchema.safeParse(await res.json());
-    if (!parsed.success) throw new Error("unexpected content shape");
-    return parsed.data;
-  } catch (err) {
-    console.warn("[content] site content:", err instanceof Error ? err.message : "unknown error");
-    return null;
-  }
+  const res = await fetch(new URL("/wp-json/zoomx/v1/content", WOOCOMMERCE_STORE_URL), {
+    headers: { Accept: "application/json" },
+    signal: AbortSignal.timeout(WOOCOMMERCE_REQUEST_TIMEOUT_MS),
+  });
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const parsed = contentSchema.safeParse(await res.json());
+  if (!parsed.success) throw new Error("unexpected content shape");
+  return parsed.data;
 }
 
 /**
@@ -91,8 +90,9 @@ async function fetchRemote(): Promise<RemoteContent | null> {
  * saves; on any error the built-in copy is used.
  */
 export async function getSiteContent(): Promise<SiteContent> {
-  "use cache";
-  cacheLife("hours");
-  cacheTag(CONTENT_TAG);
-  return mergeContent(await fetchRemote());
+  const remote = await fetchRemote().catch((err: unknown) => {
+    console.warn("[content] site content:", err instanceof Error ? err.message : "unknown error");
+    return null;
+  });
+  return mergeContent(remote);
 }
