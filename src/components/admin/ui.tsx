@@ -128,3 +128,13 @@ export function TableCard({ children }: { children: ReactNode }) {
     </div>
   );
 }
+
+/** True for a WooCommerce "not found" (works across the admin read cache, which may not preserve the error class). */
+export function isNotFound(err: unknown): boolean {
+  const e = err as { status?: unknown; message?: unknown } | null;
+  return !!e && (e.status === 404 || (typeof e.message === "string" && /REST 404/.test(e.message)));
+}
+
+export function SearchParamsNotice({ sp }: { sp: Record<string, string | string[] | undefined> }) {
+  return <Notice saved={typeof sp.saved === "string" ? sp.saved : undefined} error={typeof sp.error === "string" ? sp.error : undefined} />;
+}

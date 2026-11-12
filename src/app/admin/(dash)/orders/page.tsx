@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { adminDate, adminMoney } from "@/components/admin/format";
-import { Badge, EmptyRow, inputClass, PageHeader, Pager, TableCard } from "@/components/admin/ui";
+import { AdminLinkButton, Badge, EmptyRow, inputClass, PageHeader, Pager, SearchParamsNotice, TableCard } from "@/components/admin/ui";
 import { requireStaff } from "@/services/admin/session";
 import { listOrders, ORDER_STATUSES } from "@/services/admin/woo";
 import { cn } from "@/utils/cn";
@@ -11,8 +11,7 @@ export const metadata: Metadata = { title: "Orders" };
 const TABS = [{ value: "", label: "All" }, ...ORDER_STATUSES.filter((s) => ["processing", "on-hold", "pending", "completed", "cancelled"].includes(s.value))];
 
 export default async function OrdersPage({ searchParams }: PageProps<"/admin/orders">) {
-  await requireStaff();
-  const sp = await searchParams;
+  const [, sp] = await Promise.all([requireStaff(), searchParams]);
   const status = typeof sp.status === "string" && ORDER_STATUSES.some((s) => s.value === sp.status) ? sp.status : "";
   const search = typeof sp.q === "string" ? sp.q.slice(0, 100) : "";
   const page = Math.max(1, Number(sp.page) || 1);
@@ -25,7 +24,15 @@ export default async function OrdersPage({ searchParams }: PageProps<"/admin/ord
 
   return (
     <>
-      <PageHeader title="Orders" />
+      <PageHeader
+        title="Orders"
+        actions={
+          <AdminLinkButton href="/admin/orders/new" className="bg-[#1a1a1a] text-white shadow-none hover:bg-black">
+            Create order
+          </AdminLinkButton>
+        }
+      />
+      <SearchParamsNotice sp={sp} />
       <div className="mb-4 flex flex-wrap items-center gap-3">
         <nav aria-label="Filter by status" className="flex gap-1 overflow-x-auto rounded-xl bg-black/5 p-1">
           {TABS.map((t) => (

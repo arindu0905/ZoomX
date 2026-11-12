@@ -135,21 +135,26 @@ The ZOOM X team edits the announcement bar and homepage copy in WordPress, at **
 
 A Shopify-style back office built in Next.js, so the ZOOM X team never needs to open WordPress. WooCommerce stays the engine behind it: stock, order emails, payments and the database.
 
-| Screen | What it does |
-|---|---|
-| Home | Orders and sales for the last 30 days, orders waiting to be packed, recent orders, low stock |
-| Orders | Filter by status, search, open an order: items, totals, customer, address, change status, add private or customer notes |
-| Products | Search and filter by stock. Edit name, short description, price, sale price, stock, published/draft and featured. Products with options (e.g. Air Freshener) edit price and stock per option |
-| Customers | Accounts with contact details and a link to their orders |
-| Discounts | Create (% or LKR off, minimum spend, expiry, max uses) and delete codes |
-| Site content / Pages | Homepage text, announcement bar and content pages (same data as the WordPress screens) |
+| Screen | Create | Read | Update | Delete |
+|---|---|---|---|---|
+| Home | Quick links: create order, add product, new discount | Orders and sales (30 days), waiting to be packed, recent orders, low stock | — | — |
+| Orders | Manual orders (phone / WhatsApp / walk-in): pick products, qty, address, payment, delivery charge. WooCommerce prices and totals them and reduces stock | List, filter by status, search, order detail | Status, customer and delivery details, customer note, private or customer-emailed notes | Order (to trash, restorable 30 days), notes |
+| Products | Single products or products with options (e.g. Fragrance: Lemon, Lavender), with photo upload | List, search, filter by stock or category | Name, descriptions, price, sale price, stock, SKU, categories, photos (add / remove / main), status, featured. Per option: price, sale, stock; add new options | Product (to trash), individual options |
+| Categories | Name, description, photo | List with product counts | Name, description, photo | Category (products are kept) |
+| Customers | Account (WooCommerce emails them a set-password link) | List, search, detail with their orders | Name, email, phone, address | Account (past orders kept) |
+| Discounts | % or LKR off, minimum spend, expiry, max uses, free delivery | List with usage | All fields | Code |
+| Site content / Pages | — | Current text | Homepage text, announcement, content pages | Restore standard text |
+
+Deletes ask for confirmation. Errors show WooCommerce's own reason (e.g. "Invalid or duplicated SKU."). Photos are JPG/PNG/WebP up to 5 MB, checked by content (not file name) in the plugin's signed `admin/media` endpoint.
 
 **How it works**
 - **Sign in:** staff use their WordPress login. Only users who can manage WooCommerce (Shop manager or Administrator) are accepted, checked by the plugin's signed `auth/staff-login` endpoint. Customers can't sign in here, and staff can't sign in to the storefront account area.
-- **Session:** `zx_admin` cookie: HttpOnly, SameSite=Strict, 8 hours, signed with a key separate from the customer session. Staff status is re-checked with WordPress on **every** admin page and action (`admin/staff`), so removing someone's role locks them out immediately.
+- **Session:** `zx_admin` cookie: HttpOnly, SameSite=Strict, 8 hours, signed with a key separate from the customer session. Staff status is re-checked with WordPress (`admin/staff`) once per request (React `cache()`), and a successful check is remembered for 60 seconds per server instance. Removing someone's role therefore locks them out within a minute.
+- **Caching:** admin reads are cached for up to 60 s under the `admin` tag (`src/services/admin/woo.ts`). Every admin save, every storefront checkout and every WooCommerce webhook (orders, products, customers, coupons) clears it, so staff always see changes. The dashboard streams each section behind its own placeholder. Measured on a production build against the local sandbox: first dashboard visit ~2.6 s, repeat visits ~0.35 s.
+- **Speed:** in a production build the admin's own work is ~0.35 s per page. Screens that read shop data also wait on WooCommerce: ~1.7–2 s per call in the local WebAssembly sandbox, typically 0.2–0.5 s on normal hosting. `next dev` adds 1–2 s more on top.
 - **Saving:** every change is a Server Action (`src/app/admin/actions.ts`) that re-checks the staff member, validates with Zod, and saves through WooCommerce REST v3 (`src/services/admin/woo.ts`) or the plugin's signed `admin/content` / `admin/page` endpoints. The storefront cache is then refreshed, so changes show on the website immediately.
 - **Layout:** the storefront lives in the `src/app/(shop)` route group (same URLs), and the admin has its own frame. `/admin` renders per request (`instant = false`), is `noindex`, and is disallowed in robots.txt.
-- **Not in the dashboard yet:** creating new products or uploading photos (use the CSV import or WordPress), gateway refunds, staff management, and delivery/tax settings. These stay in WordPress → WooCommerce.
+- **Not in the dashboard yet:** gateway refunds, staff accounts, delivery zones/rates and tax settings, and restoring items from the trash. These stay in WordPress → WooCommerce.
 - **Local sandbox:** sign in at http://localhost:3000/admin with `admin` / `password` (sandbox only).
 
 ## Business data policy

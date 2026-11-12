@@ -1,39 +1,48 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { addOrderNoteAction, updateOrderStatusAction } from "@/app/admin/actions";
+import { addOrderNoteAction, deleteOrderNoteAction, saveOrderDetailsAction, trashOrderAction, updateOrderStatusAction } from "@/app/admin/actions";
+import { AddressFields } from "@/components/admin/address-fields";
+import { ConfirmButton } from "@/components/admin/confirm-button";
 import { adminDate, adminMoney } from "@/components/admin/format";
-import { AdminButton, Badge, Card, inputClass, Notice, PageHeader } from "@/components/admin/ui";
+import { AdminButton, Badge, Card, Field, inputClass, isNotFound, PageHeader, SearchParamsNotice } from "@/components/admin/ui";
 import { requireStaff } from "@/services/admin/session";
 import { getOrder, listOrderNotes, ORDER_STATUSES } from "@/services/admin/woo";
-import { StoreApiError } from "@/services/woocommerce/store-api";
 import { decodeEntities, htmlToText } from "@/utils/text";
 
 export const metadata: Metadata = { title: "Order" };
 
 export default async function OrderPage({ params, searchParams }: PageProps<"/admin/orders/[id]">) {
-  await requireStaff();
   const id = Number((await params).id);
   if (!Number.isInteger(id) || id <= 0) notFound();
-  const sp = await searchParams;
-  const [order, notes] = await Promise.all([
-    getOrder(id).catch((e) => {
-      if (e instanceof StoreApiError && e.status === 404) notFound();
-      throw e;
-    }),
+  const [, sp, order, notes] = await Promise.all([
+    requireStaff(),
+    searchParams,
+    getOrder(id).catch((e) => (isNotFound(e) ? null : Promise.reject(e))),
     listOrderNotes(id).catch(() => []),
   ]);
-
-  const addr = (a: typeof order.billing) =>
-    [`${a.first_name ?? ""} ${a.last_name ?? ""}`.trim(), a.address_1, a.address_2, [a.city, a.state].filter(Boolean).join(", "), a.postcode].filter(Boolean);
+  if (!order) notFound();
+  const delivery = order.shipping.address_1 ? order.shipping : order.billing;
 
   return (
     <>
-      <PageHeader title={`Order #${order.number}`} back={{ href: "/admin/orders", label: "Orders" }} />
-      <Notice saved={typeof sp.saved === "string" ? sp.saved : undefined} error={typeof sp.error === "string" ? sp.error : undefined} />
+      <PageHeader
+        title={`Order #${order.number}`}
+        back={{ href: "/admin/orders", label: "Orders" }}
+        actions={
+          <form action={trashOrderAction}>
+            <input type="hidden" name="id" value={order.id} />
+            <ConfirmButton message={`Delete order #${order.number}? It moves to the trash (restorable in WooCommerce for 30 days). Stock is not returned automatically — cancel the order first if the goods weren’t sent.`}>
+              Delete order
+            </ConfirmButton>
+          </form>
+        }
+      />
+      <SearchParamsNotice sp={sp} />
       <div className="mb-4 flex flex-wrap items-center gap-3 text-sm text-ink-muted">
         <Badge status={order.status} />
         <span>{adminDate(order.date_created)}</span>
-        <span>· {order.payment_method_title}</span>
+        <span>· {order.payment_method_title || "—"}</span>
+        {order.created_via === "rest-api" && <span>· Created in the dashboard</span>}
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[2fr_1fr]">
@@ -51,12 +60,31 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/ad
               ))}
             </ul>
             <dl className="mt-3 space-y-1 border-t border-line pt-3 text-sm">
-              {Number(order.discount_total) > 0 && (
-                <Row label="Discount" value={`−${adminMoney(order.discount_total, order.currency)}`} />
-              )}
+              {Number(order.discount_total) > 0 && <Row label="Discount" value={`−${adminMoney(order.discount_total, order.currency)}`} />}
               <Row label="Delivery" value={adminMoney(order.shipping_total, order.currency)} />
               <Row label="Total" value={adminMoney(order.total, order.currency)} strong />
             </dl>
+          </Card>
+
+          <Card title="Customer and delivery details">
+            <form action={saveOrderDetailsAction} className="flex flex-col gap-4">
+              <input type="hidden" name="id" value={order.id} />
+              <div className="grid gap-4 sm:grid-cols-2">
+                <Field label="Email">
+                  <input name="email" type="email" defaultValue={order.billing.email ?? ""} maxLength={200} className={inputClass} />
+                </Field>
+                <Field label="Phone">
+                  <input name="phone" type="tel" defaultValue={order.billing.phone ?? ""} maxLength={20} className={inputClass} />
+                </Field>
+              </div>
+              <AddressFields value={{ ...delivery, first_name: order.billing.first_name || delivery.first_name, last_name: order.billing.last_name || delivery.last_name }} />
+              <Field label="Note from the customer">
+                <textarea name="customer_note" rows={2} defaultValue={order.customer_note} maxLength={1000} className={inputClass} />
+              </Field>
+              <div>
+                <AdminButton variant="secondary">Save details</AdminButton>
+              </div>
+            </form>
           </Card>
 
           <Card title="Notes & history">
@@ -78,12 +106,21 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/ad
             ) : (
               <ul className="space-y-3">
                 {notes.map((n) => (
-                  <li key={n.id} className={n.customer_note ? "rounded-xl bg-[#e3f1fd] p-3 text-sm" : "rounded-xl bg-canvas-alt p-3 text-sm"}>
-                    <p>{htmlToText(n.note)}</p>
-                    <p className="mt-1 text-xs text-ink-muted">
-                      {adminDate(n.date_created)} · {n.author || "System"}
-                      {n.customer_note && " · sent to customer"}
-                    </p>
+                  <li key={n.id} className={(n.customer_note ? "bg-[#e3f1fd]" : "bg-canvas-alt") + " flex items-start justify-between gap-3 rounded-xl p-3 text-sm"}>
+                    <div>
+                      <p>{htmlToText(n.note)}</p>
+                      <p className="mt-1 text-xs text-ink-muted">
+                        {adminDate(n.date_created)} · {n.author || "System"}
+                        {n.customer_note && " · sent to customer"}
+                      </p>
+                    </div>
+                    <form action={deleteOrderNoteAction}>
+                      <input type="hidden" name="order_id" value={order.id} />
+                      <input type="hidden" name="id" value={n.id} />
+                      <ConfirmButton message="Delete this note?" className="min-h-7 px-2 text-xs" aria-label="Delete note">
+                        Delete
+                      </ConfirmButton>
+                    </form>
                   </li>
                 ))}
               </ul>
@@ -106,9 +143,7 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/ad
                 ))}
               </select>
               <AdminButton>Update status</AdminButton>
-              <p className="text-xs text-ink-muted">
-                Typical flow: Processing → Completed once delivered. Cancelling or refunding returns stock automatically.
-              </p>
+              <p className="text-xs text-ink-muted">Typical flow: Processing → Completed once delivered. Cancelling or refunding returns stock automatically.</p>
             </form>
           </Card>
           <Card title="Customer">
@@ -125,21 +160,7 @@ export default async function OrderPage({ params, searchParams }: PageProps<"/ad
                 {order.billing.phone}
               </a>
             )}
-            {order.customer_id === 0 && <p className="mt-1 text-xs text-ink-muted">Guest checkout</p>}
-          </Card>
-          <Card title="Delivery address">
-            <address className="text-sm not-italic">
-              {(addr(order.shipping).length > 1 ? addr(order.shipping) : addr(order.billing)).map((l, i) => (
-                <span key={i} className="block">
-                  {l}
-                </span>
-              ))}
-            </address>
-            {order.customer_note && (
-              <p className="mt-3 rounded-lg bg-[#fff4d6] p-2.5 text-sm">
-                <span className="font-medium">Customer note:</span> {order.customer_note}
-              </p>
-            )}
+            <p className="mt-1 text-xs text-ink-muted">{order.customer_id === 0 ? "Guest" : "Has an account"}</p>
           </Card>
         </div>
       </div>

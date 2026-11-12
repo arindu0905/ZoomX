@@ -5,7 +5,7 @@
  * Tags are those assigned in services/woocommerce/catalog.ts.
  */
 
-export const ALLOWED_TAG = /^(products|categories|content|product:\d{1,12})$/;
+export const ALLOWED_TAG = /^(products|categories|content|admin|product:\d{1,12})$/;
 
 interface WebhookPayload {
   id?: unknown;
@@ -38,5 +38,7 @@ export function tagsForWebhook(topic: string, payload: WebhookPayload): string[]
     tags.add("categories");
   }
 
+  // Any store change (new order, stock, customer, coupon) refreshes the admin dashboard.
+  if (["product", "order", "customer", "coupon", "action"].includes(resource)) tags.add("admin");
   return [...tags].filter((t) => ALLOWED_TAG.test(t));
 }

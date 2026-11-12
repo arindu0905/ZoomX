@@ -1,6 +1,6 @@
 "use client";
 
-import { FileText, Home, LayoutDashboard, LogOut, Menu, Package, ShoppingCart, Ticket, Type, Users, X } from "lucide-react";
+import { FileText, Home, LayoutDashboard, LogOut, Menu, Package, ShoppingCart, Tags, Ticket, Type, Users, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState, type ReactNode } from "react";
@@ -11,6 +11,7 @@ const NAV = [
   { href: "/admin", label: "Home", icon: LayoutDashboard },
   { href: "/admin/orders", label: "Orders", icon: ShoppingCart },
   { href: "/admin/products", label: "Products", icon: Package },
+  { href: "/admin/categories", label: "Categories", icon: Tags },
   { href: "/admin/customers", label: "Customers", icon: Users },
   { href: "/admin/coupons", label: "Discounts", icon: Ticket },
   { href: "/admin/content", label: "Site content", icon: Type },

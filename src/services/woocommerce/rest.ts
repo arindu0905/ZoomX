@@ -57,7 +57,19 @@ export async function restRequestWithMeta<S extends z.ZodType>(
     const reason = err instanceof Error && err.name === "TimeoutError" ? "timed out" : "failed";
     throw new StoreApiError(`REST request ${reason}: ${url.pathname}`, 504);
   }
-  if (!res.ok) throw new StoreApiError(`REST ${res.status} for ${url.pathname}`, res.status);
+  if (!res.ok) {
+    let detail: string | undefined;
+    try {
+      const j = (await res.json()) as { message?: unknown; data?: { params?: Record<string, unknown> } };
+      // Prefer the per-field reasons ("Invalid email address.") over the generic summary.
+      const params = j.data?.params ? Object.values(j.data.params).filter((v): v is string => typeof v === "string") : [];
+      const msg = params.length ? params.join(" ") : typeof j.message === "string" ? j.message : "";
+      if (msg) detail = msg.replace(/<[^>]*>/g, "").slice(0, 300);
+    } catch {
+      // non-JSON error body
+    }
+    throw new StoreApiError(`REST ${res.status} for ${url.pathname}`, res.status, detail);
+  }
   const parsed = schema.safeParse(await res.json());
   if (!parsed.success) throw new StoreApiError(`Unexpected REST response shape for ${url.pathname}`, 502);
   return {

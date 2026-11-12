@@ -93,6 +93,12 @@ export function SiteFooter() {
                 </Link>
               </li>
             ))}
+            <li>
+              {/* Admin dashboard for the ZOOM X team (sign-in required; noindex). */}
+              <Link href="/admin" rel="nofollow" className="hover:text-ink hover:underline underline-offset-4">
+                Staff login
+              </Link>
+            </li>
             {socials.map((s) => (
               <li key={s.key}>
                 <a href={s.href} rel="noopener noreferrer" target="_blank" className="hover:text-ink">

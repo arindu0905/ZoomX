@@ -56,6 +56,11 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
+  experimental: {
+    // Admin product/category photo uploads (images up to 5 MB + form overhead).
+    // Every action still re-checks the staff session before reading the body's contents.
+    serverActions: { bodySizeLimit: "6mb" },
+  },
   images: {
     dangerouslyAllowLocalIP: storeIsLoopback(),
     // WooCommerce media is served from the WordPress host. Tightened to the

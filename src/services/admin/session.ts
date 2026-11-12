@@ -2,6 +2,7 @@ import "server-only";
 import { createHmac } from "node:crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { cache } from "react";
 import { connection } from "next/server";
 import { z } from "zod";
 import { getServerEnv, requireEnv } from "@/lib/env";
@@ -56,23 +57,45 @@ export async function startAdminSession(id: number): Promise<void> {
 }
 
 export async function endAdminSession(): Promise<void> {
+  const id = decodeAdminSession((await cookies()).get(ADMIN_COOKIE)?.value);
+  if (id) verified.delete(id);
   (await cookies()).delete(ADMIN_COOKIE);
 }
 
-/** The signed-in staff member (re-confirmed with WordPress), or null. */
-export async function getStaff(): Promise<Staff | null> {
-  if (!getServerEnv().SESSION_SECRET) return null;
-  const raw = (await cookies()).get(ADMIN_COOKIE)?.value;
-  await connection();
-  const id = decodeAdminSession(raw);
-  if (!id) return null;
+/**
+ * Successful staff checks are remembered for a short time per server
+ * instance, so clicking around the admin doesn't wait on WordPress for every
+ * page. Removing someone's role therefore takes effect within STAFF_TTL_MS.
+ * Failed checks are never remembered.
+ */
+const STAFF_TTL_MS = 60_000;
+const verified = new Map<number, { staff: Staff; until: number }>();
+
+async function confirmStaff(id: number): Promise<Staff | null> {
+  const hit = verified.get(id);
+  if (hit && hit.until > Date.now()) return hit.staff;
   try {
-    return await wpSignedCall("admin/staff", { id }, staffSchema);
+    const staff = await wpSignedCall("admin/staff", { id }, staffSchema);
+    verified.set(id, { staff, until: Date.now() + STAFF_TTL_MS });
+    return staff;
   } catch (err) {
+    verified.delete(id);
     if (!(err instanceof AuthError)) console.error("[admin] staff check failed");
     return null;
   }
 }
+
+/**
+ * The signed-in staff member (re-confirmed with WordPress), or null.
+ * Wrapped in React cache(): the layout and the page share one check per request.
+ */
+export const getStaff = cache(async (): Promise<Staff | null> => {
+  if (!getServerEnv().SESSION_SECRET) return null;
+  const raw = (await cookies()).get(ADMIN_COOKIE)?.value;
+  await connection();
+  const id = decodeAdminSession(raw);
+  return id ? confirmStaff(id) : null;
+});
 
 /** For admin pages and Server Actions: the staff member, or redirect to sign-in. */
 export async function requireStaff(): Promise<Staff> {

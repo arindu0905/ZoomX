@@ -59,6 +59,39 @@ add_action('rest_api_init', function () {
         },
     ]);
 
+    // Product / category photo upload from the admin: { filename, data (base64), alt }.
+    register_rest_route($ns, '/admin/media', $common + [
+        'callback' => function (WP_REST_Request $r) {
+            $name = sanitize_file_name((string) $r->get_param('filename'));
+            $bytes = base64_decode((string) $r->get_param('data'), true);
+            if ($name === '' || $bytes === false || strlen($bytes) === 0) {
+                return new WP_Error('invalid_request', 'Invalid upload.', ['status' => 400]);
+            }
+            if (strlen($bytes) > 5 * 1024 * 1024) {
+                return new WP_Error('invalid_request', 'Images must be 5 MB or smaller.', ['status' => 400]);
+            }
+            // Trust the bytes, not the name: only real JPEG / PNG / WebP images.
+            $finfo = finfo_open(FILEINFO_MIME_TYPE);
+            $mime = finfo_buffer($finfo, $bytes);
+            finfo_close($finfo);
+            $ext = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'][$mime] ?? null;
+            if (!$ext) return new WP_Error('invalid_request', 'Use a JPG, PNG or WebP image.', ['status' => 400]);
+            $name = preg_replace('/\.[^.]*$/', '', $name) . '.' . $ext;
+
+            $upload = wp_upload_bits($name, null, $bytes);
+            if (!empty($upload['error'])) return new WP_Error('upload_failed', 'Upload failed.', ['status' => 500]);
+            require_once ABSPATH . 'wp-admin/includes/image.php';
+            $id = wp_insert_attachment([
+                'post_mime_type' => $mime,
+                'post_title' => sanitize_text_field(preg_replace('/\.[^.]*$/', '', $name)),
+                'post_status' => 'inherit',
+            ], $upload['file']);
+            wp_update_attachment_metadata($id, wp_generate_attachment_metadata($id, $upload['file']));
+            update_post_meta($id, '_wp_attachment_image_alt', sanitize_text_field((string) $r->get_param('alt')));
+            return ['id' => $id, 'src' => wp_get_attachment_url($id)];
+        },
+    ]);
+
     // Raw saved fields (as typed), for the admin editor.
     register_rest_route($ns, '/admin/content-raw', $common + [
         'callback' => fn() => (object) zoomx_content_get(),

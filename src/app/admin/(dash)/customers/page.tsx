@@ -1,22 +1,29 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { adminDate } from "@/components/admin/format";
-import { EmptyRow, inputClass, PageHeader, Pager, TableCard } from "@/components/admin/ui";
+import { AdminLinkButton, EmptyRow, inputClass, PageHeader, Pager, SearchParamsNotice, TableCard } from "@/components/admin/ui";
 import { requireStaff } from "@/services/admin/session";
 import { listCustomers } from "@/services/admin/woo";
 
 export const metadata: Metadata = { title: "Customers" };
 
 export default async function CustomersPage({ searchParams }: PageProps<"/admin/customers">) {
-  await requireStaff();
-  const sp = await searchParams;
+  const [, sp] = await Promise.all([requireStaff(), searchParams]);
   const search = typeof sp.q === "string" ? sp.q.slice(0, 100) : "";
   const page = Math.max(1, Number(sp.page) || 1);
   const { data: customers, total, totalPages } = await listCustomers({ page, search });
 
   return (
     <>
-      <PageHeader title="Customers" />
+      <PageHeader
+        title="Customers"
+        actions={
+          <AdminLinkButton href="/admin/customers/new" className="bg-[#1a1a1a] text-white shadow-none hover:bg-black">
+            Add customer
+          </AdminLinkButton>
+        }
+      />
+      <SearchParamsNotice sp={sp} />
       <form className="mb-4 flex flex-wrap items-center gap-2" role="search">
         <label className="sr-only" htmlFor="customer-search">
           Search customers
@@ -41,7 +48,11 @@ export default async function CustomersPage({ searchParams }: PageProps<"/admin/
           {customers.length === 0 && <EmptyRow cols={6}>No customers found.</EmptyRow>}
           {customers.map((c) => (
             <tr key={c.id} className="hover:bg-canvas-alt/60">
-              <td className="font-semibold">{`${c.first_name} ${c.last_name}`.trim() || "—"}</td>
+              <td>
+                <Link href={`/admin/customers/${c.id}`} className="font-semibold hover:underline">
+                  {`${c.first_name} ${c.last_name}`.trim() || "—"}
+                </Link>
+              </td>
               <td>
                 <a href={`mailto:${c.email}`} className="hover:underline">
                   {c.email}

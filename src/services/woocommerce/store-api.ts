@@ -6,6 +6,8 @@ export class StoreApiError extends Error {
   constructor(
     message: string,
     public readonly status?: number,
+    /** WooCommerce's own human-readable reason, when it gave one (admin only; never shown to shoppers). */
+    public readonly detail?: string,
   ) {
     super(message);
     this.name = "StoreApiError";

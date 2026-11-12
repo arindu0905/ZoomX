@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { adminMoney } from "@/components/admin/format";
-import { Badge, EmptyRow, inputClass, PageHeader, Pager, TableCard } from "@/components/admin/ui";
+import { AdminLinkButton, Badge, EmptyRow, inputClass, PageHeader, Pager, SearchParamsNotice, TableCard } from "@/components/admin/ui";
 import { requireStaff } from "@/services/admin/session";
 import { listProducts } from "@/services/admin/woo";
 import { decodeEntities } from "@/utils/text";
@@ -10,21 +10,29 @@ import { decodeEntities } from "@/utils/text";
 export const metadata: Metadata = { title: "Products" };
 
 export default async function ProductsPage({ searchParams }: PageProps<"/admin/products">) {
-  await requireStaff();
-  const sp = await searchParams;
+  const [, sp] = await Promise.all([requireStaff(), searchParams]);
   const search = typeof sp.q === "string" ? sp.q.slice(0, 100) : "";
   const stock = sp.stock === "outofstock" || sp.stock === "instock" ? sp.stock : "";
+  const category = typeof sp.category === "string" && /^\d+$/.test(sp.category) ? sp.category : "";
   const page = Math.max(1, Number(sp.page) || 1);
-  const { data: products, total, totalPages } = await listProducts({ page, search, stock });
+  const { data: products, total, totalPages } = await listProducts({ page, search, stock, category });
 
   const href = (p: number) => {
-    const q = new URLSearchParams(Object.entries({ q: search, stock, page: p > 1 ? String(p) : "" }).filter(([, v]) => v));
+    const q = new URLSearchParams(Object.entries({ q: search, stock, category, page: p > 1 ? String(p) : "" }).filter(([, v]) => v));
     return `/admin/products${q.size ? `?${q}` : ""}`;
   };
 
   return (
     <>
-      <PageHeader title="Products" />
+      <PageHeader
+        title="Products"
+        actions={
+          <AdminLinkButton href="/admin/products/new" className="bg-[#1a1a1a] text-white shadow-none hover:bg-black">
+            Add product
+          </AdminLinkButton>
+        }
+      />
+      <SearchParamsNotice sp={sp} />
       <form className="mb-4 flex flex-wrap gap-2" role="search">
         <label className="sr-only" htmlFor="product-search">
           Search products
@@ -92,9 +100,6 @@ export default async function ProductsPage({ searchParams }: PageProps<"/admin/p
         </tbody>
       </TableCard>
       <Pager page={page} totalPages={totalPages} href={href} />
-      <p className="mt-4 text-xs text-ink-muted">
-        To add a brand-new product, use the WooCommerce import (docs/zoomx-products-import.csv) or WordPress → Products → Add New.
-      </p>
     </>
   );
 }

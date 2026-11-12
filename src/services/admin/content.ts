@@ -92,3 +92,11 @@ export const saveRawContent = (content: RawContent) => wpSignedCall("admin/conte
 
 export const saveRawPage = (slug: string, page: Record<string, string> | null) =>
   wpSignedCall("admin/page", { slug, page }, z.unknown());
+
+const mediaSchema = z.object({ id: z.number().int().positive(), src: z.string() });
+
+/** Uploads a product/category photo to the WordPress media library (JPG/PNG/WebP, ≤ 5 MB). */
+export async function uploadImage(file: File, alt: string) {
+  const data = Buffer.from(await file.arrayBuffer()).toString("base64");
+  return wpSignedCall("admin/media", { filename: file.name || "image", data, alt }, mediaSchema);
+}
