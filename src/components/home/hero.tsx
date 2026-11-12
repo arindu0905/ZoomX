@@ -53,7 +53,7 @@ export function Hero({
   const aurora = [lineup[mid - 1], lineup[mid], lineup[mid + 1]].filter(Boolean).map((p) => tint(p.slug).glow);
 
   return (
-    <section aria-labelledby="hero-title" className="relative overflow-hidden bg-canvas-alt pt-14 md:pt-20">
+    <section aria-labelledby="hero-title" className="relative overflow-hidden bg-canvas-alt pt-14 max-md:flex max-md:min-h-[calc(100svh-var(--spacing-nav))] max-md:flex-col md:pt-20">
       {aurora.length > 0 && (
         <div aria-hidden className="pointer-events-none absolute inset-0 overflow-hidden">
           {aurora.map((color, i) => (
@@ -88,7 +88,7 @@ export function Hero({
           ))}
         </div>
       )}
-      <Container className="relative flex flex-col items-center text-center">
+      <Container className="relative flex flex-col items-center text-center max-md:flex-1">
         {/* CSS entrances: nothing here waits for JavaScript to become visible. */}
         <p className="animate-rise text-lg font-semibold tracking-tight text-highlight">{hero.eyebrow}</p>
         <h1 id="hero-title" className="mt-2 max-w-5xl text-display text-balance">
@@ -105,7 +105,7 @@ export function Hero({
         </div>
 
         {lineup.length > 0 ? (
-          <div className="mt-10 w-full md:mt-14">
+          <div className="mt-10 w-full max-md:mt-auto max-md:pt-6 md:mt-14">
             <HeroLineup
               items={lineup.map((p) => ({
                 id: p.id,
