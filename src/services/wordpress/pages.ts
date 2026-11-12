@@ -112,7 +112,7 @@ async function fetchRemotePages(): Promise<Record<string, RemotePage>> {
     if (!parsed.success) throw new Error("unexpected pages shape");
     return parsed.data;
   } catch (err) {
-    console.error("[content] pages:", err instanceof Error ? err.message : "unknown error");
+    console.warn("[content] pages:", err instanceof Error ? err.message : "unknown error");
     return {};
   }
 }

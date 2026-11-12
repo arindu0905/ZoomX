@@ -29,7 +29,7 @@ async function safely<T>(label: string, fn: () => Promise<T[]>): Promise<T[]> {
   try {
     return await fn();
   } catch (err) {
-    console.error(`[catalog] ${label}:`, err instanceof Error ? err.message : "unknown error");
+    console.warn(`[catalog] ${label}:`, err instanceof Error ? err.message : "unknown error");
     return [];
   }
 }
@@ -93,7 +93,7 @@ export async function getProducts(query: CatalogQuery): Promise<ProductListResul
   } catch (err) {
     // WooCommerce answers 400 for an out-of-range page; treat as empty, not as an outage.
     if (err instanceof StoreApiError && err.status === 400) return { ...EMPTY_PAGE, ok: true };
-    console.error("[catalog] products:", err instanceof Error ? err.message : "unknown error");
+    console.warn("[catalog] products:", err instanceof Error ? err.message : "unknown error");
     return { ...EMPTY_PAGE, ok: false };
   }
 }
@@ -107,7 +107,7 @@ export async function getCategory(slug: string): Promise<StoreCategory | null> {
     const all = await storeGet("products/categories", z.array(storeCategorySchema));
     return all.find((c) => c.slug === slug) ?? null;
   } catch (err) {
-    console.error("[catalog] category:", err instanceof Error ? err.message : "unknown error");
+    console.warn("[catalog] category:", err instanceof Error ? err.message : "unknown error");
     return null;
   }
 }
@@ -161,7 +161,7 @@ export async function getProductBySlug(slug: string): Promise<ProductDetail | nu
     return { product, variants };
   } catch (err) {
     if (err instanceof StoreApiError && err.status === 404) return null;
-    console.error("[catalog] product:", err instanceof Error ? err.message : "unknown error");
+    console.warn("[catalog] product:", err instanceof Error ? err.message : "unknown error");
     throw err; // surfaces the route error boundary rather than a false 404
   }
 }

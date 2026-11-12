@@ -80,7 +80,7 @@ async function fetchRemote(): Promise<RemoteContent | null> {
     if (!parsed.success) throw new Error("unexpected content shape");
     return parsed.data;
   } catch (err) {
-    console.error("[content] site content:", err instanceof Error ? err.message : "unknown error");
+    console.warn("[content] site content:", err instanceof Error ? err.message : "unknown error");
     return null;
   }
 }
