@@ -56,6 +56,10 @@ const nextConfig: NextConfig = {
   cacheComponents: true,
   partialPrefetching: true,
   poweredByHeader: false,
+  // Dev only: keep compiled pages in memory. The defaults (2 pages, 25 s) made
+  // `next dev` recompile admin screens on almost every switch — slow here,
+  // where compilation runs on WASM SWC (see README, "Why webpack").
+  onDemandEntries: { maxInactiveAge: 60 * 60 * 1000, pagesBufferLength: 100 },
   experimental: {
     // Admin product/category photo uploads (images up to 5 MB + form overhead).
     // Every action still re-checks the staff session before reading the body's contents.
