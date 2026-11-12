@@ -39,6 +39,7 @@ npm run dev                  # http://localhost:3000
 |---|---|
 | `npm run dev` | Dev server (webpack) |
 | `npm run build` / `start` | Production build / serve |
+| `npm run local` | Build + serve in one step — the fast way to use the full site locally (~30 s build, then pages load in well under a second) |
 | `npm run lint` · `typecheck` | ESLint · `tsc --noEmit` |
 | `npm test` · `test:watch` | Vitest unit/component tests |
 | `npm run test:e2e` | Playwright (desktop + mobile Chromium); builds and starts the app automatically |
@@ -48,6 +49,8 @@ First-time Playwright setup: `npx playwright install chromium`.
 ### Why webpack instead of Turbopack
 
 The development machine has **Windows Smart App Control** enabled, which blocks unsigned native binaries (`@next/swc-win32-x64-msvc`, Turbopack, Vite 8's rolldown). Next.js falls back to WASM SWC, which works with webpack but not Turbopack. For the same reason the project uses Vitest 3 (esbuild/Rollup) rather than Vitest 5.
+
+This is also why `npm run dev` feels slow here: every page compiles on first visit with WASM SWC and ships ~3 MB of unminified JavaScript. When you only need to *use* the site (not edit code with hot reload), run `npm run local` instead — measured on this machine: home page load 2.2 s → 0.06 s, JavaScript 3 MB → 0.2 MB. Re-run it after code changes. Admin pages still take ~2 s on their first visit because the local WordPress Playground sandbox answers each request in 1–2 s; a hosted WordPress is much faster.
 
 Scripts pass `--webpack` so local and Vercel builds use the same bundler. Once development happens on a machine without that policy, removing `--webpack` from `package.json` re-enables Turbopack with no other changes (Tailwind is configured via `postcss.config.mjs`, which both bundlers read).
 
