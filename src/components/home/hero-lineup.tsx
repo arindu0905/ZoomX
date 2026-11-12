@@ -80,7 +80,8 @@ function Bottle({
           ...(still ? {} : { x, y: sink }),
         } as unknown as React.ComponentProps<typeof motion.li>["style"]
       }
-      className={(lift > 2 ? "max-sm:hidden " : "") + "group/bottle relative hover:!z-20 focus-within:!z-20"}
+      // Phones show the three centre bottles, larger; wider screens show the full line-up.
+      className={(lift > 1 ? "max-sm:hidden " : "") + "group/bottle relative hover:!z-20 focus-within:!z-20"}
     >
       <Link href={item.href} className="block animate-rise rounded-2xl focus-visible:outline-offset-4">
         <span
@@ -97,9 +98,9 @@ function Bottle({
             width={450}
             height={500}
             priority={lift < 1}
-            sizes="(min-width: 1024px) 300px, 34vw"
+            sizes="(min-width: 1024px) 300px, (min-width: 640px) 34vw, 42vw"
             style={{ transform: `scale(${1 - lift * 0.07})`, transformOrigin: "bottom center" }}
-            className="h-auto w-[34vw] max-w-[300px] drop-shadow-[0_24px_24px_rgba(0,0,0,0.14)] transition-[translate] duration-500 ease-emphasized group-hover/bottle:-translate-y-4"
+            className="h-auto w-[42vw] max-w-[300px] sm:w-[34vw] drop-shadow-[0_24px_24px_rgba(0,0,0,0.14)] transition-[translate] duration-500 ease-emphasized group-hover/bottle:-translate-y-4"
           />
         </span>
       </Link>

@@ -90,7 +90,7 @@ export function Hero({
       )}
       <Container className="relative flex flex-col items-center text-center max-md:flex-1">
         {/* CSS entrances: nothing here waits for JavaScript to become visible. */}
-        <p className="animate-rise text-lg font-semibold tracking-tight text-highlight">{hero.eyebrow}</p>
+        <p className="animate-rise text-lg font-semibold tracking-tight text-highlight max-md:mt-auto">{hero.eyebrow}</p>
         <h1 id="hero-title" className="mt-2 max-w-5xl text-display text-balance">
           <Words text={hero.title} on="load" />
         </h1>
