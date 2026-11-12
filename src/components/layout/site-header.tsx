@@ -31,7 +31,7 @@ export function SiteHeader({ categories }: { categories: NavCategory[] }) {
   const [home, ...rest] = primaryNav;
 
   return (
-    <header className="sticky top-0 z-50">
+    <header className="sticky top-0 z-50" style={{ viewTransitionName: "site-header" }}>
       <Suspense fallback={null}>
         <CloseOnNavigate onNavigate={close} />
       </Suspense>

@@ -1,11 +1,24 @@
 import { Star } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { type ReactNode, ViewTransition } from "react";
 import type { StoreProduct } from "@/types/store-api";
 import { decodeEntities } from "@/utils/text";
 import { tintStyle } from "@/utils/tint";
 import { Price } from "./price";
 import { QuickAdd } from "./quick-add";
+
+export const productMorphName = (id: number) => `product-${id}`;
+
+/** Shared-element morph between card and product page; renders children as-is without a name. */
+export function Morph({ name, children }: { name?: string; children: ReactNode }) {
+  if (!name) return <>{children}</>;
+  return (
+    <ViewTransition name={name} share="morph" default="none">
+      {children}
+    </ViewTransition>
+  );
+}
 
 export const productHref = (slug: string) => `/product/${encodeURIComponent(slug)}`;
 
@@ -13,7 +26,12 @@ export const productHref = (slug: string) => `/product/${encodeURIComponent(slug
  * Minimal product card. Simple in-stock products get a quick "Add"; products
  * with options link to their page to choose a size first.
  */
-export function ProductCard({ product }: { product: StoreProduct }) {
+/**
+ * `morph`: the bottle glides into the product page photo on navigation
+ * (View Transitions). Only for lists where each product appears once — two
+ * elements with the same transition name on a page cancel the animation.
+ */
+export function ProductCard({ product, morph = false }: { product: StoreProduct; morph?: boolean }) {
   const image = product.images[0];
   const rating = Number.parseFloat(product.average_rating);
   const name = decodeEntities(product.name);
@@ -24,6 +42,7 @@ export function ProductCard({ product }: { product: StoreProduct }) {
       )}
       <div style={tintStyle(product.slug)} className="tint-surface relative aspect-square overflow-hidden rounded-[12%]">
         {image ? (
+          <Morph name={morph ? productMorphName(product.id) : undefined}>
           <Image
             src={image.src}
             alt={image.alt || name}
@@ -31,6 +50,7 @@ export function ProductCard({ product }: { product: StoreProduct }) {
             sizes="(min-width: 1024px) 25vw, (min-width: 640px) 45vw, 80vw"
             className="object-contain p-4 drop-shadow-[0_14px_14px_rgba(0,0,0,0.12)] transition-transform duration-500 ease-emphasized group-hover:scale-[1.08] group-hover:-rotate-3 sm:p-6"
           />
+          </Morph>
         ) : (
           <div aria-hidden className="flex h-full items-center justify-center text-caption text-ink-muted">
             Image coming soon

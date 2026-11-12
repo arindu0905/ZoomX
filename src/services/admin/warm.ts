@@ -25,27 +25,49 @@ let running: Promise<void> | null = null;
  *
  * The arguments must match what each page passes for its default view —
  * the cache is keyed on them (see the pages under app/admin/(dash)).
+ *
+ * Calls go out WARM_CONCURRENCY at a time, most-used screens first. Firing
+ * them all at once queues ~15 requests in WordPress (the local Playground
+ * sandbox answers one at a time), so the first real click after sign-in
+ * waited ~10 s behind the warm-up. Trickled, a click waits behind at most
+ * one or two calls.
  */
+const WARM_CONCURRENCY = 2;
+
 export function warmAdmin(): Promise<void> {
-  running ??= Promise.allSettled([
-    warmDashboard(),
-    listOrders({ page: 1, status: "", search: "" }),
-    listProducts({ page: 1, search: "", stock: "", category: "" }),
-    listCategories(),
-    listCustomers({ page: 1, search: "" }),
-    listCoupons(),
-    // Create order: every product, plus the options of products that have them.
-    listAllProducts().then((products) =>
-      Promise.allSettled(products.filter((p) => p.type === "variable").map((p) => listVariations(p.id))),
-    ),
-    getRawContent(),
-    getContentPages(),
-  ])
+  const tasks: (() => Promise<unknown>)[] = [
+    warmDashboard,
+    () => listOrders({ page: 1, status: "", search: "" }),
+    () => listProducts({ page: 1, search: "", stock: "", category: "" }),
+    () => listCustomers({ page: 1, search: "" }),
+    listCategories,
+    listCoupons,
+    getRawContent,
+    getContentPages,
+    // Create order: every product, then the options of products that have them (one call each, so last).
+    async () => {
+      const products = await listAllProducts();
+      for (const p of products.filter((x) => x.type === "variable")) await listVariations(p.id).catch(() => undefined);
+    },
+  ];
+  running ??= runLimited(tasks, WARM_CONCURRENCY)
     .then(() => undefined)
     .finally(() => {
       running = null;
     });
   return running;
+}
+
+/** Runs tasks in order with at most `limit` in flight; failures are ignored (pages fetch again on demand). */
+async function runLimited(tasks: (() => Promise<unknown>)[], limit: number): Promise<void> {
+  let next = 0;
+  const worker = async () => {
+    while (next < tasks.length) {
+      const task = tasks[next++];
+      await task().catch(() => undefined);
+    }
+  };
+  await Promise.all(Array.from({ length: Math.min(limit, tasks.length) }, worker));
 }
 
 /**

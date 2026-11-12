@@ -382,3 +382,51 @@ select:not([multiple]):not([size]) {
     animation-delay: calc(var(--i, 0) * -700ms);
   }
 }
+
+/* ── Page transitions (View Transitions API, via React <ViewTransition>) ── */
+/* Pages cross-fade with a slight lift; the header stays put; a product card's
+   bottle morphs into the product photo (.morph, see ProductCard/Morph). */
+::view-transition {
+  pointer-events: none; /* clicks during the animation reach the new page */
+}
+::view-transition-old(.page-out) {
+  animation: 220ms var(--ease-standard) both zx-page-out;
+}
+::view-transition-new(.page-in) {
+  animation: 380ms var(--ease-emphasized) 60ms both zx-page-in;
+}
+@keyframes zx-page-out {
+  to { opacity: 0; transform: scale(0.985); }
+}
+@keyframes zx-page-in {
+  from { opacity: 0; transform: translateY(14px); }
+}
+::view-transition-group(site-header) {
+  animation: none;
+  z-index: 100;
+}
+::view-transition-old(site-header) {
+  display: none;
+}
+::view-transition-new(site-header) {
+  animation: none;
+}
+::view-transition-group(.morph) {
+  animation-duration: 520ms;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  z-index: 50;
+}
+::view-transition-image-pair(.morph) {
+  animation-name: zx-via-blur;
+}
+@keyframes zx-via-blur {
+  35% { filter: blur(2px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(*),
+  ::view-transition-new(*),
+  ::view-transition-group(*) {
+    animation-duration: 0s !important;
+    animation-delay: 0s !important;
+  }
+}

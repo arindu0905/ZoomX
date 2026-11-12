@@ -4,15 +4,19 @@ import Image from "next/image";
 import { useState, type CSSProperties } from "react";
 import type { StoreImage } from "@/types/store-api";
 import { cn } from "@/utils/cn";
+import { Morph } from "./product-card";
 
 /** Large primary image with thumbnail switcher. The image is the focus of the page. */
 export function ProductGallery({
   images,
   name,
   style,
+  morphName,
 }: {
   images: StoreImage[];
   name: string;
+  /** Pairs the first photo with the product card it was opened from (see ProductCard). */
+  morphName?: string;
   /** Tint variables for the image wells (utils/tint.ts). */
   style?: CSSProperties;
 }) {
@@ -36,6 +40,7 @@ export function ProductGallery({
         onPointerLeave={() => setZoom(null)}
       >
         {current ? (
+          <Morph name={active === 0 ? morphName : undefined}>
           <Image
             key={current.id}
             src={current.src}
@@ -45,10 +50,12 @@ export function ProductGallery({
             sizes="(min-width: 1024px) 55vw, 100vw"
             style={zoom ? { transformOrigin: `${zoom.x}% ${zoom.y}%` } : undefined}
             className={cn(
-              "animate-[zx-rise_0.5s_var(--ease-standard)_both] object-contain p-10 drop-shadow-[0_30px_30px_rgba(0,0,0,0.14)] transition-transform duration-300 ease-standard sm:p-16 motion-reduce:transition-none",
+              !(active === 0 && morphName) && "animate-[zx-rise_0.5s_var(--ease-standard)_both]",
+              "object-contain p-10 drop-shadow-[0_30px_30px_rgba(0,0,0,0.14)] transition-transform duration-300 ease-standard sm:p-16 motion-reduce:transition-none",
               zoom && "scale-[1.9]",
             )}
           />
+          </Morph>
         ) : (
           <div aria-hidden className="flex h-full items-center justify-center text-body text-ink-muted">
             Image coming soon

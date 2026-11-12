@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { ProductRail } from "@/components/home/product-rail";
-import { productHref } from "@/components/products/product-card";
+import { productHref, productMorphName } from "@/components/products/product-card";
 import { ProductGallery } from "@/components/products/product-gallery";
 import { ProductPurchase, type PurchaseAttribute, type PurchaseVariant } from "@/components/products/product-purchase";
 import { Breadcrumbs } from "@/components/ui/breadcrumbs";
@@ -98,7 +98,12 @@ async function ProductView({ params }: Pick<PageProps<"/product/[slug]">, "param
       <Container className="py-8 sm:py-12">
         <Breadcrumbs crumbs={crumbs} />
         <div className="mt-8 grid gap-10 lg:grid-cols-[1.2fr_1fr] lg:gap-16">
-          <ProductGallery images={product.images} name={name} style={tintStyle(product.slug)} />
+          <ProductGallery
+            images={product.images}
+            name={name}
+            style={tintStyle(product.slug)}
+            morphName={productMorphName(product.id)}
+          />
           <div
             id="buy"
             className="flex scroll-mt-[calc(var(--spacing-nav)+2rem)] flex-col gap-8 lg:sticky lg:top-[calc(var(--spacing-nav)+2rem)] lg:self-start"
