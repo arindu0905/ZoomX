@@ -4,6 +4,7 @@ import { AdminButton, Card, Field, inputClass, Notice, PageHeader } from "@/comp
 import { CONTENT_SECTIONS, getRawContent } from "@/services/admin/content";
 import { requireStaff } from "@/services/admin/session";
 import { DEFAULT_CONTENT } from "@/services/wordpress/content";
+/** Live per request behind the staff check; not validated for instant navigation (see ../layout.tsx). */export const instant = false;
 
 export const metadata: Metadata = { title: "Site content" };
 

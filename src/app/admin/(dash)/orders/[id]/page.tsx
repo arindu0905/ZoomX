@@ -8,6 +8,7 @@ import { AdminButton, Badge, Card, Field, inputClass, isNotFound, PageHeader, Se
 import { requireStaff } from "@/services/admin/session";
 import { getOrder, listOrderNotes, ORDER_STATUSES } from "@/services/admin/woo";
 import { decodeEntities, htmlToText } from "@/utils/text";
+/** Live per request behind the staff check; not validated for instant navigation (see ../layout.tsx). */export const instant = false;
 
 export const metadata: Metadata = { title: "Order" };
 

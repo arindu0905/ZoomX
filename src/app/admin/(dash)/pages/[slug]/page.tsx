@@ -4,6 +4,7 @@ import { savePageAction } from "@/app/admin/actions";
 import { AdminButton, AdminLinkButton, Card, Field, inputClass, Notice, PageHeader } from "@/components/admin/ui";
 import { requireStaff } from "@/services/admin/session";
 import { DEFAULT_PAGES, getContentPage, POLICY_SLUGS, sectionsToText } from "@/services/wordpress/pages";
+/** Live per request behind the staff check; not validated for instant navigation (see ../layout.tsx). */export const instant = false;
 
 export const metadata: Metadata = { title: "Edit page" };
 

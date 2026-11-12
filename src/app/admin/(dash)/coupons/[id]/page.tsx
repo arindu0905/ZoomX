@@ -6,6 +6,7 @@ import { CouponFields } from "@/components/admin/coupon-fields";
 import { AdminButton, Card, isNotFound, PageHeader, SearchParamsNotice } from "@/components/admin/ui";
 import { requireStaff } from "@/services/admin/session";
 import { getCoupon } from "@/services/admin/woo";
+/** Live per request behind the staff check; not validated for instant navigation (see ../layout.tsx). */export const instant = false;
 
 export const metadata: Metadata = { title: "Edit discount" };
 

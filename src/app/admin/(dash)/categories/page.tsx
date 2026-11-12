@@ -7,6 +7,7 @@ import { AdminButton, Card, Field, inputClass, PageHeader, SearchParamsNotice } 
 import { requireStaff } from "@/services/admin/session";
 import { listCategories } from "@/services/admin/woo";
 import { decodeEntities, htmlToText } from "@/utils/text";
+/** Live per request behind the staff check; not validated for instant navigation (see ../layout.tsx). */export const instant = false;
 
 export const metadata: Metadata = { title: "Categories" };
 

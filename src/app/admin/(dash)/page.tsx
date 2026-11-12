@@ -6,6 +6,7 @@ import { AdminLinkButton, Badge, Card, EmptyRow, PageHeader, TableCard } from "@
 import { requireStaff } from "@/services/admin/session";
 import { lowStockProducts, recentOrders } from "@/services/admin/woo";
 import { decodeEntities } from "@/utils/text";
+/** Live per request behind the staff check; not validated for instant navigation (see ../layout.tsx). */export const instant = false;
 
 export const metadata: Metadata = { title: "Home" };
 

@@ -22,7 +22,7 @@ const active = (pathname: string, href: string) =>
   href === "/admin" ? pathname === "/admin" : pathname === href || pathname.startsWith(`${href}/`);
 
 /** Shopify-admin-style frame: fixed sidebar on desktop, slide-out menu on phones. */
-export function AdminShell({ staffName, children }: { staffName: string; children: ReactNode }) {
+export function AdminShell({ staffName, children }: { staffName: ReactNode; children: ReactNode }) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 

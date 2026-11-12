@@ -8,6 +8,7 @@ import { adminDate, adminMoney } from "@/components/admin/format";
 import { AdminButton, Badge, Card, isNotFound, PageHeader, SearchParamsNotice } from "@/components/admin/ui";
 import { requireStaff } from "@/services/admin/session";
 import { getCustomer, listOrders } from "@/services/admin/woo";
+/** Live per request behind the staff check; not validated for instant navigation (see ../layout.tsx). */export const instant = false;
 
 export const metadata: Metadata = { title: "Customer" };
 

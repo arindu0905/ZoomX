@@ -7,6 +7,7 @@ import { AdminButton, AdminLinkButton, Badge, Field, inputClass, isNotFound, Pag
 import { requireStaff } from "@/services/admin/session";
 import { getProduct, listCategories, listVariations } from "@/services/admin/woo";
 import { decodeEntities } from "@/utils/text";
+/** Live per request behind the staff check; not validated for instant navigation (see ../layout.tsx). */export const instant = false;
 
 export const metadata: Metadata = { title: "Product" };
 

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Badge, PageHeader, TableCard } from "@/components/admin/ui";
 import { requireStaff } from "@/services/admin/session";
 import { getContentPages, POLICY_SLUGS } from "@/services/wordpress/pages";
+/** Live per request behind the staff check; not validated for instant navigation (see ../layout.tsx). */export const instant = false;
 
 export const metadata: Metadata = { title: "Pages" };
 

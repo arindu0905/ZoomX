@@ -4,6 +4,7 @@ import { adminDate } from "@/components/admin/format";
 import { AdminLinkButton, EmptyRow, inputClass, PageHeader, Pager, SearchParamsNotice, TableCard } from "@/components/admin/ui";
 import { requireStaff } from "@/services/admin/session";
 import { listCustomers } from "@/services/admin/woo";
+/** Live per request behind the staff check; not validated for instant navigation (see ../layout.tsx). */export const instant = false;
 
 export const metadata: Metadata = { title: "Customers" };
 

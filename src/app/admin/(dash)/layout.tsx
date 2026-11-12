@@ -1,17 +1,37 @@
 import { Suspense } from "react";
 import { AdminShell } from "@/components/admin/admin-shell";
 import { requireStaff } from "@/services/admin/session";
+import Loading from "./loading";
 
-/** Every admin screen except sign-in. Staff status is re-checked with WordPress on each request. */
+/** Per-request staff check; navigations here may block (see ../layout.tsx). */
+export const instant = false;
+
+/**
+ * Every admin screen except sign-in. The shell renders instantly; only the
+ * staff name and the page wait on the per-request WordPress staff check, so
+ * nothing admin-only is shown before it passes.
+ */
 export default function DashboardLayout({ children }: LayoutProps<"/admin">) {
   return (
-    <Suspense fallback={<div className="min-h-dvh bg-[#f1f1f1]" />}>
-      <Gate>{children}</Gate>
-    </Suspense>
+    <AdminShell
+      staffName={
+        <Suspense fallback={null}>
+          <StaffName />
+        </Suspense>
+      }
+    >
+      <Suspense fallback={<Loading />}>
+        <Gate>{children}</Gate>
+      </Suspense>
+    </AdminShell>
   );
 }
 
+async function StaffName() {
+  return (await requireStaff()).name;
+}
+
 async function Gate({ children }: { children: React.ReactNode }) {
-  const staff = await requireStaff();
-  return <AdminShell staffName={staff.name}>{children}</AdminShell>;
+  await requireStaff();
+  return children;
 }

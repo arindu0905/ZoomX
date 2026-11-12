@@ -5,6 +5,7 @@ import { AdminLinkButton, Badge, EmptyRow, inputClass, PageHeader, Pager, Search
 import { requireStaff } from "@/services/admin/session";
 import { listOrders, ORDER_STATUSES } from "@/services/admin/woo";
 import { cn } from "@/utils/cn";
+/** Live per request behind the staff check; not validated for instant navigation (see ../layout.tsx). */export const instant = false;
 
 export const metadata: Metadata = { title: "Orders" };
 
