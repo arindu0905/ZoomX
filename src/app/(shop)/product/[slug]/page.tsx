@@ -1,3 +1,4 @@
+import { RecentlyViewed } from "@/components/products/recently-viewed";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
@@ -110,7 +111,7 @@ async function ProductView({ params }: Pick<PageProps<"/product/[slug]">, "param
               <h1 className="text-hero text-balance">{name}</h1>
               {summary && <p className="mt-4 text-lead text-pretty text-ink-muted">{summary}</p>}
             </header>
-            <ProductPurchase {...toPurchaseProps(detail)} />
+            <ProductPurchase {...toPurchaseProps(detail)} name={name} image={product.images[0]?.thumbnail ?? product.images[0]?.src} />
           </div>
         </div>
       </Container>
@@ -152,6 +153,17 @@ async function ProductView({ params }: Pick<PageProps<"/product/[slug]">, "param
       <Suspense fallback={null}>
         <RelatedProducts product={product} />
       </Suspense>
+
+      <RecentlyViewed
+        current={{
+          id: product.id,
+          slug: product.slug,
+          name,
+          image: product.images[0]?.thumbnail ?? product.images[0]?.src,
+          prices: product.prices,
+          onSale: product.on_sale,
+        }}
+      />
 
       <script
         type="application/ld+json"

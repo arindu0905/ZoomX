@@ -211,3 +211,14 @@ select:not([multiple]):not([size]) {
   background-position: right 0.875rem center;
   background-size: 1rem;
 }
+
+/* ── Range ticker ──────────────────────────────────────────────────────── */
+@keyframes zx-ticker {
+  to { transform: translateX(-50%); }
+}
+.ticker {
+  animation: zx-ticker 40s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .ticker { animation: none; }
+}

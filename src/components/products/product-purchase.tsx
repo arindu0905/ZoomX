@@ -1,13 +1,17 @@
 "use client";
 
 import { Minus, Plus } from "lucide-react";
-import { useId, useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
+import Image from "next/image";
+import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { Button } from "@/components/ui/button";
 import { findVariant, isOptionAvailable, optionExists, type Selection } from "@/lib/variations";
 import { useCartStore } from "@/store/cart";
 import { useUiStore } from "@/store/ui";
 import type { StorePrices } from "@/types/store-api";
 import { cn } from "@/utils/cn";
+import { flyToBag } from "@/utils/fly-to-bag";
 import { Price } from "./price";
 
 export interface PurchaseAttribute {
@@ -49,10 +53,15 @@ export function ProductPurchase({
   product,
   attributes,
   variants,
+  name,
+  image,
 }: {
   product: PurchaseProduct;
   attributes: PurchaseAttribute[];
   variants: PurchaseVariant[];
+  /** For the sticky add-to-bag bar. */
+  name?: string;
+  image?: string;
 }) {
   const isVariable = attributes.length > 0;
   const names = attributes.map((a) => a.name);
@@ -92,9 +101,25 @@ export function ProductPurchase({
       ...(variant ? { variation: names.map((n) => ({ attribute: n, value: selection[n]! })) } : {}),
     });
     setAdding(false);
-    if (r.ok) openPanel("bag");
-    else setAddError(r.message);
+    if (r.ok) {
+      await flyToBag(document.querySelector("[data-product-image]"));
+      openPanel("bag");
+    } else setAddError(r.message);
   };
+
+  // Sticky bar appears once the main Add to bag button has scrolled away.
+  const buyRef = useRef<HTMLDivElement>(null);
+  const [showBar, setShowBar] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- portal target exists only after mount
+  useEffect(() => setMounted(true), []);
+  useEffect(() => {
+    const el = buyRef.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => setShowBar(!e.isIntersecting && e.boundingClientRect.top < 0));
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
 
   const status = !complete
     ? "Choose an option to see availability."
@@ -139,7 +164,51 @@ export function ProductPurchase({
         {status}
       </p>
 
-      <div className="flex flex-wrap items-center gap-4">
+      {mounted &&
+        createPortal(
+          <AnimatePresence>
+            {showBar && name && (
+              <motion.div
+                initial={{ y: "120%" }}
+                animate={{ y: 0 }}
+                exit={{ y: "120%" }}
+                transition={{ type: "spring", stiffness: 380, damping: 34 }}
+                className="fixed inset-x-0 bottom-0 z-40 border-t border-line bg-canvas/90 backdrop-blur-xl"
+              >
+                <div className="mx-auto flex max-w-[1024px] items-center gap-4 px-gutter py-3 lg:px-[22px]">
+                  {image && (
+                    <Image
+                      src={image}
+                      alt=""
+                      width={48}
+                      height={48}
+                      className="size-12 shrink-0 rounded-button bg-canvas-alt object-contain p-1"
+                    />
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-body font-semibold">{name}</p>
+                    <Price
+                      prices={(variant ?? product).prices}
+                      onSale={(variant ?? product).onSale}
+                      className="text-caption"
+                    />
+                  </div>
+                  <Button
+                    disabled={adding || (complete && !canBuy)}
+                    onClick={
+                      canBuy ? addToBag : () => buyRef.current?.scrollIntoView({ behavior: "smooth", block: "center" })
+                    }
+                  >
+                    {adding ? "Adding…" : canBuy ? "Add to bag" : complete ? "Unavailable" : "Choose options"}
+                  </Button>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>,
+          document.body,
+        )}
+
+      <div ref={buyRef} className="flex flex-wrap items-center gap-4">
         <QuantityStepper
           value={qty}
           min={product.minQty}
@@ -185,8 +254,7 @@ function OptionGroup({
   return (
     <fieldset>
       <legend id={id} className="mb-4 text-lg font-semibold tracking-tight">
-        {attribute.name}.{" "}
-        <span className="text-ink-muted">{selected ? selected : "Which one is right for you?"}</span>
+        {attribute.name}. <span className="text-ink-muted">{selected ? selected : "Which one is right for you?"}</span>
       </legend>
       <div className="grid gap-3 sm:grid-cols-2" role="radiogroup" aria-labelledby={id}>
         {terms.map((t) => {

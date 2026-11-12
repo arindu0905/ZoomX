@@ -7,6 +7,7 @@ import { useCartStore } from "@/store/cart";
 import type { Cart } from "@/types/cart";
 import { decodeEntities } from "@/utils/text";
 import { money } from "./cart-lines";
+import { FreeDeliveryBar } from "./free-delivery-bar";
 
 /** Totals as calculated by WooCommerce, plus coupon and shipping controls. */
 export function CartTotals({ cart, editable = true }: { cart: Cart; editable?: boolean }) {
@@ -16,6 +17,7 @@ export function CartTotals({ cart, editable = true }: { cart: Cart; editable?: b
 
   return (
     <div className="flex flex-col gap-5">
+      {editable && <FreeDeliveryBar cart={cart} />}
       {editable && <CouponForm cart={cart} />}
       {cart.needs_shipping && <ShippingOptions cart={cart} editable={editable} />}
 

@@ -180,6 +180,7 @@ function BagLink() {
         toggle("bag");
       }}
       aria-label={count ? `Shopping bag, ${count} ${count === 1 ? "item" : "items"}` : "Shopping bag"}
+      data-bag-target
       className={cn(iconButton, "relative")}
     >
       <ShoppingBag aria-hidden className="size-4" strokeWidth={1.6} />

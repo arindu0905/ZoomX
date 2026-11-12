@@ -3,6 +3,8 @@ import { BusinessCampaign } from "@/components/home/business-campaign";
 import { Hero } from "@/components/home/hero";
 import { ProductRail } from "@/components/home/product-rail";
 import { ProductTiles } from "@/components/home/product-tiles";
+import { RangeTicker } from "@/components/home/range-ticker";
+import { ScrollShowcase } from "@/components/home/scroll-showcase";
 import { ShopByCategory } from "@/components/home/shop-by-category";
 import { WhyZoomX } from "@/components/home/why-zoomx";
 import { site, siteUrl } from "@/lib/site";
@@ -34,6 +36,8 @@ export default async function Home() {
   return (
     <>
       <Hero products={bestSellers} hero={content.hero} />
+      <RangeTicker />
+      <ScrollShowcase products={[...featured, ...bestSellers.filter((p) => !featuredIds.has(p.id))]} />
       <ProductTiles products={tiles} title="Our most popular products." fullWidth={Math.min(2, featured.length)} />
       <ShopByCategory categories={categories} />
       <BusinessCampaign business={content.business} />

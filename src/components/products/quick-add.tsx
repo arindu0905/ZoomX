@@ -4,6 +4,7 @@ import { Plus } from "lucide-react";
 import { useState } from "react";
 import { useCartStore } from "@/store/cart";
 import { useUiStore } from "@/store/ui";
+import { flyToBag } from "@/utils/fly-to-bag";
 
 /** One-tap add for simple, in-stock products on product cards. */
 export function QuickAdd({ productId, name }: { productId: number; name: string }) {
@@ -17,12 +18,16 @@ export function QuickAdd({ productId, name }: { productId: number; name: string 
       <button
         type="button"
         disabled={busy}
-        onClick={async () => {
+        onClick={async (e) => {
+          const card = e.currentTarget.closest("article, li");
           setBusy(true);
           setError(null);
           const r = await add({ id: productId, quantity: 1 });
           setBusy(false);
-          if (r.ok) open("bag");
+          if (r.ok) {
+            await flyToBag(card?.querySelector("img"));
+            open("bag");
+          }
           else setError(r.message);
         }}
         className="inline-flex h-9 items-center gap-1 btn-motion rounded-button bg-canvas-alt px-4 text-sm font-medium transition-colors hover:bg-ink hover:text-white disabled:opacity-50 focus-visible:outline-2 focus-visible:outline-offset-2"

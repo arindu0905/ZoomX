@@ -8,6 +8,7 @@ import { useDialog } from "@/hooks/use-dialog";
 import { useCartStore } from "@/store/cart";
 import { useUiStore } from "@/store/ui";
 import { CartLines, money } from "./cart-lines";
+import { FreeDeliveryBar } from "./free-delivery-bar";
 
 /** Slide-in shopping bag. Opens after "Add to bag" and from the header icon. */
 export function BagDrawer() {
@@ -68,6 +69,7 @@ export function BagDrawer() {
                   <CartLines cart={cart} compact />
                 </div>
                 <footer className="flex flex-col gap-3 border-t border-line px-6 pt-4 pb-6">
+                  <FreeDeliveryBar cart={cart} />
                   <div className="flex items-baseline justify-between">
                     <span className="text-body text-ink-muted">Subtotal</span>
                     <span className="text-lg font-semibold tabular-nums">{money(cart.totals.total_items, cart)}</span>

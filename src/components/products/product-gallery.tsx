@@ -8,11 +8,24 @@ import { cn } from "@/utils/cn";
 /** Large primary image with thumbnail switcher. The image is the focus of the page. */
 export function ProductGallery({ images, name }: { images: StoreImage[]; name: string }) {
   const [active, setActive] = useState(0);
+  const [zoom, setZoom] = useState<{ x: number; y: number } | null>(null);
   const current = images[active];
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="relative aspect-square overflow-hidden rounded-[10%] bg-canvas-alt">
+      <div
+        data-product-image
+        className={cn(
+          "relative aspect-square overflow-hidden rounded-[10%] bg-canvas-alt",
+          current && "[@media(hover:hover)]:cursor-zoom-in",
+        )}
+        onPointerMove={(e) => {
+          if (e.pointerType !== "mouse") return;
+          const r = e.currentTarget.getBoundingClientRect();
+          setZoom({ x: ((e.clientX - r.left) / r.width) * 100, y: ((e.clientY - r.top) / r.height) * 100 });
+        }}
+        onPointerLeave={() => setZoom(null)}
+      >
         {current ? (
           <Image
             key={current.id}
@@ -21,7 +34,11 @@ export function ProductGallery({ images, name }: { images: StoreImage[]; name: s
             fill
             priority={active === 0}
             sizes="(min-width: 1024px) 55vw, 100vw"
-            className="object-contain p-10 sm:p-16"
+            style={zoom ? { transformOrigin: `${zoom.x}% ${zoom.y}%` } : undefined}
+            className={cn(
+              "animate-[zx-rise_0.5s_var(--ease-standard)_both] object-contain p-10 transition-transform duration-300 ease-standard sm:p-16 motion-reduce:transition-none",
+              zoom && "scale-[1.9]",
+            )}
           />
         ) : (
           <div aria-hidden className="flex h-full items-center justify-center text-body text-ink-muted">
