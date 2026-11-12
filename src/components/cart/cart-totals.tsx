@@ -87,7 +87,7 @@ function CouponForm({ cart }: { cart: Cart }) {
           ))}
         </ul>
       )}
-      <div role="group" aria-label="Coupon" className="flex gap-2">
+      <div role="group" aria-label="Coupon" className="relative">
         <label htmlFor={id} className="sr-only">
           Coupon code
         </label>
@@ -106,9 +106,15 @@ function CouponForm({ cart }: { cart: Cart }) {
           maxLength={50}
           aria-describedby={message ? `${id}-msg` : undefined}
           aria-invalid={!!message}
-          className="h-11 min-w-0 flex-1 rounded-full bg-canvas-alt px-4 text-body outline-none focus-visible:ring-2 focus-visible:ring-brand-strong"
+          className="h-12 w-full rounded-card bg-canvas py-3 pr-24 pl-4 text-body shadow-[inset_0_0_0_1px_var(--color-line)] outline-none focus-visible:shadow-[inset_0_0_0_2px_var(--color-ink)]"
         />
-        <Button type="button" variant="ghost" onClick={submit} disabled={pending || !code.trim()}>
+        <Button
+          type="button"
+          variant="ghost"
+          onClick={submit}
+          disabled={pending || !code.trim()}
+          className="absolute top-1/2 right-1.5 -translate-y-1/2"
+        >
           Apply
         </Button>
       </div>

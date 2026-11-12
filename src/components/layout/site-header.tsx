@@ -42,7 +42,7 @@ export function SiteHeader({ categories }: { categories: NavCategory[] }) {
         )}
       >
         <nav aria-label="Main" className="mx-auto flex h-nav max-w-[1024px] items-center gap-2 px-gutter lg:px-[22px]">
-          <Logo className="h-7" priority />
+          <Logo className="h-10" priority />
 
           {/* Desktop links */}
           <ul className="ml-4 hidden flex-1 items-center justify-evenly md:flex">
