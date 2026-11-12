@@ -21,6 +21,8 @@ import { getBestSellers, getCategories, getFeaturedProducts } from "@/services/w
  *  11 Newsletter — omitted until an email provider is chosen (no non-functional forms)
  * Product sections render nothing until WooCommerce returns real products.
  */
+const SHOWCASE_COUNT = 5;
+
 export default async function Home() {
   const [content, categories, bestSellers, featured] = await Promise.all([
     getSiteContent(),
@@ -31,14 +33,19 @@ export default async function Home() {
   // apple.com-style tiles: featured products lead as full-width tiles, then
   // best sellers fill the two-up grid (each product shown once).
   const featuredIds = new Set(featured.map((p) => p.id));
-  const tiles = [...featured, ...bestSellers.filter((p) => !featuredIds.has(p.id))].slice(0, 8);
+  const ordered = [...featured, ...bestSellers.filter((p) => !featuredIds.has(p.id))];
+  // The scroll showcase presents the first five; the tiles continue with the
+  // rest so no product is shown twice in a row (small catalogues share them).
+  const showcase = ordered.slice(0, SHOWCASE_COUNT);
+  const rest = ordered.slice(SHOWCASE_COUNT);
+  const tiles = (rest.length >= 3 ? rest : ordered).slice(0, 7);
 
   return (
     <>
       <Hero products={bestSellers} hero={content.hero} />
       <RangeTicker />
-      <ScrollShowcase products={[...featured, ...bestSellers.filter((p) => !featuredIds.has(p.id))]} />
-      <ProductTiles products={tiles} title="Our most popular products." fullWidth={Math.min(2, featured.length)} />
+      <ScrollShowcase products={showcase} />
+      <ProductTiles products={tiles} title="Our most popular products." />
       <ShopByCategory categories={categories} />
       <BusinessCampaign business={content.business} />
       <BrandStory story={content.story} />

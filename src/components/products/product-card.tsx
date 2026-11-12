@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { StoreProduct } from "@/types/store-api";
 import { decodeEntities } from "@/utils/text";
+import { tintStyle } from "@/utils/tint";
 import { Price } from "./price";
 import { QuickAdd } from "./quick-add";
 
@@ -21,14 +22,14 @@ export function ProductCard({ product }: { product: StoreProduct }) {
       {product.on_sale && product.is_in_stock && (
         <p className="mb-1 text-caption font-semibold tracking-tight text-highlight">Sale</p>
       )}
-      <div className="relative aspect-square overflow-hidden">
+      <div style={tintStyle(product.slug)} className="tint-surface relative aspect-square overflow-hidden rounded-[12%]">
         {image ? (
           <Image
             src={image.src}
             alt={image.alt || name}
             fill
             sizes="(min-width: 1024px) 25vw, (min-width: 640px) 45vw, 80vw"
-            className="object-contain p-2 transition-transform duration-500 ease-standard group-hover:scale-[1.06] group-hover:-rotate-2 sm:p-4"
+            className="object-contain p-4 drop-shadow-[0_14px_14px_rgba(0,0,0,0.12)] transition-transform duration-500 ease-emphasized group-hover:scale-[1.08] group-hover:-rotate-3 sm:p-6"
           />
         ) : (
           <div aria-hidden className="flex h-full items-center justify-center text-caption text-ink-muted">

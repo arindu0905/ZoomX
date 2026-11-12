@@ -9,9 +9,8 @@ import { Price } from "@/components/products/price";
 import { buttonClasses } from "@/components/ui/button";
 import type { StoreProduct } from "@/types/store-api";
 import { decodeEntities, htmlToText } from "@/utils/text";
+import { tint } from "@/utils/tint";
 
-/** Soft backdrop per slide, cycling through the brand's product colours. */
-const TINTS = ["#fff4e5", "#e9f0ff", "#eaf7e6", "#e6f6fb", "#fdecef", "#f2eafb"];
 const ease = [0.22, 1, 0.36, 1] as const;
 
 /**
@@ -22,6 +21,11 @@ const ease = [0.22, 1, 0.36, 1] as const;
  */
 export function ScrollShowcase({ products }: { products: StoreProduct[] }) {
   const items = products.filter((p) => p.images[0]).slice(0, 5);
+  // Mount the scroll-driven part only when there is a section to track.
+  return items.length < 2 ? null : <Showcase items={items} />;
+}
+
+function Showcase({ items }: { items: StoreProduct[] }) {
   const ref = useRef<HTMLElement>(null);
   const reduce = useReducedMotion();
   const [active, setActive] = useState(0);
@@ -34,8 +38,6 @@ export function ScrollShowcase({ products }: { products: StoreProduct[] }) {
     const i = Math.min(items.length - 1, Math.max(0, Math.floor(v * items.length)));
     setActive((cur) => (cur === i ? cur : i));
   });
-
-  if (items.length < 2) return null;
 
   if (reduce) {
     return (
@@ -61,14 +63,20 @@ export function ScrollShowcase({ products }: { products: StoreProduct[] }) {
     >
       <motion.div
         className="sticky top-0 flex h-dvh items-center overflow-hidden"
-        animate={{ backgroundColor: TINTS[active % TINTS.length] }}
+        animate={{ backgroundColor: tint(p.slug).soft }}
         transition={{ duration: 0.8, ease }}
       >
         {/* Soft moving glow behind the bottle */}
         <motion.div
           aria-hidden
           style={{ scale: glowScale }}
-          className="pointer-events-none absolute top-1/2 left-1/2 size-[70vmin] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/70 blur-3xl lg:left-[35%]"
+          className="pointer-events-none absolute top-1/2 left-1/2 size-[70vmin] -translate-x-1/2 -translate-y-1/2 rounded-full bg-white/80 blur-3xl lg:left-[35%]"
+        />
+        <motion.div
+          aria-hidden
+          animate={{ backgroundColor: tint(p.slug).glow }}
+          transition={{ duration: 0.8, ease }}
+          className="pointer-events-none absolute -right-[20vmin] -bottom-[30vmin] size-[80vmin] rounded-full opacity-70 blur-[100px]"
         />
 
         <div className="relative mx-auto grid w-full max-w-[1024px] items-center gap-6 px-gutter lg:grid-cols-[1.1fr_1fr] lg:px-[22px]">
@@ -100,9 +108,6 @@ export function ScrollShowcase({ products }: { products: StoreProduct[] }) {
           </div>
 
           <div className="relative min-h-56 text-center lg:text-left">
-            <p className="text-sm font-semibold tracking-[0.2em] text-brand-strong uppercase">
-              {String(active + 1).padStart(2, "0")} / {String(items.length).padStart(2, "0")}
-            </p>
             <AnimatePresence mode="wait" initial={false}>
               <motion.div
                 key={p.id}
@@ -131,7 +136,7 @@ export function ScrollShowcase({ products }: { products: StoreProduct[] }) {
         <motion.div
           aria-hidden
           style={{ scaleX: progress }}
-          className="absolute inset-x-0 bottom-0 h-1 origin-left bg-brand-strong"
+          className="absolute inset-x-0 bottom-0 h-1 origin-left bg-ink/80"
         />
       </motion.div>
     </section>

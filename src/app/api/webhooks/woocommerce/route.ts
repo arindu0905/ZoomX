@@ -1,4 +1,6 @@
 import { revalidateTag } from "next/cache";
+import { staffActiveRecently } from "@/services/admin/session";
+import { warmAdminSoon } from "@/services/admin/warm";
 import type { NextRequest } from "next/server";
 import { apiError, apiOk } from "@/lib/api-route";
 import { getServerEnv } from "@/lib/env";
@@ -49,6 +51,7 @@ export async function POST(request: NextRequest) {
   const tags = tagsForWebhook(topic, payload);
   // expire: 0 → the next visitor gets fresh price/stock rather than stale-while-revalidate.
   for (const tag of tags) revalidateTag(tag, { expire: 0 });
+  if (staffActiveRecently()) warmAdminSoon();
 
   console.info(`[webhook] ${topic} → ${tags.join(", ") || "no-op"}`);
   return apiOk({ ok: true, revalidated: tags });

@@ -4,20 +4,26 @@
     {
       "name": "zoomx-dev",
       "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "dev"
-      ],
+      "runtimeArgs": ["run", "dev"],
       "port": 3000
     },
     {
       "name": "zoomx-prod",
       "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "start"
-      ],
+      "runtimeArgs": ["run", "start"],
       "port": 3000
+    },
+    {
+      "name": "zoomx-prod-3001",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["next", "start", "-p", "3001"],
+      "port": 3001
+    },
+    {
+      "name": "zoomx-sandbox",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "sandbox"],
+      "port": 9400
     }
   ]
 }

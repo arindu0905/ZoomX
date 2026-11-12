@@ -1,4 +1,6 @@
 import { revalidateTag } from "next/cache";
+import { staffActiveRecently } from "@/services/admin/session";
+import { warmAdminSoon } from "@/services/admin/warm";
 import type { NextRequest } from "next/server";
 import { apiError, apiOk, guardMutation, handleApiError, readJson } from "@/lib/api-route";
 import { checkoutSchema, toWooAddress } from "@/lib/checkout-schema";
@@ -79,6 +81,7 @@ export async function POST(request: NextRequest) {
         : `/checkout/order/${order.order_id}?key=${key}`;
     // New order: refresh the admin dashboard (orders, sales, stock).
     revalidateTag("admin", { expire: 0 });
+    if (staffActiveRecently()) warmAdminSoon();
     return apiOk<CheckoutResponse>({ orderId: order.order_id, next }, 201);
   } catch (err) {
     return handleApiError("checkout", err);

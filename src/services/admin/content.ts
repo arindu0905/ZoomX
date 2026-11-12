@@ -1,5 +1,7 @@
 import "server-only";
+import { cacheLife, cacheTag } from "next/cache";
 import { z } from "zod";
+import { CONTENT_TAG } from "@/services/wordpress/content";
 import { wpSignedCall } from "@/services/auth/wordpress-auth";
 
 /**
@@ -86,7 +88,13 @@ const rawSchema = z.union([
 ]);
 export type RawContent = Record<string, Record<string, string>>;
 
-export const getRawContent = (): Promise<RawContent> => wpSignedCall("admin/content-raw", {}, rawSchema);
+/** Cached under the content tag, which every content save clears. */
+export async function getRawContent(): Promise<RawContent> {
+  "use cache";
+  cacheLife({ stale: 30, revalidate: 60, expire: 3600 });
+  cacheTag(CONTENT_TAG);
+  return wpSignedCall("admin/content-raw", {}, rawSchema);
+}
 
 export const saveRawContent = (content: RawContent) => wpSignedCall("admin/content", { content }, z.unknown());
 

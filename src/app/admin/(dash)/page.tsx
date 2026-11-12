@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { adminDate, adminMoney } from "@/components/admin/format";
 import { AdminLinkButton, Badge, Card, EmptyRow, PageHeader, TableCard } from "@/components/admin/ui";
 import { requireStaff } from "@/services/admin/session";
-import { lowStockProducts, recentOrders } from "@/services/admin/woo";
+import { dashboardSince, lowStockProducts, recentOrders } from "@/services/admin/woo";
 import { decodeEntities } from "@/utils/text";
 /** Live per request behind the staff check; not validated for instant navigation (see ../layout.tsx). */export const instant = false;
 
@@ -13,9 +13,6 @@ export const metadata: Metadata = { title: "Home" };
 // Statuses that count as sales (paid or being fulfilled). Totals come from WooCommerce.
 const SALE_STATUSES = new Set(["processing", "completed", "on-hold"]);
 
-/** 30 days ago as a date (not a timestamp), so the cached query is shared for the whole day. */
-const sinceDay = () => new Date(Date.now() - 30 * 86_400_000).toISOString().slice(0, 10);
-
 /**
  * The heading and quick actions render at once; each data section streams
  * in behind its own placeholder, so one slow WooCommerce call doesn't hold
@@ -23,7 +20,7 @@ const sinceDay = () => new Date(Date.now() - 30 * 86_400_000).toISOString().slic
  */
 export default async function AdminHome() {
   const staff = await requireStaff();
-  const since = sinceDay();
+  const since = dashboardSince();
   return (
     <>
       <PageHeader

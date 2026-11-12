@@ -1,22 +1,31 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 import type { StoreImage } from "@/types/store-api";
 import { cn } from "@/utils/cn";
 
 /** Large primary image with thumbnail switcher. The image is the focus of the page. */
-export function ProductGallery({ images, name }: { images: StoreImage[]; name: string }) {
+export function ProductGallery({
+  images,
+  name,
+  style,
+}: {
+  images: StoreImage[];
+  name: string;
+  /** Tint variables for the image wells (utils/tint.ts). */
+  style?: CSSProperties;
+}) {
   const [active, setActive] = useState(0);
   const [zoom, setZoom] = useState<{ x: number; y: number } | null>(null);
   const current = images[active];
 
   return (
-    <div className="flex flex-col gap-4">
+    <div style={style} className="flex flex-col gap-4">
       <div
         data-product-image
         className={cn(
-          "relative aspect-square overflow-hidden rounded-[10%] bg-canvas-alt",
+          "tint-surface relative aspect-square overflow-hidden rounded-[10%]",
           current && "[@media(hover:hover)]:cursor-zoom-in",
         )}
         onPointerMove={(e) => {
@@ -36,7 +45,7 @@ export function ProductGallery({ images, name }: { images: StoreImage[]; name: s
             sizes="(min-width: 1024px) 55vw, 100vw"
             style={zoom ? { transformOrigin: `${zoom.x}% ${zoom.y}%` } : undefined}
             className={cn(
-              "animate-[zx-rise_0.5s_var(--ease-standard)_both] object-contain p-10 transition-transform duration-300 ease-standard sm:p-16 motion-reduce:transition-none",
+              "animate-[zx-rise_0.5s_var(--ease-standard)_both] object-contain p-10 drop-shadow-[0_30px_30px_rgba(0,0,0,0.14)] transition-transform duration-300 ease-standard sm:p-16 motion-reduce:transition-none",
               zoom && "scale-[1.9]",
             )}
           />
@@ -57,7 +66,7 @@ export function ProductGallery({ images, name }: { images: StoreImage[]; name: s
                 aria-label={`Show image ${i + 1} of ${images.length}`}
                 aria-current={i === active}
                 className={cn(
-                  "relative block size-20 overflow-hidden rounded-[10%] bg-canvas-alt ring-offset-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-strong",
+                  "relative block size-20 overflow-hidden rounded-[10%] bg-(--tint,var(--color-canvas-alt)) ring-offset-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-strong",
                   i === active ? "ring-2 ring-ink" : "opacity-70 hover:opacity-100",
                 )}
               >

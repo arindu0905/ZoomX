@@ -10,14 +10,17 @@ import { restRequest, restRequestWithMeta } from "@/services/woocommerce/rest";
  * requireStaff(). WooCommerce stays the source of truth — prices, totals
  * and stock are calculated by WooCommerce, never here.
  *
- * Reads are cached for up to a minute under ADMIN_TAG. Every admin save,
- * every storefront checkout and every WooCommerce webhook clears that tag,
- * so staff see changes immediately while page-to-page browsing is fast.
+ * Reads are cached under ADMIN_TAG. For a minute they are served as is;
+ * after that (up to an hour) the cached copy is still shown at once while a
+ * fresh one is fetched in the background, so a screen never waits on
+ * WooCommerce unless nobody has opened it for an hour. Every admin save,
+ * every storefront checkout and every WooCommerce webhook clears the tag
+ * (and services/admin/warm.ts refills it), so staff see changes immediately.
  */
 export const ADMIN_TAG = "admin";
 
 function adminCache() {
-  cacheLife({ stale: 30, revalidate: 60, expire: 300 });
+  cacheLife({ stale: 30, revalidate: 60, expire: 3600 });
   cacheTag(ADMIN_TAG);
 }
 
@@ -425,6 +428,9 @@ export const deleteCoupon = (id: number) =>
   restRequest("DELETE", `coupons/${id}`, adminCouponSchema, { query: { force: "true" } });
 
 // ── Dashboard ────────────────────────────────────────────────────────────
+
+/** 30 days ago as a date (not a timestamp), so the cached dashboard query is shared for the whole day. */
+export const dashboardSince = () => new Date(Date.now() - 30 * 86_400_000).toISOString().slice(0, 10);
 
 /** Orders since the given day (ISO date, so the cache key is stable for the day). */
 export const recentOrders = (sinceDay: string) => listOrders({ perPage: 100, after: `${sinceDay}T00:00:00` });

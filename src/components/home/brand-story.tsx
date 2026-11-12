@@ -1,7 +1,7 @@
 import { ArrowRight } from "lucide-react";
 import { ButtonLink } from "@/components/ui/button";
 import { Container, Section } from "@/components/ui/layout";
-import { Reveal } from "@/components/ui/reveal";
+import { Reveal, Words } from "@/components/ui/reveal";
 import { story as defaultStory } from "@/content/home";
 
 export function BrandStory({ story = defaultStory }: { story?: typeof defaultStory }) {
@@ -12,7 +12,7 @@ export function BrandStory({ story = defaultStory }: { story?: typeof defaultSto
           <Reveal>
             <p className="text-caption font-semibold uppercase tracking-[0.12em] text-brand-strong">{story.eyebrow}</p>
             <h2 id="story-title" className="mt-4 text-headline text-balance">
-              {story.title}
+              <Words text={story.title} />
             </h2>
           </Reveal>
           <Reveal delay={0.1} className="space-y-5 text-lead text-pretty text-ink-muted">
@@ -25,16 +25,19 @@ export function BrandStory({ story = defaultStory }: { story?: typeof defaultSto
           </Reveal>
         </div>
 
-        <ul className="mt-20 grid gap-x-10 gap-y-12 border-t border-line pt-12 sm:grid-cols-2 lg:grid-cols-4">
-          {story.values.map((v, i) => (
-            <li key={v.title}>
-              <Reveal delay={i * 0.06}>
-                <h3 className="text-title">{v.title}</h3>
-                <p className="mt-3 text-body text-ink-muted">{v.body}</p>
-              </Reveal>
-            </li>
-          ))}
-        </ul>
+        <div className="draw-scope relative mt-20 border-t border-line">
+          <span aria-hidden className="draw-in absolute inset-x-0 -top-px h-px bg-ink" />
+          <ul className="grid gap-x-10 gap-y-12 pt-12 sm:grid-cols-2 lg:grid-cols-4">
+            {story.values.map((v, i) => (
+              <li key={v.title}>
+                <Reveal delay={i * 0.06}>
+                  <h3 className="text-title">{v.title}</h3>
+                  <p className="mt-3 text-body text-ink-muted">{v.body}</p>
+                </Reveal>
+              </li>
+            ))}
+          </ul>
+        </div>
       </Container>
     </Section>
   );

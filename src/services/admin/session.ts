@@ -3,7 +3,7 @@ import { createHmac } from "node:crypto";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { cache } from "react";
-import { connection } from "next/server";
+import { after, connection } from "next/server";
 import { z } from "zod";
 import { getServerEnv, requireEnv } from "@/lib/env";
 import { signValue, verifySignedValue } from "@/lib/security";
@@ -63,26 +63,64 @@ export async function endAdminSession(): Promise<void> {
 }
 
 /**
- * Successful staff checks are remembered for a short time per server
- * instance, so clicking around the admin doesn't wait on WordPress for every
- * page. Removing someone's role therefore takes effect within STAFF_TTL_MS.
- * Failed checks are never remembered.
+ * Successful staff checks are remembered per server instance so the admin
+ * doesn't wait on WordPress for every click. Failed checks are never
+ * remembered.
+ *
+ * - Within STAFF_FRESH_MS of a check: trusted as is.
+ * - Page views up to STAFF_STALE_MS after it: shown at once, while the check
+ *   is repeated in the background; a failed re-check locks the next request.
+ * - Anything that changes data (Server Actions, `strict`) never uses a check
+ *   older than STAFF_FRESH_MS — it waits for WordPress.
+ *
+ * So removing someone's role stops their changes within a minute, and at
+ * most one more read-only page view gets through after that.
  */
-const STAFF_TTL_MS = 60_000;
-const verified = new Map<number, { staff: Staff; until: number }>();
+const STAFF_FRESH_MS = 60_000;
+const STAFF_STALE_MS = 10 * 60_000;
+const verified = new Map<number, { staff: Staff; checked: number }>();
+const checking = new Map<number, Promise<Staff | null>>();
 
-async function confirmStaff(id: number): Promise<Staff | null> {
+/** Asks WordPress (one call at a time per staff member). */
+function checkStaff(id: number): Promise<Staff | null> {
+  const running = checking.get(id);
+  if (running) return running;
+  const check = wpSignedCall("admin/staff", { id }, staffSchema)
+    .then((staff) => {
+      verified.set(id, { staff, checked: Date.now() });
+      return staff as Staff | null;
+    })
+    .catch((err: unknown) => {
+      verified.delete(id);
+      if (!(err instanceof AuthError)) console.error("[admin] staff check failed");
+      return null;
+    })
+    .finally(() => checking.delete(id));
+  checking.set(id, check);
+  return check;
+}
+
+async function confirmStaff(id: number, strict: boolean): Promise<Staff | null> {
   const hit = verified.get(id);
-  if (hit && hit.until > Date.now()) return hit.staff;
-  try {
-    const staff = await wpSignedCall("admin/staff", { id }, staffSchema);
-    verified.set(id, { staff, until: Date.now() + STAFF_TTL_MS });
-    return staff;
-  } catch (err) {
-    verified.delete(id);
-    if (!(err instanceof AuthError)) console.error("[admin] staff check failed");
-    return null;
+  const age = hit ? Date.now() - hit.checked : Infinity;
+  if (hit && age < STAFF_FRESH_MS) return hit.staff;
+  if (hit && !strict && age < STAFF_STALE_MS) {
+    after(() => checkStaff(id).then(() => undefined));
+    return hit.staff;
   }
+  return checkStaff(id);
+}
+
+/** WordPress has just confirmed this person at sign-in: no second check on the first page. */
+export function rememberStaff(staff: Staff): void {
+  verified.set(staff.id, { staff, checked: Date.now() });
+}
+
+/** True if a staff member used the admin on this server instance in the last half hour. */
+export function staffActiveRecently(): boolean {
+  const cutoff = Date.now() - 30 * 60_000;
+  for (const { checked } of verified.values()) if (checked > cutoff) return true;
+  return false;
 }
 
 /**
@@ -90,16 +128,28 @@ async function confirmStaff(id: number): Promise<Staff | null> {
  * Wrapped in React cache(): the layout and the page share one check per request.
  */
 export const getStaff = cache(async (): Promise<Staff | null> => {
+  const id = await sessionStaffId();
+  return id ? confirmStaff(id, false) : null;
+});
+
+async function sessionStaffId(): Promise<number | null> {
   if (!getServerEnv().SESSION_SECRET) return null;
   const raw = (await cookies()).get(ADMIN_COOKIE)?.value;
   await connection();
-  const id = decodeAdminSession(raw);
-  return id ? confirmStaff(id) : null;
-});
+  return decodeAdminSession(raw);
+}
 
-/** For admin pages and Server Actions: the staff member, or redirect to sign-in. */
+/** For admin pages: the staff member, or redirect to sign-in. */
 export async function requireStaff(): Promise<Staff> {
   const staff = await getStaff();
+  if (!staff) redirect("/admin/login");
+  return staff;
+}
+
+/** For Server Actions (anything that saves): never relies on an older check. */
+export async function requireStaffStrict(): Promise<Staff> {
+  const id = await sessionStaffId();
+  const staff = id ? await confirmStaff(id, true) : null;
   if (!staff) redirect("/admin/login");
   return staff;
 }

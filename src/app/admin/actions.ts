@@ -6,7 +6,8 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 import { clientIp, rateLimit } from "@/lib/rate-limit";
 import { CONTENT_SECTIONS, saveRawContent, saveRawPage, uploadImage } from "@/services/admin/content";
-import { endAdminSession, requireStaff, staffLogin, startAdminSession } from "@/services/admin/session";
+import { endAdminSession, rememberStaff, requireStaffStrict, staffLogin, startAdminSession } from "@/services/admin/session";
+import { warmAdminSoon, warmDashboard } from "@/services/admin/warm";
 import {
   addOrderNote,
   ADMIN_TAG,
@@ -64,6 +65,7 @@ function refreshStore(productId?: number) {
   revalidateTag("products", { expire: 0 });
   revalidateTag("categories", { expire: 0 });
   if (productId) revalidateTag(`product:${productId}`, { expire: 0 });
+  warmAdminSoon();
 }
 
 /** WooCommerce's reason if it gave one, otherwise a friendly fallback. */
@@ -124,8 +126,14 @@ export async function loginAction(formData: FormData) {
   let ok = false;
   try {
     if (email && password) {
+      // Start loading the Home screen's data while WordPress checks the
+      // password (server-side cache only; nothing is shown unless sign-in
+      // succeeds, and the rate limit above bounds how often this can run).
+      void warmDashboard();
       const staff = await staffLogin(email, password);
       await startAdminSession(staff.id);
+      rememberStaff(staff);
+      warmAdminSoon(); // the other screens load right after, before they're clicked
       ok = true;
     }
   } catch (err) {
@@ -205,7 +213,7 @@ function productPayload(p: z.infer<typeof productFields>, isVariable: boolean): 
 }
 
 export async function createProductAction(formData: FormData) {
-  await requireStaff();
+  await requireStaffStrict();
   const back = "/admin/products/new";
   const p = parse(productFields, readProduct(formData), back);
   const isVariable = str(formData, "type") === "variable";
@@ -247,7 +255,7 @@ export async function createProductAction(formData: FormData) {
 }
 
 export async function saveProductAction(formData: FormData) {
-  await requireStaff();
+  await requireStaffStrict();
   const productId = parse(id, formData.get("id"), "/admin/products");
   const back = `/admin/products/${productId}`;
   const p = parse(productFields, readProduct(formData), back);
@@ -270,7 +278,7 @@ export async function saveProductAction(formData: FormData) {
 }
 
 export async function trashProductAction(formData: FormData) {
-  await requireStaff();
+  await requireStaffStrict();
   const productId = parse(id, formData.get("id"), "/admin/products");
   try {
     await trashProduct(productId);
@@ -290,7 +298,7 @@ const variationForm = z.object({
 });
 
 export async function saveVariationAction(formData: FormData) {
-  await requireStaff();
+  await requireStaffStrict();
   const back = `/admin/products/${str(formData, "product_id")}`;
   const v = parse(variationForm, Object.fromEntries(["product_id", "id", "regular_price", "sale_price", "stock_quantity"].map((k) => [k, str(formData, k)])), back);
   saleCheck(v.regular_price, v.sale_price, back);
@@ -309,7 +317,7 @@ export async function saveVariationAction(formData: FormData) {
 }
 
 export async function addVariationAction(formData: FormData) {
-  await requireStaff();
+  await requireStaffStrict();
   const productId = parse(id, formData.get("product_id"), "/admin/products");
   const back = `/admin/products/${productId}`;
   const v = parse(
@@ -345,7 +353,7 @@ export async function addVariationAction(formData: FormData) {
 }
 
 export async function deleteVariationAction(formData: FormData) {
-  await requireStaff();
+  await requireStaffStrict();
   const productId = parse(id, formData.get("product_id"), "/admin/products");
   const variationId = parse(id, formData.get("id"), `/admin/products/${productId}`);
   try {
@@ -362,7 +370,7 @@ export async function deleteVariationAction(formData: FormData) {
 const categoryForm = z.object({ name: z.string().trim().min(1, "Name is required").max(100), description: text(1000) });
 
 export async function createCategoryAction(formData: FormData) {
-  await requireStaff();
+  await requireStaffStrict();
   const c = parse(categoryForm, { name: str(formData, "name"), description: str(formData, "description") }, "/admin/categories");
   const imageId = await photo(formData, "image", c.name, "/admin/categories");
   try {
@@ -375,7 +383,7 @@ export async function createCategoryAction(formData: FormData) {
 }
 
 export async function updateCategoryAction(formData: FormData) {
-  await requireStaff();
+  await requireStaffStrict();
   const catId = parse(id, formData.get("id"), "/admin/categories");
   const c = parse(categoryForm, { name: str(formData, "name"), description: str(formData, "description") }, "/admin/categories");
   const imageId = await photo(formData, "image", c.name, "/admin/categories");
@@ -389,7 +397,7 @@ export async function updateCategoryAction(formData: FormData) {
 }
 
 export async function deleteCategoryAction(formData: FormData) {
-  await requireStaff();
+  await requireStaffStrict();
   const catId = parse(id, formData.get("id"), "/admin/categories");
   try {
     await deleteCategory(catId);
@@ -403,7 +411,7 @@ export async function deleteCategoryAction(formData: FormData) {
 // ── Orders ───────────────────────────────────────────────────────────────
 
 export async function createOrderAction(formData: FormData) {
-  await requireStaff();
+  await requireStaffStrict();
   const back = "/admin/orders/new";
   const billing = addressFrom(formData, "");
   const contact = parse(
@@ -454,7 +462,7 @@ export async function createOrderAction(formData: FormData) {
 }
 
 export async function updateOrderStatusAction(formData: FormData) {
-  await requireStaff();
+  await requireStaffStrict();
   const orderId = parse(id, formData.get("id"), "/admin/orders");
   const back = `/admin/orders/${orderId}`;
   const status = parse(z.enum(ORDER_STATUS_VALUES), str(formData, "status"), back);
@@ -468,7 +476,7 @@ export async function updateOrderStatusAction(formData: FormData) {
 }
 
 export async function saveOrderDetailsAction(formData: FormData) {
-  await requireStaff();
+  await requireStaffStrict();
   const orderId = parse(id, formData.get("id"), "/admin/orders");
   const back = `/admin/orders/${orderId}`;
   const contact = parse(
@@ -493,7 +501,7 @@ export async function saveOrderDetailsAction(formData: FormData) {
 }
 
 export async function trashOrderAction(formData: FormData) {
-  await requireStaff();
+  await requireStaffStrict();
   const orderId = parse(id, formData.get("id"), "/admin/orders");
   try {
     await trashOrder(orderId);
@@ -505,7 +513,7 @@ export async function trashOrderAction(formData: FormData) {
 }
 
 export async function addOrderNoteAction(formData: FormData) {
-  await requireStaff();
+  await requireStaffStrict();
   const orderId = parse(id, formData.get("id"), "/admin/orders");
   const back = `/admin/orders/${orderId}`;
   const note = parse(z.string().trim().min(1, "Write a note first").max(2000), str(formData, "note"), back);
@@ -520,7 +528,7 @@ export async function addOrderNoteAction(formData: FormData) {
 }
 
 export async function deleteOrderNoteAction(formData: FormData) {
-  await requireStaff();
+  await requireStaffStrict();
   const orderId = parse(id, formData.get("order_id"), "/admin/orders");
   const noteId = parse(id, formData.get("id"), `/admin/orders/${orderId}`);
   try {
@@ -547,7 +555,7 @@ function readCustomer(fd: FormData) {
 }
 
 export async function createCustomerAction(formData: FormData) {
-  await requireStaff();
+  await requireStaffStrict();
   const back = "/admin/customers/new";
   const c = parse(customerForm, readCustomer(formData), back);
   const address = addressFrom(formData, "");
@@ -569,7 +577,7 @@ export async function createCustomerAction(formData: FormData) {
 }
 
 export async function updateCustomerAction(formData: FormData) {
-  await requireStaff();
+  await requireStaffStrict();
   const customerId = parse(id, formData.get("id"), "/admin/customers");
   const back = `/admin/customers/${customerId}`;
   const c = parse(customerForm, readCustomer(formData), back);
@@ -590,7 +598,7 @@ export async function updateCustomerAction(formData: FormData) {
 }
 
 export async function deleteCustomerAction(formData: FormData) {
-  await requireStaff();
+  await requireStaffStrict();
   const customerId = parse(id, formData.get("id"), "/admin/customers");
   try {
     await deleteCustomer(customerId);
@@ -642,7 +650,7 @@ function readCoupon(fd: FormData, back: string): CouponInput {
 }
 
 export async function createCouponAction(formData: FormData) {
-  await requireStaff();
+  await requireStaffStrict();
   const data = readCoupon(formData, "/admin/coupons");
   try {
     await createCoupon(data);
@@ -654,7 +662,7 @@ export async function createCouponAction(formData: FormData) {
 }
 
 export async function updateCouponAction(formData: FormData) {
-  await requireStaff();
+  await requireStaffStrict();
   const couponId = parse(id, formData.get("id"), "/admin/coupons");
   const back = `/admin/coupons/${couponId}`;
   const data = readCoupon(formData, back);
@@ -668,7 +676,7 @@ export async function updateCouponAction(formData: FormData) {
 }
 
 export async function deleteCouponAction(formData: FormData) {
-  await requireStaff();
+  await requireStaffStrict();
   const couponId = parse(id, formData.get("id"), "/admin/coupons");
   try {
     await deleteCoupon(couponId);
@@ -682,7 +690,7 @@ export async function deleteCouponAction(formData: FormData) {
 // ── Site content & pages ─────────────────────────────────────────────────
 
 export async function saveContentAction(formData: FormData) {
-  await requireStaff();
+  await requireStaffStrict();
   const content: Record<string, Record<string, string>> = {};
   for (const section of CONTENT_SECTIONS) {
     for (const f of section.fields) {
@@ -711,7 +719,7 @@ const pageForm = z.object({
 });
 
 export async function savePageAction(formData: FormData) {
-  await requireStaff();
+  await requireStaffStrict();
   const restore = formData.get("restore") === "1";
   const slug = str(formData, "slug");
   const p = parse(pageForm, Object.fromEntries(["slug", "title", "description", "eyebrow", "lead", "status", "body"].map((k) => [k, str(formData, k)])), `/admin/pages/${encodeURIComponent(slug)}`);

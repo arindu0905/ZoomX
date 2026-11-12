@@ -51,6 +51,12 @@ $instance = $zone->add_shipping_method('flat_rate');
 update_option("woocommerce_flat_rate_{$instance}_settings", [
     'title' => 'Sandbox flat rate', 'tax_status' => 'none', 'cost' => '350',
 ]);
+// Free delivery from LKR 5,000 — keep in step with NEXT_PUBLIC_FREE_DELIVERY_FROM
+// (the storefront's free-delivery progress bar).
+$free = $zone->add_shipping_method('free_shipping');
+update_option("woocommerce_free_shipping_{$free}_settings", [
+    'title' => 'Free delivery', 'requires' => 'min_amount', 'min_amount' => '5000', 'ignore_discounts' => 'no',
+]);
 
 // ── Catalogue ────────────────────────────────────────────────────────────
 // Real ZOOM X range from zoomx.lk (sandbox/catalogue/products.json): names,

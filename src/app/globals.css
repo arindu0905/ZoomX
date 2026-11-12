@@ -222,3 +222,163 @@ select:not([multiple]):not([size]) {
 @media (prefers-reduced-motion: reduce) {
   .ticker { animation: none; }
 }
+
+/* ── Product colour (see utils/tint.ts) ────────────────────────────────── */
+/* A pale wash with a pool of stronger colour rising from the bottom edge. */
+.tint-surface {
+  background-color: var(--tint, var(--color-canvas-alt));
+  background-image: radial-gradient(90% 70% at 50% 108%, var(--tint-glow, transparent) 0%, transparent 70%);
+}
+/* White halo that sits behind a packshot so the bottle lifts off the tint. */
+.tint-halo {
+  background: radial-gradient(closest-side, rgb(255 255 255 / 0.95), rgb(255 255 255 / 0) 100%);
+}
+
+/* ── Hero aurora: slow drifting colour behind the line-up ──────────────── */
+@keyframes zx-drift {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  33% { transform: translate3d(6%, -8%, 0) scale(1.12); }
+  66% { transform: translate3d(-7%, 5%, 0) scale(0.94); }
+}
+.aurora {
+  animation: zx-drift 18s var(--ease-standard) infinite;
+  animation-delay: calc(var(--i, 0) * -6s);
+  will-change: transform;
+}
+@media (prefers-reduced-motion: reduce) {
+  .aurora { animation: none; }
+}
+
+/* ── Scroll-driven motion (no JavaScript) ──────────────────────────────── */
+/*
+ * Everything below is tied to scroll position by the browser, so it costs no
+ * script and content is never hidden waiting for hydration. Browsers without
+ * scroll timelines (and reduced-motion users) get the final, still state.
+ * Note: a view() timeline tracks the nearest scroll container, and
+ * `overflow: hidden` creates one — ancestors of these elements must use
+ * `overflow-clip` instead.
+ */
+@keyframes zx-reveal {
+  from { opacity: 0; transform: translateY(48px) scale(0.97); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes zx-word {
+  from { transform: translateY(115%) rotate(5deg); }
+  to { transform: none; }
+}
+@keyframes zx-float-in {
+  from { transform: translateY(70px) scale(0.84) rotate(-7deg); }
+  to { transform: none; }
+}
+@keyframes zx-draw {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+@keyframes zx-ticker-shift {
+  from { transform: translateX(0); }
+  to { transform: translateX(-18%); }
+}
+
+/* Headline words rising from behind a clip edge. */
+.words > span {
+  display: inline-block;
+  overflow: clip;
+  overflow-clip-margin: 0.08em;
+  vertical-align: bottom;
+  padding-block: 0.1em;
+  margin-block: -0.1em;
+}
+.words > span > span {
+  display: inline-block;
+}
+
+/* 3D lean toward the pointer (see components/ui/tilt.tsx). */
+.tilt-target {
+  transform: perspective(1000px) rotateX(calc(var(--rx, 0) * 1deg)) rotateY(calc(var(--ry, 0) * 1deg));
+  transition: transform 350ms var(--ease-standard);
+}
+
+.scroll-progress { display: none; }
+
+@media (prefers-reduced-motion: no-preference) {
+  .words:not(.words-scroll) > span > span {
+    animation: zx-word 0.9s var(--ease-emphasized) both;
+    animation-delay: calc(var(--i, 0) * 80ms);
+  }
+
+  @supports (animation-timeline: view()) {
+    .reveal {
+      animation: zx-reveal linear both;
+      animation-timeline: view();
+      animation-range: entry calc(var(--reveal-delay, 0) * 100%) entry calc(45% + var(--reveal-delay, 0) * 100%);
+    }
+    .words-scroll > span > span {
+      animation: zx-word linear both;
+      animation-timeline: view();
+      animation-range: cover calc(2% + var(--i, 0) * 2.5%) cover calc(20% + var(--i, 0) * 2.5%);
+    }
+    /* Packshots drift up, grow and straighten as their tile scrolls in. */
+    .float-in {
+      animation: zx-float-in linear both;
+      animation-timeline: view();
+      animation-range: entry 0% cover 42%;
+    }
+    /* Hairlines that draw themselves left to right while their block (.draw-scope) enters. */
+    .draw-scope {
+      view-timeline-name: --draw;
+    }
+    .draw-in {
+      transform-origin: left;
+      animation: zx-draw linear both;
+      animation-timeline: --draw;
+      animation-range: entry 0% entry 100%;
+    }
+    /* The ticker slides further while the page is scrolling past it. */
+    .ticker-shift {
+      animation: zx-ticker-shift linear both;
+      animation-timeline: view();
+    }
+    /* Reading progress under the header. */
+    .scroll-progress {
+      display: block;
+      transform-origin: left;
+      animation: zx-draw linear both;
+      animation-timeline: scroll(root);
+    }
+  }
+}
+
+/* ── Hero: soap bubbles and bobbing bottles (CSS only) ─────────────────── */
+@keyframes zx-bubble {
+  0% { transform: translate3d(0, 0, 0) scale(0.5); opacity: 0; }
+  10% { opacity: 0.9; }
+  50% { transform: translate3d(var(--sway, 20px), -52vh, 0) scale(1); opacity: 0.8; }
+  100% { transform: translate3d(calc(var(--sway, 20px) * -1), -104vh, 0) scale(1.08); opacity: 0; }
+}
+@keyframes zx-bob {
+  50% { translate: 0 -9px; }
+}
+.bubble {
+  position: absolute;
+  bottom: -12%;
+  border-radius: 50%;
+  opacity: 0;
+  background: radial-gradient(
+    circle at 30% 28%,
+    rgb(255 255 255 / 0.95) 0 7%,
+    rgb(255 255 255 / 0.3) 22%,
+    rgb(255 255 255 / 0.06) 62%,
+    rgb(255 255 255 / 0.45) 100%
+  );
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.65);
+}
+@media (prefers-reduced-motion: no-preference) {
+  .bubble {
+    animation: zx-bubble var(--t, 12s) linear infinite;
+    animation-delay: var(--d, 0s);
+  }
+  .bob {
+    animation: zx-bob 5s ease-in-out infinite;
+    animation-delay: calc(var(--i, 0) * -700ms);
+  }
+}

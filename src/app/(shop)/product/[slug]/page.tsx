@@ -18,6 +18,7 @@ import {
 } from "@/services/woocommerce/catalog";
 import type { StoreProduct } from "@/types/store-api";
 import { decodeEntities, htmlToParagraphs, htmlToText } from "@/utils/text";
+import { tintStyle } from "@/utils/tint";
 
 export async function generateStaticParams() {
   const slugs = await getPopularProductSlugs();
@@ -60,7 +61,8 @@ async function ProductView({ params }: Pick<PageProps<"/product/[slug]">, "param
   const description = htmlToParagraphs(product.description);
   const summary = htmlToText(product.short_description);
   const specs = [
-    product.formatted_weight && {
+    product.formatted_weight &&
+      product.formatted_weight !== "N/A" && {
       label: "Weight",
       value: decodeEntities(product.formatted_weight),
     },
@@ -96,7 +98,7 @@ async function ProductView({ params }: Pick<PageProps<"/product/[slug]">, "param
       <Container className="py-8 sm:py-12">
         <Breadcrumbs crumbs={crumbs} />
         <div className="mt-8 grid gap-10 lg:grid-cols-[1.2fr_1fr] lg:gap-16">
-          <ProductGallery images={product.images} name={name} />
+          <ProductGallery images={product.images} name={name} style={tintStyle(product.slug)} />
           <div
             id="buy"
             className="flex scroll-mt-[calc(var(--spacing-nav)+2rem)] flex-col gap-8 lg:sticky lg:top-[calc(var(--spacing-nav)+2rem)] lg:self-start"

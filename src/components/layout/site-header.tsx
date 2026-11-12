@@ -41,6 +41,7 @@ export function SiteHeader({ categories }: { categories: NavCategory[] }) {
           panel ? "bg-canvas" : "bg-glass",
         )}
       >
+        <span aria-hidden className="scroll-progress absolute inset-x-0 bottom-0 h-0.5 bg-brand-strong" />
         <nav aria-label="Main" className="mx-auto flex h-nav max-w-[1024px] items-center gap-2 px-gutter lg:px-[22px]">
           <Logo className="h-10" priority />
 

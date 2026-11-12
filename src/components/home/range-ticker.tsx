@@ -14,10 +14,12 @@ export function RangeTicker() {
     </ul>
   );
   return (
-    <section aria-label="The ZOOM X range" className="group overflow-hidden border-y border-line bg-canvas py-5">
-      <div className="ticker flex w-max group-hover:[animation-play-state:paused]">
-        {row(false)}
-        {row(true)}
+    <section aria-label="The ZOOM X range" className="group overflow-clip border-y border-line bg-canvas py-5">
+      <div className="ticker-shift w-max">
+        <div className="ticker flex w-max group-hover:[animation-play-state:paused]">
+          {row(false)}
+          {row(true)}
+        </div>
       </div>
     </section>
   );

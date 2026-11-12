@@ -1,6 +1,6 @@
 import { ArrowUpRight } from "lucide-react";
 import Link from "next/link";
-import { CategoryRow } from "@/components/products/category-row";
+import { CategoryCards } from "@/components/home/category-cards";
 import { Container, Section, SectionHeading } from "@/components/ui/layout";
 import { Reveal } from "@/components/ui/reveal";
 import { range } from "@/content/home";
@@ -23,7 +23,7 @@ export function ShopByCategory({ categories }: { categories: StoreCategory[] }) 
         </Reveal>
 
         {categories.length ? (
-          <CategoryRow categories={categories} className="mt-12 flex justify-center" />
+          <CategoryCards categories={categories} />
         ) : (
           <Reveal delay={0.1}>
             <ul className="mx-auto mt-14 grid max-w-5xl gap-px overflow-hidden rounded-card bg-line sm:grid-cols-2">

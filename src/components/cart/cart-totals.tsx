@@ -1,7 +1,7 @@
 "use client";
 
 import { Tag, X } from "lucide-react";
-import { useId, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useCartStore } from "@/store/cart";
 import type { Cart } from "@/types/cart";
@@ -132,6 +132,22 @@ function CouponForm({ cart }: { cart: Cart }) {
 function ShippingOptions({ cart, editable }: { cart: Cart; editable: boolean }) {
   const { selectRate, pending } = useCartStore();
   const packages = cart.shipping_rates.filter((p) => p.shipping_rates.length > 0);
+
+  // When free delivery unlocks, switch to it once (WooCommerce keeps the
+  // previously chosen paid rate). The customer can still pick another rate.
+  const autoPicked = useRef(new Set<string>());
+  useEffect(() => {
+    if (!editable || pending) return;
+    for (const pkg of packages) {
+      const free = pkg.shipping_rates.find((r) => r.rate_id.startsWith("free_shipping"));
+      const key = `${pkg.package_id}:${free?.rate_id}`;
+      if (free && !free.selected && !autoPicked.current.has(key)) {
+        autoPicked.current.add(key);
+        void selectRate(pkg.package_id, free.rate_id);
+      }
+    }
+  }, [packages, editable, pending, selectRate]);
+
   if (!packages.length) {
     return <p className="text-caption text-ink-muted">Delivery options are shown once your address is entered.</p>;
   }
