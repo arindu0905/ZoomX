@@ -12,6 +12,7 @@ import { decodeEntities, htmlToText } from "@/utils/text";
 import { tint } from "@/utils/tint";
 
 const ease = [0.22, 1, 0.36, 1] as const;
+const compact = "max-sm:h-11 max-sm:px-5 max-sm:text-[0.9375rem]";
 
 /**
  * Cinematic product showcase: the section pins to the viewport while the
@@ -147,7 +148,7 @@ function Slide({ product: p, hideImage }: { product: StoreProduct; hideImage?: b
   const name = decodeEntities(p.name);
   const blurb = htmlToText(p.short_description || "").slice(0, 160);
   return (
-    <div className="flex flex-col items-center gap-4 lg:items-start">
+    <div className="flex flex-col items-center gap-3 sm:gap-4 lg:items-start">
       {!hideImage && (
         <div className="relative aspect-square w-full">
           <Image src={p.images[0].src} alt={name} fill sizes="400px" className="object-contain" />
@@ -158,9 +159,15 @@ function Slide({ product: p, hideImage }: { product: StoreProduct; hideImage?: b
       </h2>
       {blurb && <p className="max-w-md text-lead text-pretty text-ink-muted">{blurb}</p>}
       <Price prices={p.prices} onSale={p.on_sale} className="text-title" />
-      <Link href={productHref(p.slug)} className={buttonClasses({ size: "lg" })}>
-        Discover {name}
-      </Link>
+      {/* Slightly smaller on phones so both buttons fit the pinned screen. */}
+      <div className="flex max-w-full flex-wrap items-center justify-center gap-3 lg:justify-start">
+        <Link href={productHref(p.slug)} className={buttonClasses({ size: "lg", className: compact })}>
+          Discover {name}
+        </Link>
+        <Link href="/shop" className={buttonClasses({ variant: "secondary", size: "lg", className: compact })}>
+          Shop
+        </Link>
+      </div>
     </div>
   );
 }
